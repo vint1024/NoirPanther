@@ -4463,7 +4463,9 @@
 		"bookClub": {
 			"BookClubHeader": {
 				"createdBy": "Created by",
-				"created": "Created"
+				"created": "Created",
+				"members_one": "{{count}} member",
+				"members_other": "{{count}} members"
 			},
 			"UserBookClubsScene": {
 				"active": "Active",
@@ -4486,7 +4488,9 @@
 						"MembersTable": {
 							"removeError": "Failed to remove member",
 							"member": "Member",
-							"loadMore": "Load more members"
+							"loadMore": "Load more members",
+							"role": "Role",
+							"creator": "Creator"
 						},
 						"MemberActionMenu": {
 							"remove": "Remove"
@@ -4526,12 +4530,18 @@
 							"updateClub": "Update club"
 						}
 					}
+				},
+				"members": {
+					"BookClubMembersScene": {
+						"creator": "Creator"
+					}
 				}
 			},
 			"BookClubNavigation": {
 				"home": "Home",
 				"discussion": "Discussion",
-				"members": "Members"
+				"members": "Members",
+				"settings": "Settings"
 			}
 		},
 		"createLibrary": {

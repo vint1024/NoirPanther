@@ -1,6 +1,5 @@
 import { cn, cx, Link } from '@stump/components'
 import { useLocaleContext } from '@stump/i18n'
-import { noop } from 'lodash'
 import { useMemo } from 'react'
 import { useLocation } from 'react-router'
 
@@ -16,8 +15,6 @@ export default function BookClubNavigation() {
 		preferences: { primaryNavigationMode, layoutMaxWidthPx },
 	} = usePreferences()
 	const { viewerIsMember } = useBookClubContext()
-	// const { prefetch } = usePrefetchClubChat({ id })
-	const prefetch = noop
 
 	const tabs = useMemo(() => {
 		const base = [
@@ -32,14 +29,10 @@ export default function BookClubNavigation() {
 			return base
 		}
 
+		// The web discussion scene is still a stub upstream (TODO(graphql)); the
+		// NoirPanther mobile client carries the chat. Hide the tab until it exists.
 		return [
 			...base,
-			{
-				isActive: location.pathname.match(/\/clubs\/[^/]+\/discussion(\/.*)?$/),
-				label: t('scenes.bookClub.BookClubNavigation.discussion'),
-				onHover: () => prefetch(),
-				to: 'discussion',
-			},
 			{
 				isActive: location.pathname.match(/\/clubs\/[^/]+\/members(\/.*)?$/),
 				label: t('scenes.bookClub.BookClubNavigation.members'),
@@ -47,11 +40,11 @@ export default function BookClubNavigation() {
 			},
 			{
 				isActive: location.pathname.match(/\/clubs\/[^/]+\/settings(\/.*)?$/),
-				label: 'Settings',
+				label: t('scenes.bookClub.BookClubNavigation.settings'),
 				to: 'settings',
 			},
 		]
-	}, [location, viewerIsMember, prefetch, t])
+	}, [location, viewerIsMember, t])
 
 	const preferTopBar = primaryNavigationMode === 'TOPBAR'
 

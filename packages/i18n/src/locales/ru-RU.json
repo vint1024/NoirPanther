@@ -4495,7 +4495,11 @@
 		"bookClub": {
 			"BookClubHeader": {
 				"createdBy": "Создатель",
-				"created": "Создан"
+				"created": "Создан",
+				"members_one": "{{count}} участник",
+				"members_few": "{{count}} участника",
+				"members_many": "{{count}} участников",
+				"members_other": "{{count}} участника"
 			},
 			"UserBookClubsScene": {
 				"active": "Активен",
@@ -4518,7 +4522,9 @@
 						"MembersTable": {
 							"removeError": "Не удалось удалить участника",
 							"member": "Участник",
-							"loadMore": "Загрузить ещё участников"
+							"loadMore": "Загрузить ещё участников",
+							"role": "Роль",
+							"creator": "Создатель"
 						},
 						"MemberActionMenu": {
 							"remove": "Удалить"
@@ -4558,12 +4564,18 @@
 							"updateClub": "Обновить клуб"
 						}
 					}
+				},
+				"members": {
+					"BookClubMembersScene": {
+						"creator": "Создатель"
+					}
 				}
 			},
 			"BookClubNavigation": {
 				"home": "Главная",
 				"discussion": "Обсуждение",
-				"members": "Участники"
+				"members": "Участники",
+				"settings": "Настройки"
 			}
 		},
 		"createLibrary": {

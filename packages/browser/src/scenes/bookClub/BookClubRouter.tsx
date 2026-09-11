@@ -17,7 +17,11 @@ const BookClubHomeScene = lazy(() => import('./tabs/home'))
 const BookClubDiscussionScene = lazy(() => import('./tabs/discussion/index.ts'))
 const BookClubMembersScene = lazy(() => import('./tabs/members'))
 
-const IS_DEVELOPMENT = import.meta.env.DEV
+// Upstream still hides book clubs in production builds (stumpapp/stump#120)
+// and only renders them in dev. The NoirPanther fork ships them: the mobile
+// client is built around clubs, and the web scenes carry our pagination /
+// DataLoader work. Flip this back to `import.meta.env.DEV` to re-hide them.
+const BOOK_CLUBS_ENABLED = true
 
 export default function BookClubRouter() {
 	const { checkPermission } = useAppContext()
@@ -34,7 +38,7 @@ export default function BookClubRouter() {
 		return null
 	}
 
-	if (!IS_DEVELOPMENT) {
+	if (!BOOK_CLUBS_ENABLED) {
 		return (
 			<Routes>
 				<Route path="*" element={<UnderConstruction issue={120} />} />

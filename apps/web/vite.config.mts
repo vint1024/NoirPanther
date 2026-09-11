@@ -18,6 +18,25 @@ export default defineConfig({
 		assetsDir: './assets',
 		manifest: true,
 		outDir: '../dist',
+		rollupOptions: {
+			output: {
+				// Keep the framework core (react, router, i18next + our i18n package,
+				// date-fns incl. locales) in ONE chunk. Left to the default heuristics
+				// rolldown split date-fns' `en-US` locale into its own chunk that imported
+				// a CJS-interop helper from the react chunk, while the react chunk
+				// (via packages/i18n) imported the locale — a circular chunk graph that
+				// left the helper undefined at evaluation time and broke app start-up
+				// (blank splash). See .build-logs/chunk_cycles.py for the detector.
+				advancedChunks: {
+					groups: [
+						{
+							name: 'framework',
+							test: /node_modules[\\/](react|react-dom|scheduler|use-sync-external-store|react-i18next|i18next|date-fns|react-router|@remix-run)[\\/]|packages[\\/]i18n[\\/]/,
+						},
+					],
+				},
+			},
+		},
 	},
 	clearScreen: false,
 	define: {

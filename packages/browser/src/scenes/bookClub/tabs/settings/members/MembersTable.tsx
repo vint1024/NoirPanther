@@ -8,10 +8,10 @@ import upperFirst from 'lodash/upperFirst'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
+import { useBookClubContext } from '@/components/bookClub'
 import { Table } from '@/components/table'
 import { useAppContext } from '@/context'
 
-import { useBookClubManagement } from '../context'
 import MemberActionMenu from './MemberActionMenu'
 import RemoveMemberConfirmation from './RemoveMemberConfirmation'
 
@@ -45,9 +45,12 @@ const removeMutation = graphql(`
 export default function MembersTable() {
 	const { t } = useLocaleContext()
 	const { user } = useAppContext()
+	// Rendered both under club settings and on the public Members tab: only
+	// managers get the remove-member action.
 	const {
-		club: { id, roleSpec },
-	} = useBookClubManagement()
+		bookClub: { id, roleSpec },
+		viewerCanManage,
+	} = useBookClubContext()
 
 	const { data, hasNextPage, isFetchingNextPage, fetchNextPage, refetch } =
 		useInfiniteCursorGraphQL(query, ['bookClubMembers', id], {
@@ -72,18 +75,22 @@ export default function MembersTable() {
 	const columns = useMemo(
 		() => [
 			...createBaseColumns(roleSpec, t),
-			columnHelper.display({
-				id: 'actions',
-				cell: ({ row: { original } }) => {
-					if (original.userId === user?.id || original.isCreator) {
-						return null
-					}
+			...(viewerCanManage
+				? [
+						columnHelper.display({
+							id: 'actions',
+							cell: ({ row: { original } }) => {
+								if (original.userId === user?.id || original.isCreator) {
+									return null
+								}
 
-					return <MemberActionMenu onSelectForRemoval={() => setRemovingMember(original)} />
-				},
-			}),
+								return <MemberActionMenu onSelectForRemoval={() => setRemovingMember(original)} />
+							},
+						}),
+					]
+				: []),
 		],
-		[roleSpec, user, t],
+		[roleSpec, user, t, viewerCanManage],
 	)
 
 	return (
@@ -161,9 +168,13 @@ const createBaseColumns = (spec: BookClubMemberRoleSpec, t: (key: string) => str
 			id: 'display_name',
 		}),
 		columnHelper.accessor('role', {
-			cell: ({ getValue }) => (
-				<span>{spec[getValue()] || upperFirst(getValue().toLowerCase())}</span>
+			cell: ({ getValue, row: { original } }) => (
+				<span>
+					{original.isCreator
+						? t('scenes.bookClub.tabs.settings.members.MembersTable.creator')
+						: spec[getValue()] || upperFirst(getValue().toLowerCase())}
+				</span>
 			),
-			header: 'Role',
+			header: t('scenes.bookClub.tabs.settings.members.MembersTable.role'),
 		}),
 	] as ColumnDef<Member>[]
