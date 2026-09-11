@@ -1,0 +1,55 @@
+# NoirPanther server on PostgreSQL (docker compose). Put STUMP_DB_PASSWORD=... into a .env file next to this file.
+# Migrating an existing SQLite database: start once (schema), stop stump-vint, run scripts/db/sqlite_to_postgres.py
+# (e.g. in a one-off python:3.12-slim container on this compose network), start again.
+services:
+  db:
+    image: postgres:18-alpine
+    container_name: stump-vint-db
+    environment:
+      POSTGRES_USER: stump
+      POSTGRES_PASSWORD: ${STUMP_DB_PASSWORD}
+      POSTGRES_DB: stump
+    volumes:
+      - pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U stump -d stump"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    restart: unless-stopped
+
+  stump-vint:
+    image: stump:vint-dev
+    container_name: stump-vint
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      # Config dir: thumbnails, avatars, logs (the database lives in the db service).
+      - ./stump_config:/config
+
+      - /path/to/your/books:/data
+    ports:
+      - 10802:10801
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=UTC
+      - STUMP_CONFIG_DIR=/config
+      - STUMP_DB_HOST=db
+      - STUMP_DB_PORT=5432
+      - STUMP_DB_NAME=stump
+      - STUMP_DB_USER=stump
+      - STUMP_DB_PASSWORD=${STUMP_DB_PASSWORD}
+    restart: unless-stopped
+
+# Явная подсеть: авто-выданная 192.168.48.0/20 накрывала домашнюю LAN 192.168.50.x
+# и убивала контейнерам доступ в локалку (инцидент 2026-08-16)
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: 172.16.80.0/24
+
+volumes:
+  pgdata:
