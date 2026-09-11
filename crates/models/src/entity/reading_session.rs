@@ -104,9 +104,10 @@ pub struct ModelWithDevice {
 /// the caller passes the active [`DbBackend`].
 ///
 /// sea-orm always emits the relation's own `from = to` predicate; it is OR-ed
-/// with the real condition and compares `reading_sessions.id` (text) with the
-/// device id so it never matches — but it stays type-valid on every backend
-/// (`device_ids = id` was `json = text`, an error on PostgreSQL).
+/// with the real condition and compares `reading_sessions.user_id` (text)
+/// with the device id, so it never matches — but it stays type-valid on every
+/// backend (`device_ids = id` was `json = text`, an error on PostgreSQL; the
+/// integer session id would be `integer = text`).
 pub fn device_join(backend: DbBackend) -> RelationDef {
 	let first_device_matches = match backend {
 		DbBackend::Postgres => {
@@ -121,7 +122,7 @@ pub fn device_join(backend: DbBackend) -> RelationDef {
 		},
 	};
 	Entity::belongs_to(reading_device::Entity)
-		.from(Column::Id)
+		.from(Column::UserId)
 		.to(reading_device::Column::Id)
 		.condition_type(ConditionType::Any)
 		.on_condition(move |_left, _right| {
@@ -296,7 +297,7 @@ mod device_join_tests {
 		let pg = ModelWithDevice::find(DbBackend::Postgres)
 			.build(DbBackend::Postgres)
 			.to_string();
-		assert!(pg.contains(r#"LEFT JOIN "reading_devices" ON "reading_sessions"."id" = "reading_devices"."id" OR (reading_sessions.device_ids->>0 = reading_devices.id)"#), "{pg}");
+		assert!(pg.contains(r#"LEFT JOIN "reading_devices" ON "reading_sessions"."user_id" = "reading_devices"."id" OR (reading_sessions.device_ids->>0 = reading_devices.id)"#), "{pg}");
 		assert!(
 			!pg.contains("device_ids\" ="),
 			"json = text comparison must not be emitted: {pg}"
