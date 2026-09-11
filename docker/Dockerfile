@@ -65,9 +65,14 @@ FROM rust:1.97-bookworm AS builder
 ARG GIT_REV
 ARG BUILD_CHANNEL
 ARG TARGETARCH
+# Cap rustc parallelism: the release build of stump_server peaks at several GB
+# per job, and the default (one job per CPU) OOM-kills the build on a small
+# Docker Desktop VM. Override with --build-arg CARGO_BUILD_JOBS=N on big hosts.
+ARG CARGO_BUILD_JOBS=2
 
 ENV GIT_REV=${GIT_REV}
 ENV BUILD_CHANNEL=${BUILD_CHANNEL}
+ENV CARGO_BUILD_JOBS=${CARGO_BUILD_JOBS}
 
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked --mount=type=cache,target=/var/lib/apt,sharing=locked \
     apt-get update && apt-get install -y \
