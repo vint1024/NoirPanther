@@ -4,11 +4,11 @@
 
 # NoirPanther server
 
-> **NoirPanther server is a fork of [Stump](https://github.com/stumpapp/stump)**, tracking upstream up to tag **`v0.1.5`**.
+> **NoirPanther server is a fork of [Stump](https://github.com/stumpapp/stump)**, tracking upstream up to tag **`v0.1.7`** (plus the post-release image-reader history fix).
 >
 > - Fork repository: <https://git.vint1024.net/vint1024/stump.git> (mirror: <https://github.com/vint1024/NoirPanther>)
 > - Upstream (original): <https://github.com/stumpapp/stump>
-> - **Semantic version `v0.1.5`** — the same release as upstream Stump (everything in Stump 0.1.5 plus the additions below). The exact build is identified by its commit hash; the build channel is **`NoirPanther (stable)`**.
+> - **Semantic version `v0.1.7`** — the same release as upstream Stump (everything in Stump 0.1.7 — PostgreSQL support, the Readium-based web EPUB reader with streaming, whole-book search and annotations, Comic Vine + manual metadata search, reading-session conflict resolution, avatars with metadata — plus the additions below). The exact build is identified by its commit hash; the build channel is **`NoirPanther (stable)`**.
 >
 > **All modifications in this fork were developed with heavy assistance from AI tooling.**
 
@@ -23,7 +23,7 @@
 
 ### Server &amp; features
 
-- **EPUB streaming for read-only users** — manifest + per-resource endpoints so users without download permission can read EPUBs in the browser/app
+- **EPUB streaming for read-only users** — manifest + per-resource endpoints so users without download permission can read EPUBs in the browser/app (our implementation seeded upstream PR #1288; since v0.1.7 the fork ships the upstream Readium reader on top of it)
 - **Offline reading with encryption (E3)** — an `/offline` endpoint that wraps the content key to a device's Secure-Enclave public key, gated by an `OfflineRead` capability (no download permission required)
 - **Multiple folders per library**
 - **Reversible series merging**
@@ -33,7 +33,7 @@
 - **Server-side EPUB cover placeholder** + WebP / GIF / SVG thumbnail support
 - **Series thumbnail regeneration** (incl. a regenerate-from-cover button)
 - **Book clubs at scale** — cursor-paginated members / past books / discussions, keyset discussion history, and DataLoader fixes for the member graph
-- **Unicode case-insensitive search** (`ulower`) — search matches regardless of letter case in any language (incl. Cyrillic); **search also matches book authors** (writers), not just titles
+- **Unicode case-insensitive search** (`ulower`) — search matches regardless of letter case in any language (incl. Cyrillic); **search also matches book authors** (writers), not just titles. Works on both SQLite (custom function) and PostgreSQL (SQL wrapper over `lower()`)
 - **Book & series metadata editor** in the web UI — permission-gated (`EditMetadata`), with autocomplete and field-level locks
 - **Sliding session expiry** — active web sessions are refreshed instead of logging the user out on a fixed TTL
 - **Memory-bounded server** — tuned allocator (jemalloc + glibc arena/trim), bounded blocking pool and scanner concurrency for stable memory on large libraries
@@ -42,8 +42,8 @@
 
 ### Packaging
 
-- Semantic version **`v0.1.5`** (internal build identifier `0.1.5-vint-0.4.0`), build channel **`NoirPanther (stable)`**
-- Docker `arm64` image
+- Semantic version **`v0.1.7`** (internal build identifier `0.1.7-vint-0.5.0`), build channel **`NoirPanther (stable)`**
+- Docker `arm64` image (Rust 1.97 / Node 24 toolchain; `CARGO_BUILD_JOBS` build-arg caps compile parallelism for small Docker VMs)
 
 > A from-scratch **proprietary** client — **NoirPanther** — is built against this fork's API: <https://git.vint1024.net/vint1024/noirpanther.git>
 

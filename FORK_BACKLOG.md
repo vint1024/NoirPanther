@@ -26,6 +26,7 @@ Status legend: ✅ present/verified · ⚠️ partially lost · ❌ lost/regress
 | A14 | Memory bounding (jemalloc + glibc arena/trim + blocking pool 128 + scanner parallelism) | main.rs MAX_BLOCKING_THREADS, Dockerfile MALLOC_* | ✅ audited — `MAX_BLOCKING_THREADS=128` in `main.rs`, `MALLOC_*` in Dockerfile |
 | A15 | Hide metadata field lock button without EditMetadata | gated lock icon | ✅ audited — `metadataEditor/cells/LockFieldButton.tsx` |
 | A16 | Single-series deletion + content-rule UX polish | per-series delete | ✅ backend OK; delete UI was orphaned — RESTORED this session (mutation + button + ConfirmationModal) |
+| A17 | `ulower()` on PostgreSQL (SQL wrapper over `lower()`) so string filters / content rules are backend-agnostic | `core/src/database.rs` postgres branch `CREATE OR REPLACE FUNCTION ulower` | ✅ added in the v0.1.7 merge (2026-09-11) |
 
 ## B. Web / UI
 | # | Feature | Key symbols / files | Status |
@@ -50,6 +51,10 @@ editing, search-by-author, offline encryption E2/E3, OPDS, book clubs, themes.
 
 ### App TODO (not yet done)
 - [ ] Unified search across SERIES + BOOKS + AUTHORS in one query (spawn_task task_86802da7). Currently book search matches title+author but there's no combined cross-entity search.
+
+## Audit log
+- **v0.1.5 merge (2026-06):** 114 conflicts; regressions found in 3 rounds (codegen theirs, i18n/components theirs, orphaned parent scenes). All items restored.
+- **v0.1.7 merge (2026-09-11, merge `08123931`):** 39 conflicts. Upstream took over localisation of the EPUB/image reader controls, thumbnail selectors and error scene with its own keys (theirs taken, ru translated); our `t()` re-applied to users table/menu, filter drawer, fullscreen toggle. EPUB streaming (`readium.rs`/`epub.rs`) = upstream (their PR #1288 grew from our A6); fork-only read-gated `/epub/{id}/file` dropped by decision. A1–A17 + B2–B12 verified present & wired (paths moved: `packages/components/tailwind/themes.css`, `apps/web/vite.config.mts`, `apps/web/src/index.html`). New failure mode seen: **auto-merge duplicates `const { t } = useLocaleContext()`** when both sides add it (BookManagementScene) → tsc catches it; and **upstream component API drift** (CheckBox lost `variant`) in our-only files (MetadataWriteback) → tsc catches it. Always run `yarn --cwd packages/browser check-types` after a merge.
 
 ---
 **Audit method:** for each ⏳ item, confirm the key symbol/file exists in current
