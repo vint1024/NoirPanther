@@ -33,6 +33,7 @@
 - **Server-side EPUB cover placeholder** + WebP / GIF / SVG thumbnail support
 - **Series thumbnail regeneration** (incl. a regenerate-from-cover button)
 - **Book clubs at scale** — cursor-paginated members / past books / discussions, keyset discussion history, and DataLoader fixes for the member graph
+- **PostgreSQL-ready fork**: on Postgres the string-backed book-club role columns are fixed (upstream declares them INTEGER, which breaks clubs there), `ulower()` is provided as a SQL wrapper, and `scripts/db/sqlite_to_postgres.py` copies an existing SQLite database into a freshly migrated PostgreSQL one (used to move this fork's own servers off SQLite)
 - **Unicode case-insensitive search** (`ulower`) — search matches regardless of letter case in any language (incl. Cyrillic); **search also matches book authors** (writers), not just titles. Works on both SQLite (custom function) and PostgreSQL (SQL wrapper over `lower()`)
 - **Book & series metadata editor** in the web UI — permission-gated (`EditMetadata`), with autocomplete and field-level locks
 - **Sliding session expiry** — active web sessions are refreshed instead of logging the user out on a fixed TTL

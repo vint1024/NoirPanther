@@ -26,6 +26,7 @@ Status legend: ✅ present/verified · ⚠️ partially lost · ❌ lost/regress
 | A14 | Memory bounding (jemalloc + glibc arena/trim + blocking pool 128 + scanner parallelism) | main.rs MAX_BLOCKING_THREADS, Dockerfile MALLOC_* | ✅ audited — `MAX_BLOCKING_THREADS=128` in `main.rs`, `MALLOC_*` in Dockerfile |
 | A15 | Hide metadata field lock button without EditMetadata | gated lock icon | ✅ audited — `metadataEditor/cells/LockFieldButton.tsx` |
 | A16 | Single-series deletion + content-rule UX polish | per-series delete | ✅ backend OK; delete UI was orphaned — RESTORED this session (mutation + button + ConfirmationModal) |
+| A18 | PostgreSQL: book-club `role` columns TEXT on pg (`m20260911_000000_pg_book_club_role_text`), copier `scripts/db/sqlite_to_postgres.py` | migration + script | ✅ added 2026-09-11 (servers migrated to Postgres) |
 | A17 | `ulower()` on PostgreSQL (SQL wrapper over `lower()`) so string filters / content rules are backend-agnostic | `core/src/database.rs` postgres branch `CREATE OR REPLACE FUNCTION ulower` | ✅ added in the v0.1.7 merge (2026-09-11) |
 
 ## B. Web / UI
