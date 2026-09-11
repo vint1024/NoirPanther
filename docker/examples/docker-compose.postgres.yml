@@ -1,10 +1,10 @@
 # NoirPanther server on PostgreSQL (docker compose). Put STUMP_DB_PASSWORD=... into a .env file next to this file.
-# Migrating an existing SQLite database: start once (schema), stop stump-vint, run scripts/db/sqlite_to_postgres.py
+# Migrating an existing SQLite database: start once (schema), stop noir-panter, run scripts/db/sqlite_to_postgres.py
 # (e.g. in a one-off python:3.12-slim container on this compose network), start again.
 services:
   db:
     image: postgres:18-alpine
-    container_name: stump-vint-db
+    container_name: noir-panter-db
     environment:
       POSTGRES_USER: stump
       POSTGRES_PASSWORD: ${STUMP_DB_PASSWORD}
@@ -18,9 +18,9 @@ services:
       retries: 30
     restart: unless-stopped
 
-  stump-vint:
+  noir-panter:
     image: stump:vint-dev
-    container_name: stump-vint
+    container_name: noir-panter
     depends_on:
       db:
         condition: service_healthy

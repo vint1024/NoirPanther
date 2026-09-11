@@ -1,5 +1,5 @@
 #!/bin/bash
-# Dump the NoirPanther PostgreSQL database into ./db-backups (run from /Users/homeserver/docker/stump-vint).
+# Dump the NoirPanther PostgreSQL database into ./db-backups (run from the stack directory, e.g. /Users/homeserver/docker/noir-panter).
 set -euo pipefail
 export PATH=/usr/local/bin:$PATH
 cd "$(dirname "$0")"
