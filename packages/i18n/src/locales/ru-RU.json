@@ -4485,6 +4485,11 @@
 			"EmailBookDialog": {
 				"sendErrors": "При отправке письма (писем) возникли ошибки. Подробности смотрите в логах",
 				"sendFailed": "Не удалось отправить письмо"
+			},
+			"BookReaderLink": {
+				"readAgain": "Читать снова",
+				"continueReading": "Продолжить чтение",
+				"read": "Читать"
 			}
 		},
 		"bookClub": {

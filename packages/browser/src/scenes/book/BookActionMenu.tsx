@@ -279,10 +279,10 @@ export default function BookActionMenu({ book }: Props) {
 						className="w-full shrink"
 						variant="outline"
 						onClick={() => downloadRef.current?.click()}
-						title="Download"
+						title={t('scenes.book.BookActionMenu.download')}
 					>
 						<Download className="mr-2 h-4 w-4" />
-						Download
+						{t('scenes.book.BookActionMenu.download')}
 					</ButtonOrLink>
 				)}
 

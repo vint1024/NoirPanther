@@ -4453,6 +4453,11 @@
 			"EmailBookDialog": {
 				"sendErrors": "Some errors occurred while sending email(s). Check the logs for more detail",
 				"sendFailed": "Failed to send email"
+			},
+			"BookReaderLink": {
+				"readAgain": "Read again",
+				"continueReading": "Continue reading",
+				"read": "Read"
 			}
 		},
 		"bookClub": {

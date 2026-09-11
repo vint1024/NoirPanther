@@ -1,9 +1,11 @@
 import { Button } from '@stump/components'
+import { useLocaleContext } from '@stump/i18n'
 
 import { MetadataEditorState, useMetadataEditorContext } from './context'
 
 export const MetadataEditorHeader = () => {
 	const { state, setState, isEditing, onCancel, onSave } = useMetadataEditorContext()
+	const { t } = useLocaleContext()
 
 	// Note: I had to separate the buttons because dynamically setting `type` based
 	// on state would trigger a submit
@@ -17,13 +19,13 @@ export const MetadataEditorHeader = () => {
 					className="h-7 px-2.5 rounded-lg"
 					onClick={onCancel}
 				>
-					Cancel
+					{t('common.cancel')}
 				</Button>
 			)}
 
 			{isEditing && (
 				<Button type="submit" size="sm" className="h-7 px-2.5 rounded-lg" onClick={onSave}>
-					Save
+					{t('common.save')}
 				</Button>
 			)}
 
@@ -35,7 +37,7 @@ export const MetadataEditorHeader = () => {
 					className="h-7 px-2.5 rounded-lg"
 					onClick={() => setState(MetadataEditorState.Editing)}
 				>
-					Edit
+					{t('common.edit')}
 				</Button>
 			)}
 		</div>

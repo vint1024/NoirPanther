@@ -1,6 +1,7 @@
 import { EBOOK_EXTENSION } from '@stump/client'
 import { ButtonOrLink } from '@stump/components'
 import { BookCardFragment } from '@stump/graphql'
+import { useLocaleContext } from '@stump/i18n'
 import { useMemo } from 'react'
 
 import { usePaths } from '@/paths'
@@ -12,6 +13,7 @@ type Props = {
 
 export default function BookReaderLink({ book }: Props) {
 	const paths = usePaths()
+	const { t } = useLocaleContext()
 
 	const isReadAgain = useMemo(() => isReadAgainPrompt(book), [book])
 
@@ -19,13 +21,13 @@ export default function BookReaderLink({ book }: Props) {
 	const currentPage = book.readProgress?.page ?? -1
 	const title = useMemo(() => {
 		if (isReadAgain) {
-			return 'Read again'
+			return t('scenes.book.BookReaderLink.readAgain')
 		} else if (currentPage > 0 || hasEbookProgress) {
-			return 'Continue reading'
+			return t('scenes.book.BookReaderLink.continueReading')
 		} else {
-			return 'Read'
+			return t('scenes.book.BookReaderLink.read')
 		}
-	}, [isReadAgain, currentPage, hasEbookProgress])
+	}, [isReadAgain, currentPage, hasEbookProgress, t])
 
 	const readUrl = useMemo(() => {
 		const { id, readProgress, extension } = book
