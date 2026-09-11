@@ -8,7 +8,11 @@ use std::{
 use globset::GlobSet;
 use itertools::{Either, Itertools};
 use models::entity::{media, series};
-use sea_orm::{prelude::*, DatabaseConnection, QuerySelect};
+use sea_orm::{
+	prelude::*,
+	sea_query::{LikeExpr, SimpleExpr},
+	DatabaseConnection, QuerySelect,
+};
 use walkdir::{DirEntry, WalkDir};
 
 use crate::{
@@ -27,10 +31,12 @@ use super::ScanOptions;
 /// escaped — folder names commonly contain `_`, which would otherwise match any
 /// character and pull in siblings. `qualified_column` must be pre-quoted, e.g.
 /// `"\"media\".\"path\""`.
-fn path_under_prefix(
-	qualified_column: &str,
-	folder: &str,
-) -> sea_orm::sea_query::SimpleExpr {
+///
+/// Built with the sea-query LIKE builder rather than a raw
+/// `cust_with_values("... LIKE ? ...")` string: the `?` placeholder is only
+/// substituted on SQLite/MySQL — on PostgreSQL it is emitted verbatim and the
+/// query fails with `type "escape" does not exist`.
+pub(crate) fn path_under_prefix(qualified_column: &str, folder: &str) -> SimpleExpr {
 	let mut prefix = folder.to_string();
 	if !prefix.ends_with(std::path::MAIN_SEPARATOR) {
 		prefix.push(std::path::MAIN_SEPARATOR);
@@ -39,10 +45,8 @@ fn path_under_prefix(
 		.replace('\\', "\\\\")
 		.replace('%', "\\%")
 		.replace('_', "\\_");
-	Expr::cust_with_values(
-		format!("{qualified_column} LIKE ? ESCAPE '\\'"),
-		[format!("{escaped}%")],
-	)
+	Expr::expr(Expr::cust(qualified_column))
+		.like(LikeExpr::new(format!("{escaped}%")).escape('\\'))
 }
 
 pub struct WalkerCtx {
@@ -563,4 +567,42 @@ pub async fn walk_series(
 		series_is_missing: false,
 		observed_dir_mtimes,
 	})
+}
+
+#[cfg(test)]
+mod path_under_prefix_tests {
+	use sea_orm::sea_query::{PostgresQueryBuilder, Query, SqliteQueryBuilder};
+
+	use super::path_under_prefix;
+
+	fn render<B: sea_orm::sea_query::QueryBuilder>(
+		builder: B,
+		folder: &str,
+	) -> (String, Vec<String>) {
+		let (sql, values) = Query::select()
+			.expr(path_under_prefix("\"media\".\"path\"", folder))
+			.build(builder);
+		let values = values
+			.iter()
+			.map(|v| match v {
+				sea_orm::Value::String(Some(s)) => s.as_ref().clone(),
+				other => panic!("unexpected bind value {other:?}"),
+			})
+			.collect();
+		(sql, values)
+	}
+
+	#[test]
+	fn renders_bound_like_on_postgres() {
+		let (sql, values) = render(PostgresQueryBuilder, "/data/my_lib");
+		assert_eq!(sql, r#"SELECT ("media"."path") LIKE $1 ESCAPE E'\\'"#);
+		assert_eq!(values, vec![r"/data/my\_lib/%".to_string()]);
+	}
+
+	#[test]
+	fn renders_bound_like_on_sqlite() {
+		let (sql, values) = render(SqliteQueryBuilder, "/data/100%/");
+		assert_eq!(sql, r#"SELECT ("media"."path") LIKE ? ESCAPE '\'"#);
+		assert_eq!(values, vec![r"/data/100\%/%".to_string()]);
+	}
 }

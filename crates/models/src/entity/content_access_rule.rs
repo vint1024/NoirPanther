@@ -1,6 +1,6 @@
 use sea_orm::{
 	entity::prelude::*,
-	sea_query::{Query, SimpleExpr},
+	sea_query::{Expr, LikeExpr, Query, SimpleExpr},
 	Condition,
 };
 use serde::{Deserialize, Serialize};
@@ -78,12 +78,8 @@ impl Entity {
 /// A Unicode-case-insensitive `tag.name IN (values)` condition — tag names are
 /// user-typed in rules, so "Хоррор" must match a "хоррор" tag
 fn tag_name_matches(values: &[String]) -> SimpleExpr {
-	let placeholders = values.iter().map(|_| "?").collect::<Vec<_>>().join(", ");
 	let params = values.iter().map(|v| v.to_lowercase());
-	Expr::cust_with_values(
-		format!("ulower(\"tags\".\"name\") IN ({placeholders})"),
-		params,
-	)
+	Expr::expr(Expr::cust("ulower(\"tags\".\"name\")")).is_in(params)
 }
 
 /// Tag names → subquery of media ids carrying one of those tags
@@ -164,12 +160,10 @@ fn comma_list_contains(table: &str, column: &str, value: &str) -> SimpleExpr {
 		.replace('\\', "\\\\")
 		.replace('%', "\\%")
 		.replace('_', "\\_");
-	Expr::cust_with_values(
-		format!(
-			"(',' || ulower(REPLACE(COALESCE(\"{table}\".\"{column}\", ''), ', ', ',')) || ',') LIKE ('%,' || ? || ',%') ESCAPE '\\'"
-		),
-		[escaped],
-	)
+	Expr::expr(Expr::cust(format!(
+		"(',' || ulower(REPLACE(COALESCE(\"{table}\".\"{column}\", ''), ', ', ',')) || ',')"
+	)))
+	.like(LikeExpr::new(format!("%,{escaped},%")).escape('\\'))
 }
 
 /// A NULL-safe, Unicode-case-insensitive equality test against a list of
@@ -180,13 +174,9 @@ fn column_in_values(table: &str, column: &str, values: &[String]) -> SimpleExpr 
 	if values.is_empty() {
 		return Expr::cust("0 = 1");
 	}
-	let placeholders = values.iter().map(|_| "?").collect::<Vec<_>>().join(", ");
 	let params = values.iter().map(|v| v.to_lowercase());
-	Expr::cust_with_values(
-		format!(
-			"\"{table}\".\"{column}\" IS NOT NULL AND ulower(\"{table}\".\"{column}\") IN ({placeholders})"
-		),
-		params,
+	Expr::cust(format!("\"{table}\".\"{column}\" IS NOT NULL")).and(
+		Expr::expr(Expr::cust(format!("ulower(\"{table}\".\"{column}\")"))).is_in(params),
 	)
 }
 
@@ -439,4 +429,62 @@ pub fn series_filter(rules: &[Model]) -> Option<Condition> {
 /// genre/publisher are book/series concepts and leave libraries visible
 pub fn library_filter(rules: &[Model]) -> Option<Condition> {
 	combined_filter(rules, &[MatchLevel::Library(LibraryIdSource::LibraryTable)])
+}
+
+#[cfg(test)]
+mod sql_rendering_tests {
+	use sea_orm::sea_query::{PostgresQueryBuilder, Query, SqliteQueryBuilder};
+
+	use super::{column_in_values, comma_list_contains, tag_name_matches};
+
+	fn render<B: sea_orm::sea_query::QueryBuilder>(
+		builder: B,
+		expr: SimpleExpr,
+	) -> String {
+		Query::select().expr(expr).build(builder).0
+	}
+	use sea_orm::sea_query::SimpleExpr;
+
+	#[test]
+	fn comma_list_contains_binds_on_both_backends() {
+		let pg = render(
+			PostgresQueryBuilder,
+			comma_list_contains("media_metadata", "genres", "Sci_Fi"),
+		);
+		assert_eq!(
+			pg,
+			r#"SELECT ((',' || ulower(REPLACE(COALESCE("media_metadata"."genres", ''), ', ', ',')) || ',')) LIKE $1 ESCAPE E'\\'"#
+		);
+		let (sqlite, values) = Query::select()
+			.expr(comma_list_contains("media_metadata", "genres", "Sci_Fi"))
+			.build(SqliteQueryBuilder);
+		assert_eq!(
+			sqlite,
+			r#"SELECT ((',' || ulower(REPLACE(COALESCE("media_metadata"."genres", ''), ', ', ',')) || ',')) LIKE ? ESCAPE '\'"#
+		);
+		assert_eq!(
+			values.0,
+			vec![sea_orm::Value::from(r"%,sci\_fi,%".to_string())]
+		);
+	}
+
+	#[test]
+	fn in_lists_bind_on_postgres() {
+		let values = vec!["Хоррор".to_string(), "b".to_string()];
+		assert_eq!(
+			render(PostgresQueryBuilder, tag_name_matches(&values)),
+			r#"SELECT (ulower("tags"."name")) IN ($1, $2)"#
+		);
+		assert_eq!(
+			render(
+				PostgresQueryBuilder,
+				column_in_values("media_metadata", "publisher", &values)
+			),
+			r#"SELECT ("media_metadata"."publisher" IS NOT NULL) AND (ulower("media_metadata"."publisher")) IN ($1, $2)"#
+		);
+		assert_eq!(
+			render(SqliteQueryBuilder, tag_name_matches(&values)),
+			r#"SELECT (ulower("tags"."name")) IN (?, ?)"#
+		);
+	}
 }

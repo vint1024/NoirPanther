@@ -6,7 +6,7 @@ use models::{
 };
 use sea_orm::{
 	prelude::*,
-	sea_query::{OnConflict, Query},
+	sea_query::{LikeExpr, OnConflict, Query},
 	ActiveValue::Set,
 	TransactionTrait,
 };
@@ -444,10 +444,10 @@ impl SeriesMutation {
 			media::Entity::update_many()
 				.col_expr(media::Column::SeriesId, Expr::value(restored.id.clone()))
 				.filter(media::Column::SeriesId.eq(target.id.clone()))
-				.filter(Expr::cust_with_values(
-					"\"media\".\"path\" LIKE ? ESCAPE '\\'",
-					[format!("{escaped_prefix}%")],
-				))
+				.filter(
+					Expr::expr(Expr::cust("\"media\".\"path\""))
+						.like(LikeExpr::new(format!("{escaped_prefix}%")).escape('\\')),
+				)
 				.exec(&txn)
 				.await?;
 		}
