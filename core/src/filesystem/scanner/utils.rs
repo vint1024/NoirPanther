@@ -87,8 +87,16 @@ pub(crate) async fn update_media(
 	let updated_media = media.update(&txn).await?;
 
 	if let Some(meta) = metadata {
-		let on_conflict = OnConflict::new()
-			.update_columns(media_metadata::Column::iter())
+		// Upsert keyed on the media_id UNIQUE constraint: PostgreSQL rejects
+		// `ON CONFLICT DO UPDATE` without a conflict target (SQLite tolerates
+		// it). The existing row's `id`/`media_id` are kept.
+		let on_conflict = OnConflict::column(media_metadata::Column::MediaId)
+			.update_columns(media_metadata::Column::iter().filter(|column| {
+				!matches!(
+					column,
+					media_metadata::Column::Id | media_metadata::Column::MediaId
+				)
+			}))
 			.to_owned();
 		media_metadata::Entity::insert(meta.into_active_model())
 			.on_conflict(on_conflict)

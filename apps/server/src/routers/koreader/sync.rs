@@ -251,7 +251,9 @@ async fn put_progress(
 
 	let tx = ctx.conn.as_ref().begin().await?;
 
-	let on_conflict = OnConflict::new()
+	// Keyed on the device id: PostgreSQL requires an explicit conflict target
+	// for `ON CONFLICT DO UPDATE`
+	let on_conflict = OnConflict::column(reading_device::Column::Id)
 		.update_columns(
 			reading_device::Column::iter()
 				.filter(|col| matches!(col, reading_device::Column::Name)),

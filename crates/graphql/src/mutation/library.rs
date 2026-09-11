@@ -13,9 +13,8 @@ use models::{
 	shared::enums::{FileStatus, MetadataResetImpact, UserPermission},
 };
 use sea_orm::{
-	prelude::*,
-	sea_query::{OnConflict, Query},
-	Condition, IntoActiveModel, QuerySelect, Set, TransactionTrait,
+	prelude::*, sea_query::Query, Condition, IntoActiveModel, QueryOrder, QuerySelect,
+	Set, TransactionTrait,
 };
 use stump_core::filesystem::{
 	image::{
@@ -1191,21 +1190,34 @@ impl LibraryMutation {
 			.await?
 			.ok_or("Library not found")?;
 
-		let active_model = last_library_visit::ActiveModel {
-			library_id: Set(library.id.clone()),
-			user_id: Set(user.id.clone()),
-			timestamp: Set(Utc::now().into()),
-			..Default::default()
-		};
-
-		last_library_visit::Entity::insert(active_model)
-			.on_conflict(
-				OnConflict::new()
-					.update_column(last_library_visit::Column::Timestamp)
-					.to_owned(),
-			)
-			.exec(core.conn.as_ref())
+		// `last_library_visits` has no UNIQUE(user_id, library_id), so a
+		// target-less `ON CONFLICT DO UPDATE` never fired on SQLite (it just
+		// inserted a new row per visit) and is a syntax error on PostgreSQL.
+		// Update the existing visit when there is one, insert otherwise.
+		let existing = last_library_visit::Entity::find()
+			.filter(last_library_visit::Column::UserId.eq(user.id.clone()))
+			.filter(last_library_visit::Column::LibraryId.eq(library.id.clone()))
+			.order_by_desc(last_library_visit::Column::Timestamp)
+			.one(core.conn.as_ref())
 			.await?;
+		let now: DateTimeWithTimeZone = Utc::now().into();
+		match existing {
+			Some(visit) => {
+				let mut active_model = visit.into_active_model();
+				active_model.timestamp = Set(now);
+				active_model.update(core.conn.as_ref()).await?;
+			},
+			None => {
+				last_library_visit::ActiveModel {
+					library_id: Set(library.id.clone()),
+					user_id: Set(user.id.clone()),
+					timestamp: Set(now),
+					..Default::default()
+				}
+				.insert(core.conn.as_ref())
+				.await?;
+			},
+		}
 
 		Ok(Library::from(library))
 	}
