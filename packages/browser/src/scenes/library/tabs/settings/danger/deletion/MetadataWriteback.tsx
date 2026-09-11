@@ -66,7 +66,6 @@ export default function MetadataWriteback() {
 			</div>
 
 			<CheckBox
-				variant="primary"
 				label={t(`${LOCALE_BASE}.keepBackup`)}
 				checked={backup}
 				onClick={() => setBackup((value) => !value)}

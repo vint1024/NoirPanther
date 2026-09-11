@@ -28,14 +28,12 @@ export default function UploadImageModal({ isOpen, onClose, onUploadImage }: Pro
 				const isTooLarge = firstError?.code === 'file-too-large'
 				toast.error(
 					isTooLarge
-						? t(withLocaleKey('errors.fileTooLarge'))
-						: firstError?.message || t(withLocaleKey('errors.unknown')),
+						? t(withLocaleKey('fileTooLarge'))
+						: firstError?.message || t('common.unknownError'),
 				)
 			} else if (acceptedFiles.length > 1 || !acceptedFiles.length) {
 				toast.error(
-					acceptedFiles.length
-						? t(withLocaleKey('errors.onlyOneFile'))
-						: t(withLocaleKey('errors.noFiles')),
+					acceptedFiles.length ? t(withLocaleKey('onlyOneFile')) : t(withLocaleKey('noFile')),
 				)
 			} else if (acceptedFiles[0]) {
 				const file = acceptedFiles[0]
@@ -62,7 +60,7 @@ export default function UploadImageModal({ isOpen, onClose, onUploadImage }: Pro
 				await onUploadImage(selectedFile)
 			} catch (error) {
 				console.error(error)
-				toast.error(t(withLocaleKey('errors.uploadFailed')))
+				toast.error(t('thumbnailSelector.errors.uploadFailed'))
 			}
 		}
 	}
@@ -130,7 +128,7 @@ export default function UploadImageModal({ isOpen, onClose, onUploadImage }: Pro
 						{t('common.cancel')}
 					</Button>
 					<Button onClick={handleConfirm} disabled={!selectedFile}>
-						{t(withLocaleKey('confirmSelection'))}
+						{t('thumbnailSelector.actions.confirmSelection')}
 					</Button>
 				</Dialog.Footer>
 			</Dialog.Content>

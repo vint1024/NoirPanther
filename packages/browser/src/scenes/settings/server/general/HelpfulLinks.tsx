@@ -35,8 +35,7 @@ export default function HelpfulLinks() {
 					underline={false}
 				>
 					<span>
-						NoirPanther ·{' '}
-						{t('settingsScene.server/general.sections.helpfulLinks.links.changelog')}
+						NoirPanther · {t('settingsScene.server/general.sections.helpfulLinks.links.changelog')}
 					</span>
 					<ExternalLink className="h-3 w-3 text-muted-foreground" />
 				</Link>
@@ -49,8 +48,7 @@ export default function HelpfulLinks() {
 					underline={false}
 				>
 					<span>
-						Stump ·{' '}
-						{t('settingsScene.server/general.sections.helpfulLinks.links.documentation')}
+						Stump · {t('settingsScene.server/general.sections.helpfulLinks.links.documentation')}
 					</span>
 					<ExternalLink className="h-3 w-3 text-muted-foreground" />
 				</Link>
@@ -74,8 +72,7 @@ export default function HelpfulLinks() {
 					underline={false}
 				>
 					<span>
-						Stump ·{' '}
-						{t('settingsScene.server/general.sections.helpfulLinks.links.changelog')}
+						Stump · {t('settingsScene.server/general.sections.helpfulLinks.links.changelog')}
 					</span>
 					<ExternalLink className="h-3 w-3 text-muted-foreground" />
 				</Link>

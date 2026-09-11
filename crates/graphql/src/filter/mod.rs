@@ -6,17 +6,20 @@ use models::{
 };
 use sea_orm::{
 	prelude::DateTimeWithTimeZone,
-	sea_query::{Alias, ConditionExpression, Expr, Func, FunctionCall, LikeExpr},
+	sea_query::{Alias, ConditionExpression, Expr, Func, FunctionCall},
 	ColumnTrait, Condition, Value,
 };
 use serde::{Deserialize, Serialize};
 
+pub mod keyword;
 pub mod library;
 pub mod log;
 pub mod media;
 pub mod media_metadata;
 pub mod series;
 pub mod series_metadata;
+
+use keyword::{like_contains, like_ends_with, like_starts_with};
 
 // TODO: This probably needs a rewrite to make it more compatible with async-graphql. The big issue is generics
 // with input objects. Look at and yoink from seaography for how they are doing things
@@ -62,27 +65,12 @@ where
 	Func::cust(Alias::new(UNICODE_LOWER_FN)).arg(Expr::col(column.as_column_ref()))
 }
 
-/// Lowercase (Unicode-aware) a literal and escape its LIKE metacharacters so it
-/// is matched verbatim. Pair with `ESCAPE '\'` on the LIKE so the escapes are
-/// honored.
-fn lower_escaped<T>(value: T) -> String
-where
-	T: Into<String>,
-{
-	value
-		.into()
-		.to_lowercase()
-		.replace('\\', "\\\\")
-		.replace('%', "\\%")
-		.replace('_', "\\_")
-}
-
 pub(crate) fn apply_string_filter<C, T>(
 	column: C,
 	filter: StringLikeFilter<T>,
 ) -> Condition
 where
-	C: ColumnTrait,
+	C: ColumnTrait + Copy,
 	T: InputType + Into<Value> + Into<String>,
 {
 	match filter {
@@ -93,42 +81,47 @@ where
 			Condition::all().add(column.is_not_in(values))
 		},
 		// The LIKE-family below all fold case across the full Unicode range via
-		// ulower(). The SQLite-native column.like()/.contains() only fold ASCII,
-		// which left Cyrillic/accented searches (e.g. "рикман", "шитенбург")
-		// effectively case-sensitive. Both sides are lowercased: the column by
-		// ulower() in SQL, the value by to_lowercase() in Rust.
-		StringLikeFilter::Like(value) => Condition::all().add(
-			Expr::expr(ulower(column)).like(Into::<String>::into(value).to_lowercase()),
-		),
-		StringLikeFilter::Contains(value) => Condition::all().add(
-			Expr::expr(ulower(column))
-				.like(LikeExpr::new(format!("%{}%", lower_escaped(value))).escape('\\')),
-		),
-		StringLikeFilter::Excludes(value) => Condition::all().add(
-			Expr::expr(ulower(column))
-				.not_like(Into::<String>::into(value).to_lowercase()),
-		),
-		StringLikeFilter::StartsWith(value) => Condition::all().add(
-			Expr::expr(ulower(column))
-				.like(LikeExpr::new(format!("{}%", lower_escaped(value))).escape('\\')),
-		),
-		StringLikeFilter::EndsWith(value) => Condition::all().add(
-			Expr::expr(ulower(column))
-				.like(LikeExpr::new(format!("%{}", lower_escaped(value))).escape('\\')),
-		),
+		// ulower(). SQLite's native lower()/LIKE only fold ASCII, which left
+		// Cyrillic/accented searches (e.g. "рикман", "шитенбург") effectively
+		// case-sensitive. Both sides are lowercased: the column by ulower() in
+		// SQL, the value by to_lowercase() in Rust (see `keyword`). On Postgres
+		// `ulower` is registered as a thin wrapper over the (already Unicode-
+		// aware) built-in lower(), so the generated SQL is identical on both
+		// backends. Semantics follow upstream: `like`/`contains`/`excludes` are
+		// substring matches, `startsWith`/`endsWith` are anchored; every literal
+		// has its LIKE metacharacters escaped except `like`, which is a raw pattern.
+		StringLikeFilter::Like(value) => {
+			let v: String = value.into();
+			Condition::all()
+				.add(Expr::expr(ulower(column)).like(format!("%{}%", v.to_lowercase())))
+		},
+		StringLikeFilter::Contains(value) => {
+			let v: String = value.into();
+			Condition::all().add(Expr::expr(ulower(column)).like(like_contains(&v)))
+		},
+		StringLikeFilter::Excludes(value) => {
+			let v: String = value.into();
+			Condition::all().add(Expr::expr(ulower(column)).not_like(like_contains(&v)))
+		},
+		StringLikeFilter::StartsWith(value) => {
+			let v: String = value.into();
+			Condition::all().add(Expr::expr(ulower(column)).like(like_starts_with(&v)))
+		},
+		StringLikeFilter::EndsWith(value) => {
+			let v: String = value.into();
+			Condition::all().add(Expr::expr(ulower(column)).like(like_ends_with(&v)))
+		},
 		StringLikeFilter::LikeAnyOf(values) => {
 			values.into_iter().fold(Condition::any(), |acc, value| {
-				acc.add(Expr::expr(ulower(column)).like(
-					LikeExpr::new(format!("%{}%", lower_escaped(value))).escape('\\'),
-				))
+				let v: String = value.into();
+				acc.add(Expr::expr(ulower(column)).like(like_contains(&v)))
 			})
 		},
 		StringLikeFilter::LikeNoneOf(values) => values
 			.into_iter()
 			.fold(Condition::any(), |acc, value| {
-				acc.add(Expr::expr(ulower(column)).like(
-					LikeExpr::new(format!("%{}%", lower_escaped(value))).escape('\\'),
-				))
+				let v: String = value.into();
+				acc.add(Expr::expr(ulower(column)).like(like_contains(&v)))
 			})
 			.not(),
 	}
@@ -311,6 +304,69 @@ mod tests {
 		assert_eq!(
 			sql,
 			r#"SELECT  FROM "media" WHERE NOT (ulower("media"."name") LIKE '%test%' ESCAPE '\' OR ulower("media"."name") LIKE '%example%' ESCAPE '\')"#
+		);
+	}
+
+	#[test]
+	fn test_contains_escapes_wildcards_in_the_pattern() {
+		let sql = media::Entity::find()
+			.filter(apply_string_filter(
+				media::Column::Name,
+				StringLikeFilter::Contains("50%".to_string()),
+			))
+			.select_only()
+			.into_query()
+			.to_string(SqliteQueryBuilder);
+
+		assert_eq!(
+			sql,
+			r#"SELECT  FROM "media" WHERE ulower("media"."name") LIKE '%50\%%' ESCAPE '\'"#
+		);
+	}
+
+	#[test]
+	fn test_starts_and_ends_with_escape_wildcards() {
+		let starts = media::Entity::find()
+			.filter(apply_string_filter(
+				media::Column::Name,
+				StringLikeFilter::StartsWith("file_".to_string()),
+			))
+			.select_only()
+			.into_query()
+			.to_string(SqliteQueryBuilder);
+		assert_eq!(
+			starts,
+			r#"SELECT  FROM "media" WHERE ulower("media"."name") LIKE 'file\_%' ESCAPE '\'"#
+		);
+
+		let ends = media::Entity::find()
+			.filter(apply_string_filter(
+				media::Column::Name,
+				StringLikeFilter::EndsWith("_v1".to_string()),
+			))
+			.select_only()
+			.into_query()
+			.to_string(SqliteQueryBuilder);
+		assert_eq!(
+			ends,
+			r#"SELECT  FROM "media" WHERE ulower("media"."name") LIKE '%\_v1' ESCAPE '\'"#
+		);
+	}
+
+	#[test]
+	fn test_excludes_is_a_substring_negation() {
+		let sql = media::Entity::find()
+			.filter(apply_string_filter(
+				media::Column::Name,
+				StringLikeFilter::Excludes("annual".to_string()),
+			))
+			.select_only()
+			.into_query()
+			.to_string(SqliteQueryBuilder);
+
+		assert_eq!(
+			sql,
+			r#"SELECT  FROM "media" WHERE ulower("media"."name") NOT LIKE '%annual%' ESCAPE '\'"#
 		);
 	}
 }

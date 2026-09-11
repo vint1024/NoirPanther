@@ -1,4 +1,5 @@
 import { APIBase } from '../base'
+import type { EpubSearchParams, EpubSearchResponse } from '../types/epub'
 import { ClassQueryKeys } from './types'
 import { createRouteURLHandler } from './utils'
 
@@ -19,52 +20,44 @@ export class EpubAPI extends APIBase {
 	 * A helper to get the service URL for the epub API scoped to a specific epub ID
 	 */
 	epubServiceURL(id: string): string {
-		return epubURL(`/${id}`)
+		return this.withServiceURL(epubURL(`/${id}`))
 	}
 
 	/**
-	 * The base URL for streaming raw resources out of an epub file. The trailing
-	 * slash matters: epub.js consumes this as an unpacked "directory" input and
-	 * resolves META-INF/container.xml (and then every internal resource) below it.
-	 * Unlike the media download URL, this route does not require the DownloadFile
-	 * permission — reading a book is not downloading it
-	 */
-	resourceBaseURL(id: string): string {
-		return `${this.withServiceURL(epubURL(`/${id}/resource`))}/`
-	}
-
-	/**
-	 * The URL of the Readium Web Publication Manifest for an epub
+	 * Absolute URL for the Readium Web Publication Manifest for an epub
 	 */
 	manifestURL(id: string): string {
 		return this.withServiceURL(epubURL(`/${id}/manifest.json`))
 	}
 
 	/**
-	 * The URL for fetching the whole epub file for READING purposes (e.g. the
-	 * native Readium reader opening a publication). Unlike media.downloadURL,
-	 * this does not require the DownloadFile permission
+	 * Absolute URL for the Readium positions list for an epub
 	 */
-	fileURL(id: string): string {
-		return this.withServiceURL(epubURL(`/${id}/file`))
+	positionsURL(id: string): string {
+		return this.withServiceURL(epubURL(`/${id}/positions.json`))
 	}
 
 	/**
-	 * Fetch a resource from an epub by its ID and resource ID
+	 * Absolute URL for whole-book EPUB search
 	 */
-	async fetchResource({
-		id,
-		root = 'META-INF',
-		resourceId,
-	}: {
-		id: string
-		root?: string
-		resourceId: string
-	}): Promise<string> {
-		const { data: resource } = await this.api.axios.get<string>(
-			epubURL(`${id}/${root}/${resourceId}`),
+	searchURL(id: string): string {
+		return this.withServiceURL(epubURL(`/${id}/search`))
+	}
+
+	/**
+	 * Bounded whole-book search over spine XHTML. Returns Readium locators — never
+	 * downloads the EPUB archive.
+	 */
+	async search({ id, q, limit, cursor, signal }: EpubSearchParams): Promise<EpubSearchResponse> {
+		const { data } = await this.api.axios.get<EpubSearchResponse>(
+			epubURL(`/${id}/search`, {
+				q,
+				...(limit != null ? { limit } : {}),
+				...(cursor ? { cursor } : {}),
+			}),
+			{ signal },
 		)
-		return resource
+		return data
 	}
 
 	/**
@@ -72,11 +65,7 @@ export class EpubAPI extends APIBase {
 	 */
 	get keys(): ClassQueryKeys<InstanceType<typeof EpubAPI>> {
 		return {
-			epubServiceURL: 'epub.serviceURL',
-			fetchResource: 'epub.fetchResource',
-			fileURL: 'epub.fileURL',
-			manifestURL: 'epub.manifestURL',
-			resourceBaseURL: 'epub.resourceBaseURL',
+			search: 'epub.search',
 		}
 	}
 }

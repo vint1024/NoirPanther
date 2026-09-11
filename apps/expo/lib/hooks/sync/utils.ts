@@ -1,4 +1,5 @@
-import { useCallback } from 'react'
+import { Api } from '@stump/sdk'
+import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner-native'
 
 import { isLocalLibrary } from '~/lib/localLibrary'
@@ -29,7 +30,7 @@ export function useServerInstances() {
 		[savedServers, getServerConfig],
 	)
 
-	const getInstances = async (forServers?: string[]) => {
+	const getInstances = async (forServers?: string[], suppressAlerts?: boolean) => {
 		const actualServers = forServers?.filter((id) => !isLocalLibrary(id))
 
 		const servers = await Promise.all(
@@ -54,13 +55,18 @@ export function useServerInstances() {
 
 		// skipped = stump servers which cannot auto-auth
 		const skipped = servers.filter((s) => s.kind === 'stump' && !instances[s.id])
-		if (skipped.length > 0) {
+		if (skipped.length > 0 && !suppressAlerts) {
 			toast.warning(
-				t(`progressSync.${skipped.length === 1 ? 'skippedOneServer' : 'skippedMultipleServers'}`, {
-					skippedCount: skipped.length,
-				}),
+				t(
+					`progressSync.skippedSync.${skipped.length === 1 ? 'skippedOneServer' : 'skippedMultipleServers'}`,
+					{
+						skippedCount: skipped.length,
+					},
+				),
 				{
-					description: t('progressSync.explanation'),
+					// pretty sure providing an id will let sonner dedupe for us
+					id: 'progress-sync-skipped',
+					description: t('progressSync.skippedSync.explanation'),
 				},
 			)
 		}
@@ -69,4 +75,23 @@ export function useServerInstances() {
 	}
 
 	return { getInstances, getFullServer, savedServers }
+}
+
+export function useServerInstance(serverId: string) {
+	const { getInstances } = useServerInstances()
+
+	const [instance, setInstance] = useState<Api | null>(null)
+
+	useEffect(() => {
+		const fetchInstance = async () => {
+			const instances = await getInstances([serverId], true)
+			setInstance(instances[serverId] || null)
+		}
+
+		if (!instance) {
+			fetchInstance()
+		}
+	}, [instance, serverId, getInstances])
+
+	return [instance, setInstance] as const
 }

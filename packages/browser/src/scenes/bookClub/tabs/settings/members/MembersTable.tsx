@@ -127,7 +127,7 @@ export default function MembersTable() {
 							type="button"
 							disabled={isFetchingNextPage}
 							onClick={() => fetchNextPage()}
-							className="rounded-sm p-1 outline-none focus-visible:ring-2 focus-visible:ring-brand-400 disabled:opacity-50"
+							className="p-1 rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-brand-400 disabled:opacity-50"
 						>
 							<Text className="cursor-pointer underline" size="sm" variant="muted">
 								{t('scenes.bookClub.tabs.settings.members.MembersTable.loadMore')}

@@ -50,9 +50,9 @@ export default function BasicSettingsScene() {
 	})
 
 	const [pickerTarget, setPickerTarget] = useState<'path' | `extraPaths.${number}` | null>(null)
-	const [path, name, description, tags, extraPaths] = useWatch({
+	const [path, name, description, tags, extraPaths, libraryType] = useWatch({
 		control: form.control,
-		name: ['path', 'name', 'description', 'tags', 'extraPaths'],
+		name: ['path', 'name', 'description', 'tags', 'extraPaths', 'libraryType'],
 	})
 
 	const hasChanges = useMemo(() => {
@@ -60,6 +60,7 @@ export default function BasicSettingsScene() {
 		const libraryTagSet = new Set(library?.tags?.map(({ name }) => name) || [])
 		const currentExtraPaths = (extraPaths ?? []).filter(Boolean).map(normalizePath)
 		const libraryExtraPaths = library?.extraPaths ?? []
+		const differentLibraryType = library?.config?.libraryType !== libraryType
 
 		return (
 			library?.path !== normalizePath(path) ||
@@ -68,9 +69,10 @@ export default function BasicSettingsScene() {
 			currentExtraPaths.length !== libraryExtraPaths.length ||
 			currentExtraPaths.some((p) => !libraryExtraPaths.includes(p)) ||
 			[...currentTagSet].some((tag) => !libraryTagSet.has(tag)) ||
-			[...libraryTagSet].some((tag) => !currentTagSet.has(tag))
+			[...libraryTagSet].some((tag) => !currentTagSet.has(tag)) ||
+			differentLibraryType
 		)
-	}, [library, path, name, description, tags, extraPaths])
+	}, [library, path, name, description, tags, extraPaths, libraryType])
 
 	const handleSubmit = useCallback(
 		(values: CreateOrUpdateLibrarySchema) => {
@@ -81,7 +83,10 @@ export default function BasicSettingsScene() {
 				newExtraPaths.some((p) => !oldExtraPaths.includes(p))
 
 			patch({
-				config: { thumbnailConfig: intoThumbnailConfig(values.thumbnailConfig) },
+				config: {
+					thumbnailConfig: intoThumbnailConfig(values.thumbnailConfig),
+					libraryType: values.libraryType,
+				},
 				description: values.description,
 				extraPaths: newExtraPaths,
 				name: values.name,

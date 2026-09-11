@@ -22,21 +22,13 @@ export default function ReadingMode() {
 
 	return (
 		<div className="py-1.5">
-			<Label htmlFor="reading-mode">
-				{t('components.readers.epub.controls.ReadingMode.label')}
-			</Label>
+			<Label htmlFor="reading-mode">{t('epubReader.controls.readingMode')}</Label>
 			<NativeSelect
 				id="reading-mode"
 				size="sm"
 				options={[
-					{
-						label: t('components.readers.epub.controls.ReadingMode.paged'),
-						value: ReadingModeType.Paged,
-					},
-					{
-						label: t('components.readers.epub.controls.ReadingMode.continuous'),
-						value: ReadingModeType.ContinuousVertical,
-					},
+					{ label: t('epubReader.controls.paged'), value: ReadingModeType.Paged },
+					{ label: t('epubReader.controls.continuous'), value: ReadingModeType.ContinuousVertical },
 				]}
 				value={readingMode}
 				onChange={handleChange}

@@ -28,21 +28,13 @@ export default function ReadingDirectionSelect({ direction, onChange }: Props) {
 
 	return (
 		<div className="py-1.5">
-			<Label htmlFor="reading-direction">
-				{t('components.readers.imageBased.container.ReadingDirectionSelect.label')}
-			</Label>
+			<Label htmlFor="reading-direction">{t('imageReader.settings.readingDirection.label')}</Label>
 			<NativeSelect
 				id="reading-direction"
 				size="sm"
 				options={[
-					{
-						label: t('components.readers.imageBased.container.ReadingDirectionSelect.leftToRight'),
-						value: 'LTR',
-					},
-					{
-						label: t('components.readers.imageBased.container.ReadingDirectionSelect.rightToLeft'),
-						value: 'RTL',
-					},
+					{ label: t('imageReader.settings.readingDirection.options.leftToRight'), value: 'LTR' },
+					{ label: t('imageReader.settings.readingDirection.options.rightToLeft'), value: 'RTL' },
 				]}
 				value={direction}
 				onChange={handleChange}

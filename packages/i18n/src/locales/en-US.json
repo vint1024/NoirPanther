@@ -458,6 +458,20 @@
 				"description": "Optional extra folders this library spans, in addition to the main path",
 				"addFolder": "Add folder",
 				"removeFolder": "Remove folder"
+			},
+			"libraryType": {
+				"label": "Library content",
+				"description": "The type of content present in this library",
+				"options": {
+					"COMIC": "Comics",
+					"MANGA": "Manga",
+					"BOOK": "Books",
+					"LIGHT_NOVEL": "Light Novels",
+					"MANHWA": "Manhwa",
+					"WEB_NOVEL": "Web Novels",
+					"WEBTOON": "Webtoons",
+					"MIXED": "Mixed"
+				}
 			}
 		},
 		"scan": {
@@ -811,8 +825,15 @@
 		"buttons": {
 			"report": "Report Bug",
 			"copy": "Copy Error Details",
-			"goHome": "Go Home"
-		}
+			"goHome": "Go Home",
+			"goHomeTitle": "Go back to the homepage",
+			"reportTitle": "Report this error as a potential bug on GitHub",
+			"copyTitle": "Copy the error details to your clipboard"
+		},
+		"criticalHeading": "A critical error occurred",
+		"emptyMessage": "The error message was empty.",
+		"copiedDetails": "Copied error details to your clipboard",
+		"imageAlt": "Construction illustration"
 	},
 	"homeScene": {
 		"onDeck": {
@@ -1691,6 +1712,32 @@
 						"enabled": "This setting will show thumbnails in more places",
 						"disabled": "This setting will not show thumbnails in more places"
 					}
+				},
+				"interfaceRoundness": {
+					"label": "Interface roundness",
+					"description": "How rounded the corners are for UI elements",
+					"options": {
+						"none": "None",
+						"normal": "Normal",
+						"rounded": "Rounded",
+						"pill": "Pill"
+					}
+				},
+				"displayAndSpacing": {
+					"label": "Display and spacing",
+					"description": "Preferences related to the presentation of content and information"
+				},
+				"contentBrowsing": {
+					"label": "Content browsing",
+					"description": "Preferences that affect browsing and navigating content lists"
+				},
+				"motionAndAnimation": {
+					"label": "Motion and animation",
+					"description": "Visual presentation and movement preferences"
+				},
+				"activityAndStatus": {
+					"label": "Activity and status",
+					"description": "Indicators, overlays, or functionality related to background activity"
 				}
 			}
 		},
@@ -2095,6 +2142,9 @@
 						"updateError": "Failed to update scheduled job",
 						"deleteSuccess": "Scheduled job deleted",
 						"deleteError": "Failed to delete scheduled job"
+					},
+					"errors": {
+						"invalidCron": "Schedule must be a valid cron expression"
 					}
 				},
 				"history": {
@@ -2168,7 +2218,8 @@
 						"emailing": "Emailing",
 						"libraryManagement": "Library management",
 						"userManagement": "User management",
-						"serverManagement": "Server management"
+						"serverManagement": "Server management",
+						"metadataManagement": "Metadata management"
 					},
 					"heading": "Permissions",
 					"subtitle": [
@@ -2491,9 +2542,9 @@
 					"validationError": "The auto-validation failed for this token",
 					"validationRequestError": "The validation request failed",
 					"validationRequestErrorUnknown": "An unknown error occurred during validation",
-					"hardcoverStatusError": "Hardcover API responded with status {{status}}",
-					"hardcoverValidationError": "Hardcover API responded with an error: {{message}}",
-					"noBearerPrefixRequired": "Remove the 'Bearer ' prefix from the API token"
+					"noBearerPrefixRequired": "Remove the 'Bearer ' prefix from the API token",
+					"providerStatusError": "The provider responded with status {{status}}",
+					"providerError": "The provider responded with an error: {{message}}"
 				},
 				"apiTokenExpiresAt": {
 					"label": "API token expiration",
@@ -2534,7 +2585,9 @@
 			"deleteDialog": {
 				"title": "Delete provider",
 				"description": "Are you sure you want to delete {{providerName}}? This action cannot be undone."
-			}
+			},
+			"createProviderError": "Failed to create provider",
+			"updateProviderError": "Failed to update provider"
 		},
 		"server/tags": {
 			"helmet": "Tag management",
@@ -2709,7 +2762,10 @@
 				"onlyOneFile": "Only 1 file allowed",
 				"noFiles": "No files provided",
 				"uploadFailed": "Failed to upload image"
-			}
+			},
+			"fileTooLarge": "File too large",
+			"onlyOneFile": "Only one file is allowed",
+			"noFile": "No file was provided"
 		}
 	},
 	"common": {
@@ -2773,7 +2829,8 @@
 			"someRejected": "Some files were rejected. Please check the file types and try again",
 			"tooManyFiles": "You have selected too many files",
 			"noValidFiles": "No valid files were selected"
-		}
+		},
+		"unknownError": "An unknown error occurred"
 	},
 	"userPermissions": {
 		"ACCESS_API_KEYS": {
@@ -2919,6 +2976,22 @@
 		"EDIT_THUMBNAILS": {
 			"label": "Edit thumbnails",
 			"description": "Allows the user to edit thumbnails for books and series"
+		},
+		"METADATA_PROVIDER_READ": {
+			"label": "Read metadata providers",
+			"description": "Allows the user to view configured external metadata providers"
+		},
+		"METADATA_PROVIDER_MANAGE": {
+			"label": "Manage metadata providers",
+			"description": "Allows the user to configure external metadata providers"
+		},
+		"METADATA_FETCH_RECORD_READ": {
+			"label": "Read metadata matches",
+			"description": "Allows the user to view metadata fetch results awaiting review"
+		},
+		"METADATA_FETCH_RECORD_MANAGE": {
+			"label": "Manage metadata matches",
+			"description": "Allows the user to search external providers for a book and accept or reject candidate matches"
 		}
 	},
 	"mobileApp": {
@@ -2939,15 +3012,19 @@
 			},
 			"auth": {
 				"label": "Auth",
-				"default": {
-					"label": "Login",
-					"description": "You will be prompted to login when accessing content as needed"
-				},
 				"token": {
 					"label": "Token",
 					"placeholder": "Raw Token"
 				},
-				"basic": "Basic"
+				"basic": "Basic",
+				"login": {
+					"label": "Login",
+					"description": "You will be prompted to login when accessing content as needed"
+				},
+				"none": {
+					"label": "None",
+					"description": "No authentication is required for this server or auth is provided through the URL"
+				}
 			},
 			"serverNamePlaceholder": "My Server",
 			"catalogUrl": "Catalog URL",
@@ -2955,7 +3032,6 @@
 			"didConnect": "Connected",
 			"checkConnection": "Check Connection",
 			"setAsDefaultServer": "Set as Default Server",
-			"enableOPDS": "Enable OPDS",
 			"validation": {
 				"nameAlreadyExists": "Name already exists",
 				"cannotSetAuthorizationHeader": "Cannot set Authorization header"
@@ -2964,15 +3040,18 @@
 		"bookActions": {
 			"markAsRead": {
 				"label": "Mark as Read",
-				"confirmation": "Are you sure you want to mark {{bookTitle}} as read?"
+				"confirmation": "Are you sure you want to mark {{bookTitle}} as read?",
+				"failure": "Failed to mark book as read"
 			},
 			"clearProgress": {
 				"label": "Clear Progress",
-				"confirmation": "Are you sure you want to clear your progress for {{bookTitle}}?"
+				"confirmation": "Are you sure you want to clear your progress for {{bookTitle}}?",
+				"failure": "Failed to delete current progress"
 			},
 			"deleteReadHistory": {
 				"label": "Delete Read History",
-				"confirmation": "Are you sure you want to delete your read history for {{bookTitle}}?"
+				"confirmation": "Are you sure you want to delete your read history for {{bookTitle}}?",
+				"failure": "Failed to delete read history"
 			},
 			"deleteBook": {
 				"label": "Delete Book",
@@ -3057,7 +3136,12 @@
 			"url": "URL",
 			"username": "Username",
 			"value": "Value",
-			"version": "Version"
+			"version": "Version",
+			"downloaded": "Downloaded",
+			"pageX": "Page {{current}}",
+			"reset": "Reset",
+			"accessOpdsV2": "Access OPDS v2.0",
+			"accessOpdsV1": "Access OPDS v1.2"
 		},
 		"errors": {
 			"unknown": "Unknown error"
@@ -3135,7 +3219,8 @@
 				"seeProblems": "See Problems ({{problemCount}})",
 				"hideCurated": "Hide Curated",
 				"showCurated": "Show Curated",
-				"attemptSync": "Attempt Sync"
+				"attemptSync": "Attempt Sync",
+				"syncConflicts": "Sync Conflicts"
 			},
 			"downloadsHeaderSortMenu": {
 				"sortBy": {
@@ -3191,7 +3276,6 @@
 						"dark": "Dark"
 					}
 				},
-				"appPrimaryColor": "Accent",
 				"appLanguage": "Language",
 				"defaultServer": "Default Server",
 				"thumbnailRatio": "Thumbnail Ratio",
@@ -3218,7 +3302,14 @@
 				"preferNativePdf": "Prefer Native PDF",
 				"preferMinimalReader": "Prefer Minimal Reader",
 				"disableDismissGesture": "Disable Dismiss Gesture",
-				"incognitoReading": "Incognito Reading"
+				"incognitoReading": "Incognito Reading",
+				"maxPageViewingSeconds": {
+					"label": "Page Viewing Seconds Limit",
+					"errors": {
+						"minimumValue": "Must be at least 1 second",
+						"integer": "Must be an integer"
+					}
+				}
 			},
 			"stump": {
 				"label": "NoirPanther",
@@ -3285,7 +3376,6 @@
 				},
 				"performanceMonitor": "Performance Monitor",
 				"reduceAnimations": "Reduce Animations",
-				"maskUrls": "Mask URLs",
 				"displayLanguageKeys": {
 					"label": "Display Language Keys",
 					"options": {
@@ -3391,7 +3481,14 @@
 			},
 			"readingTimer": {
 				"label": "Reading Timer",
-				"resetTimer": "Reset Timer"
+				"resetTimer": "Reset Timer",
+				"confirmation": {
+					"message": "Are you sure you want to reset your reading time for '{{bookName}}'?\n\n{{action}}",
+					"action": {
+						"multi-session": "This will set every reading session in this readthrough to 0 seconds.",
+						"single-session": "This will set the reading time to 0 seconds."
+					}
+				}
 			},
 			"allSettings": "All Settings"
 		},
@@ -3541,6 +3638,38 @@
 				"ASC": "1 → 10",
 				"DESC": "10 → 1"
 			}
+		},
+		"syncConflicts": {
+			"title": "Sync Conflicts",
+			"remainingCount": "{{remainingCount}} Remaining",
+			"noConflicts": {
+				"title": "No Sync Conflicts",
+				"description": "All your local progress is in sync their servers"
+			},
+			"lastCommonSession": "Last common session",
+			"localSession": "Local Session",
+			"remoteSessionWithId": "Remote Session {{sessionId}}",
+			"noCommonSession": "No common reading history",
+			"noRemoteSessions": "No remote sessions",
+			"divergentProgress": {
+				"title": "Divergent Progress",
+				"description": "The last common session was modified on the server after your last sync"
+			},
+			"noCommonReadingHistory": {
+				"title": "No Common Reading History",
+				"description": "This book had no synced history when you started reading offline"
+			},
+			"acceptSource": {
+				"local": "Accept Local",
+				"remote": "Accept Remote",
+				"both": "Accept Both"
+			},
+			"pullError": "Failed to pull remote progress"
+		},
+		"widgets": {
+			"readingNow": {
+				"nothingInProgress": "Nothing in Progress"
+			}
 		}
 	},
 	"seriesSettingsScene": {
@@ -3621,10 +3750,95 @@
 		"thumbnail": {
 			"heading": "Thumbnail",
 			"description": "Change the cover image for this book"
+		},
+		"metadataSearch": {
+			"heading": "Search metadata",
+			"description": "Search an external provider for this book and choose a match to apply",
+			"openButton": "Search Metadata",
+			"searchButton": "Search",
+			"noProviders": "No enabled metadata providers are configured for this library type. Configure one in server settings first.",
+			"noResults": "No matches were found for this search",
+			"partialResults": "Some results could not be loaded from the provider, likely due to rate limiting. Try searching again to see if more turn up.",
+			"searchFailed": "Failed to search metadata providers",
+			"form": {
+				"title": {
+					"label": "Title"
+				},
+				"author": {
+					"label": "Author"
+				},
+				"isbn": {
+					"label": "ISBN"
+				},
+				"year": {
+					"label": "Year"
+				},
+				"number": {
+					"label": "Issue number"
+				},
+				"comicVineVolumeId": {
+					"label": "ComicVine volume ID",
+					"placeholder": "e.g., 129260"
+				},
+				"provider": {
+					"label": "Provider",
+					"allOption": "All enabled providers"
+				}
+			}
 		}
 	},
 	"epubReader": {
-		"failedToLoad": "Failed to load the book"
+		"failedToLoad": "Failed to load the book",
+		"reading": "Reading",
+		"appearance": "Appearance",
+		"themeAndOptions": "Theme and options",
+		"locationManager": "Location manager",
+		"contents": "Contents",
+		"bookmarks": "Bookmarks",
+		"annotations": "Annotations",
+		"noBookmarks": "No bookmarks",
+		"bookmark": "Bookmark",
+		"noAnnotations": "No annotations",
+		"annotation": {
+			"addNote": "Add note",
+			"edit": "Edit annotation",
+			"note": "Note",
+			"optionalNote": "Add an optional note…",
+			"selectionActions": "Selection actions",
+			"highlight": "Highlight",
+			"disabledInIncognito": "Annotations are disabled in incognito mode",
+			"saveFailed": "Failed to save annotation",
+			"updateFailed": "Failed to update annotation",
+			"deleteFailed": "Failed to delete annotation"
+		},
+		"search": {
+			"placeholder": "Enter a query and press enter to search",
+			"failed": "Search failed. Please try again.",
+			"noResults": "No results found.",
+			"section": "Section {{position}}",
+			"loadingMore": "Loading more…",
+			"loadMore": "Load more results"
+		},
+		"controls": {
+			"columns": "Columns",
+			"auto": "Auto",
+			"columnCount_one": "{{count}} column",
+			"columnCount_other": "{{count}} columns",
+			"pageMargins": "Page margins",
+			"readingDirection": "Reading direction",
+			"leftToRight": "Left to right",
+			"rightToLeft": "Right to left",
+			"readingMode": "Reading mode",
+			"paged": "Paged",
+			"continuous": "Continuous",
+			"previousPage": "Previous page",
+			"nextPage": "Next page",
+			"toggleControls": "Toggle reader controls"
+		},
+		"errors": {
+			"openFailed": "Failed to open EPUB with Readium.",
+			"navigateFailed": "Failed to navigate to location"
+		}
 	},
 	"AppLayout": {
 		"logoutSuccess": "You have been logged out",
@@ -4692,6 +4906,48 @@
 					"ChangeVisibilityConfirmation": {
 						"title": "Change visibility"
 					}
+				}
+			}
+		}
+	},
+	"thumbnailSelector": {
+		"title": "Select a thumbnail",
+		"descriptions": {
+			"chooseBookPage": "Choose a page from this book to use as the new thumbnail",
+			"chooseSeriesBook": "Select a book from the series"
+		},
+		"actions": {
+			"confirmSelection": "Confirm selection"
+		},
+		"errors": {
+			"uploadFailed": "Failed to upload image",
+			"updateFailed": "Failed to update thumbnail"
+		}
+	},
+	"imageReader": {
+		"settings": {
+			"imageScaling": {
+				"label": "Image scaling",
+				"options": {
+					"auto": "Auto",
+					"height": "Height",
+					"width": "Width",
+					"original": "Original"
+				}
+			},
+			"readingDirection": {
+				"label": "Reading direction",
+				"options": {
+					"leftToRight": "Left to right",
+					"rightToLeft": "Right to left"
+				}
+			},
+			"readingMode": {
+				"label": "Flow",
+				"options": {
+					"verticalScroll": "Vertical scroll",
+					"horizontalScroll": "Horizontal scroll",
+					"paged": "Paged"
 				}
 			}
 		}

@@ -1,11 +1,19 @@
 import { useGraphQLMutation } from '@stump/client'
-import { BookByIdQuery, FragmentType, graphql, useFragment } from '@stump/graphql'
+import {
+	BookByIdQuery,
+	extractErrorMessage,
+	FragmentType,
+	graphql,
+	Media,
+	useFragment,
+} from '@stump/graphql'
 import { useQueryClient } from '@tanstack/react-query'
 import { and, eq } from 'drizzle-orm'
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite'
 import { Stack, useNavigation, useRouter } from 'expo-router'
 import { useCallback, useLayoutEffect } from 'react'
 import { Alert, Platform } from 'react-native'
+import { toast } from 'sonner-native'
 
 import { useActiveServer } from '~/components/activeServer'
 import { db, downloadedFiles } from '~/db'
@@ -83,17 +91,9 @@ export default function BookMenu({ data }: Props) {
 
 	const onFavoriteChanged = useCallback(
 		(isFavorite: boolean) => {
-			client.setQueryData(['bookById', book.id], (oldData: BookByIdQuery | undefined) => {
-				if (!oldData) return
-
-				return {
-					...oldData,
-					mediaById: {
-						...oldData.mediaById,
-						isFavorite,
-					},
-				}
-			})
+			client.setQueryData(['bookById', book.id], (oldData: BookByIdQuery | undefined) =>
+				patchQueryData(oldData, { isFavorite }),
+			)
 		},
 		[client, book.id],
 	)
@@ -104,38 +104,41 @@ export default function BookMenu({ data }: Props) {
 		isFavorite: book.isFavorite,
 	})
 
-	const onSuccess = useCallback(
-		() =>
-			Promise.all([
-				client.refetchQueries({ queryKey: ['bookById', book.id] }),
-				client.invalidateQueries({ queryKey: ['continueReading'], exact: false }),
-				client.refetchQueries({ queryKey: ['onDeck'], exact: false }),
-				client.refetchQueries({ queryKey: ['recentlyAddedBooks'], exact: false }),
-				client.refetchQueries({ queryKey: ['recentlyAddedSeries'], exact: false }),
-			]),
-		[client, book.id],
-	)
+	const onSuccess = async () => {
+		await Promise.all([
+			client.refetchQueries({ queryKey: ['bookById', book.id], exact: false }),
+			client.invalidateQueries({ queryKey: ['continueReading'], exact: false }),
+			client.invalidateQueries({ queryKey: ['readBook'], exact: false }),
+			client.refetchQueries({ queryKey: ['onDeck'], exact: false }),
+			client.refetchQueries({ queryKey: ['recentlyAddedBooks'], exact: false }),
+			client.refetchQueries({ queryKey: ['recentlyAddedSeries'], exact: false }),
+			// TODO: would be better to have a little bit smarter cache invalidation here,
+			// im casting a wide net because i don't want to have to figure out where i am
+			// in the router (e.g., did i come from books? a series? etc)
+			client.invalidateQueries({ queryKey: ['seriesById', book.series.id], exact: false }), // stats
+			client.invalidateQueries({ queryKey: ['seriesBooks', book.series.id], exact: false }),
+			client.invalidateQueries({ queryKey: ['booksStats', serverID], exact: false }), // stats
+			client.invalidateQueries({ queryKey: ['books', serverID], exact: false }), // server books
+		])
+	}
+
+	const onError = (title: string, error: unknown) => {
+		toast.error(title, {
+			description: extractErrorMessage(error, t('common.unknownError')),
+		})
+	}
 
 	const { mutate: completeBook } = useGraphQLMutation(completedMutation, {
 		onSuccess,
-		onError: (error) => {
-			console.error(error)
-			// toast.error('Failed to update book completion status')
-		},
+		onError: (error) => onError(t('bookActions.markAsRead.failure'), error),
 	})
 	const { mutate: deleteCurrentSession } = useGraphQLMutation(deleteMutation, {
 		onSuccess,
-		onError: (error) => {
-			console.error(error)
-			// toast.error('Failed to delete current session')
-		},
+		onError: (error) => onError(t('bookActions.clearProgress.failure'), error),
 	})
 	const { mutate: deleteReadHistory } = useGraphQLMutation(deleteHistoryMutation, {
 		onSuccess,
-		onError: (error) => {
-			console.error(error)
-			// toast.error('Failed to delete read history')
-		},
+		onError: (error) => onError(t('bookActions.deleteReadHistory.failure'), error),
 	})
 
 	const confirmMarkAsRead = () => {
@@ -310,4 +313,16 @@ export function useBookMenu(book?: FragmentType<typeof fragment> | null) {
 	}
 
 	return null
+}
+
+const patchQueryData = (oldData: BookByIdQuery | undefined, changes: Partial<Media>) => {
+	if (!oldData) return
+
+	return {
+		...oldData,
+		mediaById: {
+			...oldData.mediaById,
+			...changes,
+		},
+	}
 }

@@ -59,8 +59,8 @@ type Props = {
 }
 
 export default function BookThumbnailSelector({ fragment }: Props) {
-	const { t } = useLocaleContext()
 	const book = useFragment(BookThumbnailSelectorFragment, fragment)
+	const { t } = useLocaleContext()
 
 	const [isOpen, setIsOpen] = useState(false)
 	const [page, setPage] = useState<number>()
@@ -111,10 +111,10 @@ export default function BookThumbnailSelector({ fragment }: Props) {
 				setIsOpen(false)
 			} catch (error) {
 				console.error(error)
-				toast.error(t('scenes.book.settings.BookThumbnailSelector.uploadError'))
+				toast.error(t('thumbnailSelector.errors.uploadFailed'))
 			}
 		},
-		[book.id, uploadThumbnail, t],
+		[book.id, t, uploadThumbnail],
 	)
 
 	const handleConfirm = useCallback(async () => {
@@ -125,7 +125,7 @@ export default function BookThumbnailSelector({ fragment }: Props) {
 			setIsOpen(false)
 		} catch (error) {
 			console.error(error)
-			toast.error(t('scenes.book.settings.BookThumbnailSelector.updateError'))
+			toast.error(t('thumbnailSelector.errors.updateFailed'))
 		}
 	}, [patchThumbnail, page, book.id, t])
 
@@ -149,11 +149,9 @@ export default function BookThumbnailSelector({ fragment }: Props) {
 				</Dialog.Trigger>
 				<Dialog.Content size="xl">
 					<Dialog.Header>
-						<Dialog.Title>
-							{t('scenes.book.settings.BookThumbnailSelector.dialogTitle')}
-						</Dialog.Title>
+						<Dialog.Title>{t('thumbnailSelector.title')}</Dialog.Title>
 						<Dialog.Description>
-							{t('scenes.book.settings.BookThumbnailSelector.dialogDescription')}
+							{t('thumbnailSelector.descriptions.chooseBookPage')}
 						</Dialog.Description>
 						<Dialog.Close onClick={() => setIsOpen(false)} />
 					</Dialog.Header>
@@ -167,14 +165,14 @@ export default function BookThumbnailSelector({ fragment }: Props) {
 
 					<Dialog.Footer>
 						<Button variant="outline" onClick={handleCancel}>
-							{t('scenes.book.settings.BookThumbnailSelector.cancel')}
+							{t('common.cancel')}
 						</Button>
 						<Button
 							onClick={handleConfirm}
 							disabled={!page}
 							isLoading={isPatchingThumbnail || isUploadingThumbnail}
 						>
-							{t('scenes.book.settings.BookThumbnailSelector.confirm')}
+							{t('thumbnailSelector.actions.confirmSelection')}
 						</Button>
 					</Dialog.Footer>
 				</Dialog.Content>

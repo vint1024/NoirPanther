@@ -179,7 +179,7 @@ export function AppLayout() {
 			console.error('Error logging out:', { error })
 			toast.error(t('AppLayout.logoutError'))
 		}
-	}, [sdk, client, setUser, navigate])
+	}, [sdk, client, setUser, navigate, t])
 
 	useEffect(() => {
 		if (user) {
@@ -195,8 +195,10 @@ export function AppLayout() {
 		const isNetworkError = axiosError?.code === 'ERR_NETWORK'
 
 		if (isNetworkError || isUnauthorized) {
-			const to = isNetworkError ? '/server-connection-error' : '/auth'
-			navigate(to, { state: { from: location } })
+			const to = isNetworkError
+				? '/server-connection-error'
+				: `/auth?redirect=${encodeURIComponent(location.pathname)}`
+			navigate(to)
 		} else if (error) {
 			console.error('An unknown error occurred:', error)
 			showBoundary(error)

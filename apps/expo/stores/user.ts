@@ -8,6 +8,7 @@ import {
 	ThumbnailPlaceholderType,
 	ThumbnailResizeMode,
 } from '~/components/image/ThumbnailPlaceholder'
+import { Hue } from '~/lib/constants'
 
 import { ZustandMMKVStorage } from './store'
 
@@ -21,8 +22,6 @@ export type TextCase = 'lowerCase' | 'sentenceCase' | 'titleCase'
 
 type MobilePreferencesStore = {
 	showTabLabels: boolean
-	maskURLs: boolean
-	setMaskURLs: (mask: boolean) => void
 	storeLastRead: boolean
 	reduceAnimations: boolean
 	allowDownscaling: boolean
@@ -30,7 +29,8 @@ type MobilePreferencesStore = {
 	thumbnailResizeMode: ThumbnailResizeMode
 	thumbnailPlaceholder: ThumbnailPlaceholderType
 	performanceMonitor: boolean
-	accentColor?: string | undefined
+	accentHue: Hue
+	accentChromaScale: number
 	showCuratedDownloads?: boolean | undefined
 	preferNativePdf?: boolean | undefined
 	disableDismissGesture: boolean
@@ -45,6 +45,7 @@ type MobilePreferencesStore = {
 	displayLanguageKeys: DisplayLanguageKeysType
 	tintListBackground: boolean
 	textCase: TextCase
+	maxPageViewingSeconds: number
 	/**
 	 * Patch the store with new values.
 	 */
@@ -59,14 +60,13 @@ export const usePreferencesStore = create<MobilePreferencesStore>()(
 	persist(
 		(set) => ({
 			showTabLabels: true,
-			maskURLs: false,
-			setMaskURLs: (mask) => set({ maskURLs: mask }),
 			storeLastRead: false,
 			reduceAnimations: false,
 			allowDownscaling: true,
 			thumbnailRatio: 2 / 3,
 			thumbnailPlaceholder: 'grayscale',
-			accentColor: undefined,
+			accentHue: 'orange',
+			accentChromaScale: 1,
 			performanceMonitor: false,
 			showCuratedDownloads: true,
 			preferNativePdf: false,
@@ -83,6 +83,7 @@ export const usePreferencesStore = create<MobilePreferencesStore>()(
 			displayLanguageKeys: 'none',
 			textCase: Platform.OS === 'android' ? 'sentenceCase' : 'titleCase',
 			tintListBackground: false,
+			maxPageViewingSeconds: 600,
 			patch: (data) => set(data),
 		}),
 		{

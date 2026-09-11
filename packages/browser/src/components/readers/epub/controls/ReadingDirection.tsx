@@ -26,21 +26,13 @@ export default function ReadingDirection() {
 
 	return (
 		<div className="py-1.5">
-			<Label htmlFor="reading-direction">
-				{t('components.readers.epub.controls.ReadingDirection.label')}
-			</Label>
+			<Label htmlFor="reading-direction">{t('epubReader.controls.readingDirection')}</Label>
 			<NativeSelect
 				id="reading-direction"
 				size="sm"
 				options={[
-					{
-						label: t('components.readers.epub.controls.ReadingDirection.leftToRight'),
-						value: 'ltr',
-					},
-					{
-						label: t('components.readers.epub.controls.ReadingDirection.rightToLeft'),
-						value: 'rtl',
-					},
+					{ label: t('epubReader.controls.leftToRight'), value: 'LTR' },
+					{ label: t('epubReader.controls.rightToLeft'), value: 'RTL' },
 				]}
 				value={readingDirection}
 				onChange={handleChange}

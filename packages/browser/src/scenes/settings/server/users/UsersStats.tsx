@@ -35,7 +35,10 @@ export default function UsersStats() {
 	const [powerReader] = useMemo(() => data.topReaders, [data.topReaders])
 
 	return (
-		<div className="gap-4 pb-8 scrollbar-hide flex items-center divide-x divide-border/60 overflow-x-scroll">
+		<div
+			data-testid="users-stats"
+			className="gap-4 pb-8 scrollbar-hide flex items-center divide-x divide-border/60 overflow-x-scroll"
+		>
 			<Statistic className="pr-5 md:pr-10 shrink-0">
 				<Statistic.Label>{t(getKey('users'))}</Statistic.Label>
 				<Statistic.CountUpNumber value={data.userCount} />

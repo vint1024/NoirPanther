@@ -21,6 +21,7 @@ export default function EpubReaderHeader() {
 	const { t } = useLocaleContext()
 	const {
 		readerMeta: { bookEntity },
+		controls: { searchBook },
 	} = useEpubReaderContext()
 	const {
 		bookPreferences: { fontFamily },
@@ -55,7 +56,7 @@ export default function EpubReaderHeader() {
 			<Spacer />
 
 			<div className="gap-x-2 flex items-center">
-				<SearchCommand />
+				{searchBook ? <SearchCommand /> : null}
 				<ThemeControls />
 				<FullScreenToggle />
 				<BookmarkToggle />

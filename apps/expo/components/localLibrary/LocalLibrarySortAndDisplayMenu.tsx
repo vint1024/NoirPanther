@@ -1,9 +1,12 @@
 import { TrueSheet } from '@lodev09/react-native-true-sheet'
+import { count, eq } from 'drizzle-orm'
+import { useLiveQuery } from 'drizzle-orm/expo-sqlite'
 import { Stack } from 'expo-router'
 import {
 	ALargeSmall,
 	AlertCircle,
 	CheckCircle,
+	CircleAlert,
 	Clock,
 	Ellipsis,
 	LibraryBig,
@@ -26,6 +29,7 @@ import {
 	Icon,
 	Text,
 } from '~/components/ui'
+import { db, downloadedFiles, readProgress } from '~/db'
 import {
 	useDownload,
 	useDownloadsCount,
@@ -39,6 +43,7 @@ import { useSelectionStore } from '~/stores/selection'
 
 import { DOWNLOAD_PROBLEMS_SHEET_NAME } from '../downloadQueue'
 import { DownloadSortOption, useDownloadsState } from './store'
+import { SYNC_CONFLICTS_SHEET_NAME } from './syncConflicts'
 
 export function useLocalLibrarySortAndDisplayMenu() {
 	const { t } = useTranslate()
@@ -59,6 +64,17 @@ export function useLocalLibrarySortAndDisplayMenu() {
 
 	const downloadsCount = useDownloadsCount()
 	const failedDownloadsCount = useFailedDownloadsCount()
+
+	const {
+		data: [conflictCountData],
+	} = useLiveQuery(
+		db
+			.select({ count: count() })
+			.from(downloadedFiles)
+			.leftJoin(readProgress, eq(downloadedFiles.id, readProgress.bookId))
+			.where(eq(readProgress.syncStatus, 'CONFLICT')),
+	)
+	const syncConflictsCount = conflictCountData?.count ?? 0
 
 	const handleSortSelection = useCallback(
 		(option: DownloadSortOption) => {
@@ -95,6 +111,20 @@ export function useLocalLibrarySortAndDisplayMenu() {
 				{ text: t('common.delete'), style: 'destructive', onPress: onDeleteAllDownloads },
 			],
 		)
+	}
+
+	const onAttemptSync = async () => {
+		const {
+			progress: { pullResults },
+		} = await syncAll()
+		refetchDownloads()
+		const conflictsCount = Object.values(pullResults).reduce(
+			(acc, result) => acc + result.conflictBookIds.length,
+			0,
+		)
+		if (conflictsCount > 0) {
+			TrueSheet.present(SYNC_CONFLICTS_SHEET_NAME)
+		}
 	}
 
 	return Platform.select({
@@ -136,13 +166,20 @@ export function useLocalLibrarySortAndDisplayMenu() {
 					</Stack.Toolbar.MenuAction>
 					<Stack.Toolbar.MenuAction
 						icon="arrow.trianglehead.2.clockwise.rotate.90"
-						onPress={async () => {
-							await syncAll()
-							refetchDownloads()
-						}}
+						onPress={onAttemptSync}
 					>
 						{t(getActionsKey('attemptSync'))}
 					</Stack.Toolbar.MenuAction>
+
+					{syncConflictsCount > 0 && (
+						<Stack.Toolbar.MenuAction
+							icon="exclamationmark.circle"
+							onPress={() => TrueSheet.present(SYNC_CONFLICTS_SHEET_NAME)}
+						>
+							{t(getActionsKey('syncConflicts'))}
+						</Stack.Toolbar.MenuAction>
+					)}
+
 					<Stack.Toolbar.MenuAction
 						icon="sparkles.rectangle.stack"
 						onPress={() => setIsCuratedDownloadsEnabled(!isCuratedDownloadsEnabled)}
@@ -177,13 +214,11 @@ export function useLocalLibrarySortAndDisplayMenu() {
 				sortConfig={sortConfig}
 				downloadsCount={downloadsCount}
 				failedDownloadsCount={failedDownloadsCount}
+				syncConflictsCount={syncConflictsCount}
 				isCuratedDownloadsEnabled={isCuratedDownloadsEnabled}
 				onSortSelection={handleSortSelection}
 				onSelect={() => setIsSelecting(true)}
-				onSync={async () => {
-					await syncAll()
-					refetchDownloads()
-				}}
+				onSync={onAttemptSync}
 				onToggleCurated={() => setIsCuratedDownloadsEnabled(!isCuratedDownloadsEnabled)}
 				onSeeProblems={() => TrueSheet.present(DOWNLOAD_PROBLEMS_SHEET_NAME)}
 				onDeleteAll={confirmDeleteAllDownloads}
@@ -197,6 +232,7 @@ type AndroidMenuProps = {
 	sortConfig: { option: DownloadSortOption; direction: 'ASC' | 'DESC' }
 	downloadsCount: number
 	failedDownloadsCount: number
+	syncConflictsCount: number
 	isCuratedDownloadsEnabled: boolean
 	onSortSelection: (option: DownloadSortOption) => void
 	onSelect: () => void
@@ -210,6 +246,7 @@ function AndroidSortAndActionsMenu({
 	sortConfig,
 	downloadsCount,
 	failedDownloadsCount,
+	syncConflictsCount,
 	isCuratedDownloadsEnabled,
 	onSortSelection,
 	onSelect,
@@ -237,6 +274,13 @@ function AndroidSortAndActionsMenu({
 		const localeKey = option === 'ADDED_AT' ? 'sortDirectionDate' : 'sortDirectionText'
 		return t(getSortKey(`${localeKey}.${direction}`))
 	}
+
+	const renderSortText = (label: string, subtitle: string | null) => (
+		<View className={cn('flex-1', !subtitle && 'justify-center')}>
+			<Text className="text-lg">{label}</Text>
+			{subtitle && <Text className="text-sm text-foreground-muted">{subtitle}</Text>}
+		</View>
+	)
 
 	return (
 		<DropdownMenu onOpenChange={setIsOpen}>
@@ -273,14 +317,14 @@ function AndroidSortAndActionsMenu({
 					onCheckedChange={() => onSortSelection('NAME')}
 					className="text-foreground"
 				>
-					<View className="gap-4 flex w-full flex-row items-center justify-between">
-						<View className="gap-4 flex flex-row items-center">
-							<Icon as={ALargeSmall} size={20} className="ml-auto text-foreground-muted" />
-							<Text className="text-lg">{t(getSortKey('sortBy.NAME'))}</Text>
+					<View className="flex w-full">
+						<View className="gap-4 flex flex-1 flex-row items-center">
+							<Icon as={ALargeSmall} size={20} className="text-foreground-muted ml-auto" />
+							{renderSortText(
+								t(getSortKey('sortBy.NAME')),
+								renderAndroidSortLabel('NAME', sortConfig.direction),
+							)}
 						</View>
-						<Text className="text-sm text-foreground-muted">
-							{renderAndroidSortLabel('NAME', sortConfig.direction)}
-						</Text>
 					</View>
 				</DropdownMenuCheckboxItem>
 
@@ -289,14 +333,14 @@ function AndroidSortAndActionsMenu({
 					onCheckedChange={() => onSortSelection('ADDED_AT')}
 					className="text-foreground"
 				>
-					<View className="gap-4 flex w-full flex-row items-center justify-between">
-						<View className="gap-4 flex flex-row items-center">
-							<Icon as={Clock} size={20} className="ml-auto text-foreground-muted" />
-							<Text className="text-lg">{t(getSortKey('sortBy.ADDED_AT'))}</Text>
+					<View className="flex w-full">
+						<View className="gap-4 flex flex-1 flex-row items-center">
+							<Icon as={Clock} size={20} className="text-foreground-muted ml-auto" />
+							{renderSortText(
+								t(getSortKey('sortBy.ADDED_AT')),
+								renderAndroidSortLabel('ADDED_AT', sortConfig.direction),
+							)}
 						</View>
-						<Text className="text-sm text-foreground-muted">
-							{renderAndroidSortLabel('ADDED_AT', sortConfig.direction)}
-						</Text>
 					</View>
 				</DropdownMenuCheckboxItem>
 
@@ -305,14 +349,14 @@ function AndroidSortAndActionsMenu({
 					onCheckedChange={() => onSortSelection('SERIES')}
 					className="text-foreground"
 				>
-					<View className="gap-4 flex w-full flex-row items-center justify-between">
-						<View className="gap-4 flex flex-row items-center">
-							<Icon as={LibraryBig} size={20} className="ml-auto text-foreground-muted" />
-							<Text className="text-lg">{t(getSortKey('sortBy.SERIES'))}</Text>
+					<View className="flex w-full">
+						<View className="gap-4 flex flex-1 flex-row items-center">
+							<Icon as={LibraryBig} size={20} className="text-foreground-muted ml-auto" />
+							{renderSortText(
+								t(getSortKey('sortBy.SERIES')),
+								renderAndroidSortLabel('SERIES', sortConfig.direction),
+							)}
 						</View>
-						<Text className="text-sm text-foreground-muted">
-							{renderAndroidSortLabel('SERIES', sortConfig.direction)}
-						</Text>
 					</View>
 				</DropdownMenuCheckboxItem>
 
@@ -325,7 +369,7 @@ function AndroidSortAndActionsMenu({
 				>
 					<View className="gap-4 flex w-full flex-row items-center justify-between">
 						<View className="gap-4 flex flex-row items-center">
-							<Icon as={CheckCircle} size={20} className="ml-auto text-foreground-muted" />
+							<Icon as={CheckCircle} size={20} className="text-foreground-muted ml-auto" />
 							<Text className="text-lg">{t('common.select')}</Text>
 						</View>
 					</View>
@@ -334,16 +378,30 @@ function AndroidSortAndActionsMenu({
 				<DropdownMenuItem onPress={onSync} className="text-foreground">
 					<View className="gap-4 flex w-full flex-row items-center justify-between">
 						<View className="gap-4 flex flex-row items-center">
-							<Icon as={RefreshCw} size={20} className="ml-auto text-foreground-muted" />
+							<Icon as={RefreshCw} size={20} className="text-foreground-muted ml-auto" />
 							<Text className="text-lg">{t(getActionsKey('attemptSync'))}</Text>
 						</View>
 					</View>
 				</DropdownMenuItem>
 
+				{syncConflictsCount > 0 && (
+					<DropdownMenuItem
+						onPress={() => TrueSheet.present(SYNC_CONFLICTS_SHEET_NAME)}
+						className="text-foreground"
+					>
+						<View className="gap-4 flex w-full flex-row items-center justify-between">
+							<View className="gap-4 flex flex-row items-center">
+								<Icon as={CircleAlert} size={20} className="text-foreground-muted ml-auto" />
+								<Text className="text-lg">{t(getActionsKey('syncConflicts'))}</Text>
+							</View>
+						</View>
+					</DropdownMenuItem>
+				)}
+
 				<DropdownMenuItem onPress={onToggleCurated} className="text-foreground">
 					<View className="gap-4 flex w-full flex-row items-center justify-between">
 						<View className="gap-4 flex flex-row items-center">
-							<Icon as={Sparkles} size={20} className="ml-auto text-foreground-muted" />
+							<Icon as={Sparkles} size={20} className="text-foreground-muted ml-auto" />
 							<Text className="text-lg">
 								{t(getActionsKey(isCuratedDownloadsEnabled ? 'hideCurated' : 'showCurated'))}
 							</Text>
@@ -360,7 +418,7 @@ function AndroidSortAndActionsMenu({
 										problemsCount: failedDownloadsCount.toString(),
 									})}
 								</Text>
-								<Icon as={AlertCircle} size={20} className="ml-auto text-foreground-muted" />
+								<Icon as={AlertCircle} size={20} className="text-foreground-muted ml-auto" />
 							</View>
 						</View>
 					</DropdownMenuItem>
@@ -375,7 +433,7 @@ function AndroidSortAndActionsMenu({
 				>
 					<View className="gap-4 flex w-full flex-row items-center justify-between">
 						<View className="gap-4 flex flex-row items-center">
-							<Icon as={Trash} size={20} className="ml-auto text-fill-danger" />
+							<Icon as={Trash} size={20} className="text-fill-danger ml-auto" />
 							<Text className="text-lg text-fill-danger">
 								{t(getActionsKey('deleteAllDownloads.label'))}
 							</Text>

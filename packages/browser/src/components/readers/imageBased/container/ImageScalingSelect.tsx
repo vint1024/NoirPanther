@@ -29,29 +29,15 @@ export default function ImageScalingSelect({ value, onChange }: Props) {
 
 	return (
 		<div className="py-1.5">
-			<Label htmlFor="image-scaling-fit">
-				{t('components.readers.imageBased.container.ImageScalingSelect.label')}
-			</Label>
+			<Label htmlFor="image-scaling-fit">{t('imageReader.settings.imageScaling.label')}</Label>
 			<NativeSelect
 				id="image-scaling-fit"
 				size="sm"
 				options={[
-					{
-						label: t('components.readers.imageBased.container.ImageScalingSelect.auto'),
-						value: 'AUTO',
-					},
-					{
-						label: t('components.readers.imageBased.container.ImageScalingSelect.height'),
-						value: 'HEIGHT',
-					},
-					{
-						label: t('components.readers.imageBased.container.ImageScalingSelect.width'),
-						value: 'WIDTH',
-					},
-					{
-						label: t('components.readers.imageBased.container.ImageScalingSelect.original'),
-						value: 'NONE',
-					},
+					{ label: t('imageReader.settings.imageScaling.options.auto'), value: 'AUTO' },
+					{ label: t('imageReader.settings.imageScaling.options.height'), value: 'HEIGHT' },
+					{ label: t('imageReader.settings.imageScaling.options.width'), value: 'WIDTH' },
+					{ label: t('imageReader.settings.imageScaling.options.original'), value: 'NONE' },
 				]}
 				value={value}
 				onChange={handleChange}

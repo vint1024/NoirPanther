@@ -16,10 +16,7 @@ use crate::{
 	},
 };
 
-use super::{
-	content_access_rule, library_exclusion, media_metadata, series, series_metadata,
-	user::AuthUser,
-};
+use super::{library_exclusion, media_metadata, series, series_metadata, user::AuthUser};
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, SimpleObject, Ordering)]
 #[graphql(name = "MediaModel")]
@@ -137,17 +134,6 @@ pub fn get_age_restriction_filter(min_age: i32, restrict_on_unset: bool) -> Cond
 	}
 }
 
-fn apply_content_rules_filter(
-	query: Select<Entity>,
-	rules: &[content_access_rule::Model],
-) -> Select<Entity> {
-	if let Some(condition) = content_access_rule::media_filter(rules) {
-		query.filter(condition)
-	} else {
-		query
-	}
-}
-
 fn apply_age_restriction_filter(
 	query: Select<Entity>,
 	age_restriction: Option<age_restriction::Model>,
@@ -183,19 +169,13 @@ impl Entity {
 		let select = Entity::find().left_join(media_metadata::Entity);
 		let select = apply_series_metadata_join(select);
 		let select = apply_library_hidden_filter(select, user);
-		let select = apply_content_rules_filter(select, &user.content_rules);
 		apply_age_restriction_filter(select, user.age_restriction.clone())
 	}
 
 	pub fn apply_for_user(user: &AuthUser, select: Select<Entity>) -> Select<Entity> {
-		// NOTE: unlike find_for_user this does NOT join media_metadata — callers
-		// (keepReading) add their own via find_also_related, and double-joining
-		// is ambiguous. The content-rule filter is self-contained (subqueries),
-		// so it needs no media_metadata join; the age-restriction filter does
-		// reference media_metadata directly (pre-existing caller contract).
+		let select = select.left_join(media_metadata::Entity);
 		let select = apply_series_metadata_join(select);
 		let select = apply_library_hidden_filter(select, user);
-		let select = apply_content_rules_filter(select, &user.content_rules);
 		apply_age_restriction_filter(select, user.age_restriction.clone())
 	}
 
@@ -253,7 +233,6 @@ impl ModelWithMetadata {
 		let select = ModelWithMetadata::find();
 		let select = apply_series_metadata_join(select);
 		let select = apply_library_hidden_filter(select, user);
-		let select = apply_content_rules_filter(select, &user.content_rules);
 		apply_age_restriction_filter(select, user.age_restriction.clone())
 	}
 
@@ -261,7 +240,6 @@ impl ModelWithMetadata {
 		let select = ModelWithMetadata::find_by_id(id);
 		let select = apply_series_metadata_join(select);
 		let select = apply_library_hidden_filter(select, user);
-		let select = apply_content_rules_filter(select, &user.content_rules);
 		apply_age_restriction_filter(select, user.age_restriction.clone())
 	}
 }
@@ -579,5 +557,24 @@ mod tests {
             r#"SELECT  FROM "media" LEFT JOIN "media_metadata" ON "media"."id" = "media_metadata"."media_id" INNER JOIN "series" ON "media"."series_id" = "series"."id" LEFT JOIN "series_metadata" ON "series_metadata"."series_id" = "series"."id" "#.to_string() +
             r#"WHERE "media"."id" = '123' AND "series"."library_id" NOT IN (SELECT "library_id" FROM "library_exclusions" WHERE "library_exclusions"."user_id" = '42')"#
             );
+	}
+
+	#[test]
+	fn test_apply_for_user_age_restrict() {
+		let mut user = get_default_user();
+		user.age_restriction = Some(age_restriction::Model {
+			id: 1,
+			age: 18,
+			restrict_on_unset: true,
+			user_id: user.id.clone(),
+		});
+		let select = Entity::apply_for_user(&user, Entity::find());
+		let stmt_str = select_no_cols_to_string(select);
+		assert_eq!(
+            stmt_str,
+            r#"SELECT  FROM "media" LEFT JOIN "media_metadata" ON "media"."id" = "media_metadata"."media_id" INNER JOIN "series" ON "media"."series_id" = "series"."id" LEFT JOIN "series_metadata" ON "series_metadata"."series_id" = "series"."id" "#.to_string() +
+            r#"WHERE "series"."library_id" NOT IN (SELECT "library_id" FROM "library_exclusions" WHERE "library_exclusions"."user_id" = '42')"# +
+            r#" AND (("media_metadata"."age_rating" IS NULL AND "series_metadata"."age_rating" IS NOT NULL AND "series_metadata"."age_rating" <= 18) OR ("media_metadata"."age_rating" IS NOT NULL AND "media_metadata"."age_rating" <= 18))"#
+        );
 	}
 }

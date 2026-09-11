@@ -458,6 +458,20 @@
 				"description": "Необязательные дополнительные папки этой библиотеки в добавление к основному пути",
 				"addFolder": "Добавить папку",
 				"removeFolder": "Убрать папку"
+			},
+			"libraryType": {
+				"label": "Содержимое библиотеки",
+				"description": "Тип контента в этой библиотеке",
+				"options": {
+					"COMIC": "Комиксы",
+					"MANGA": "Манга",
+					"BOOK": "Книги",
+					"LIGHT_NOVEL": "Ранобэ",
+					"MANHWA": "Манхва",
+					"WEB_NOVEL": "Веб-новеллы",
+					"WEBTOON": "Вебтуны",
+					"MIXED": "Смешанное"
+				}
 			}
 		},
 		"scan": {
@@ -811,8 +825,15 @@
 		"buttons": {
 			"report": "Сообщить об ошибке",
 			"copy": "Скопировать информацию об ошибке",
-			"goHome": "На главную"
-		}
+			"goHome": "На главную",
+			"goHomeTitle": "Вернуться на главную",
+			"reportTitle": "Сообщить об этой ошибке как о возможном баге на GitHub",
+			"copyTitle": "Скопировать сведения об ошибке в буфер обмена"
+		},
+		"criticalHeading": "Произошла критическая ошибка",
+		"emptyMessage": "Сообщение об ошибке пустое.",
+		"copiedDetails": "Сведения об ошибке скопированы в буфер обмена",
+		"imageAlt": "Иллюстрация «идут работы»"
 	},
 	"homeScene": {
 		"onDeck": {
@@ -1691,6 +1712,32 @@
 						"enabled": "Миниатюры будут показываться в большем числе мест",
 						"disabled": "Миниатюры не будут показываться в дополнительных местах"
 					}
+				},
+				"interfaceRoundness": {
+					"label": "Скругление интерфейса",
+					"description": "Насколько скруглены углы элементов интерфейса",
+					"options": {
+						"none": "Нет",
+						"normal": "Обычное",
+						"rounded": "Скруглённое",
+						"pill": "Пилюля"
+					}
+				},
+				"displayAndSpacing": {
+					"label": "Отображение и отступы",
+					"description": "Настройки представления контента и информации"
+				},
+				"contentBrowsing": {
+					"label": "Просмотр контента",
+					"description": "Настройки, влияющие на просмотр и навигацию по спискам контента"
+				},
+				"motionAndAnimation": {
+					"label": "Движение и анимация",
+					"description": "Настройки визуального представления и движения"
+				},
+				"activityAndStatus": {
+					"label": "Активность и статус",
+					"description": "Индикаторы, оверлеи и функции, связанные с фоновой активностью"
 				}
 			}
 		},
@@ -2095,6 +2142,9 @@
 						"updateError": "Не удалось обновить задачу по расписанию",
 						"deleteSuccess": "Задача по расписанию удалена",
 						"deleteError": "Не удалось удалить задачу по расписанию"
+					},
+					"errors": {
+						"invalidCron": "Расписание должно быть корректным cron-выражением"
 					}
 				},
 				"history": {
@@ -2168,7 +2218,8 @@
 						"emailing": "Отправка почты",
 						"libraryManagement": "Управление библиотеками",
 						"userManagement": "Управление пользователями",
-						"serverManagement": "Управление сервером"
+						"serverManagement": "Управление сервером",
+						"metadataManagement": "Управление метаданными"
 					},
 					"heading": "Права доступа",
 					"subtitle": [
@@ -2491,9 +2542,9 @@
 					"validationError": "Автопроверка токена не прошла",
 					"validationRequestError": "Запрос проверки не удался",
 					"validationRequestErrorUnknown": "Во время проверки произошла неизвестная ошибка",
-					"hardcoverStatusError": "Hardcover API ответил статусом {{status}}",
-					"hardcoverValidationError": "Hardcover API ответил ошибкой: {{message}}",
-					"noBearerPrefixRequired": "Уберите префикс «Bearer » из API-токена"
+					"noBearerPrefixRequired": "Уберите префикс «Bearer » из API-токена",
+					"providerStatusError": "Источник ответил со статусом {{status}}",
+					"providerError": "Источник ответил ошибкой: {{message}}"
 				},
 				"apiTokenExpiresAt": {
 					"label": "Срок действия API-токена",
@@ -2534,7 +2585,9 @@
 			"deleteDialog": {
 				"title": "Удалить провайдера",
 				"description": "Точно удалить {{providerName}}? Это действие нельзя отменить."
-			}
+			},
+			"createProviderError": "Не удалось создать источник",
+			"updateProviderError": "Не удалось обновить источник"
 		},
 		"server/tags": {
 			"helmet": "Управление тегами",
@@ -2709,7 +2762,10 @@
 				"onlyOneFile": "Допускается только 1 файл",
 				"noFiles": "Файлы не выбраны",
 				"uploadFailed": "Не удалось загрузить изображение"
-			}
+			},
+			"fileTooLarge": "Файл слишком большой",
+			"onlyOneFile": "Можно загрузить только один файл",
+			"noFile": "Файл не выбран"
 		}
 	},
 	"common": {
@@ -2773,7 +2829,8 @@
 			"someRejected": "Часть файлов отклонена. Проверьте типы файлов и попробуйте снова",
 			"tooManyFiles": "Выбрано слишком много файлов",
 			"noValidFiles": "Не выбрано ни одного подходящего файла"
-		}
+		},
+		"unknownError": "Произошла неизвестная ошибка"
 	},
 	"userPermissions": {
 		"ACCESS_API_KEYS": {
@@ -2919,6 +2976,22 @@
 		"EDIT_THUMBNAILS": {
 			"label": "Изменение миниатюр",
 			"description": "Позволяет изменять миниатюры книг и серий"
+		},
+		"METADATA_PROVIDER_READ": {
+			"label": "Просмотр источников метаданных",
+			"description": "Позволяет пользователю видеть настроенные внешние источники метаданных"
+		},
+		"METADATA_PROVIDER_MANAGE": {
+			"label": "Управление источниками метаданных",
+			"description": "Позволяет пользователю настраивать внешние источники метаданных"
+		},
+		"METADATA_FETCH_RECORD_READ": {
+			"label": "Просмотр совпадений метаданных",
+			"description": "Позволяет пользователю видеть результаты поиска метаданных, ожидающие проверки"
+		},
+		"METADATA_FETCH_RECORD_MANAGE": {
+			"label": "Управление совпадениями метаданных",
+			"description": "Позволяет пользователю искать книгу во внешних источниках и принимать или отклонять найденные совпадения"
 		}
 	},
 	"mobileApp": {
@@ -2939,15 +3012,19 @@
 			},
 			"auth": {
 				"label": "Аутентификация",
-				"default": {
-					"label": "Логин",
-					"description": "Вход будет запрошен при обращении к контенту по мере необходимости"
-				},
 				"token": {
 					"label": "Токен",
 					"placeholder": "Токен как есть"
 				},
-				"basic": "Basic"
+				"basic": "Basic",
+				"login": {
+					"label": "Логин",
+					"description": "Вход будет запрошен при обращении к контенту, когда потребуется"
+				},
+				"none": {
+					"label": "Нет",
+					"description": "Для этого сервера аутентификация не требуется или передаётся через URL"
+				}
 			},
 			"serverNamePlaceholder": "Мой сервер",
 			"catalogUrl": "URL каталога",
@@ -2955,7 +3032,6 @@
 			"didConnect": "Подключено",
 			"checkConnection": "Проверить подключение",
 			"setAsDefaultServer": "Сделать сервером по умолчанию",
-			"enableOPDS": "Включить OPDS",
 			"validation": {
 				"nameAlreadyExists": "Имя уже занято",
 				"cannotSetAuthorizationHeader": "Нельзя задать заголовок Authorization"
@@ -2964,15 +3040,18 @@
 		"bookActions": {
 			"markAsRead": {
 				"label": "Отметить прочитанной",
-				"confirmation": "Точно отметить {{bookTitle}} как прочитанную?"
+				"confirmation": "Точно отметить {{bookTitle}} как прочитанную?",
+				"failure": "Не удалось отметить книгу прочитанной"
 			},
 			"clearProgress": {
 				"label": "Сбросить прогресс",
-				"confirmation": "Точно сбросить прогресс для {{bookTitle}}?"
+				"confirmation": "Точно сбросить прогресс для {{bookTitle}}?",
+				"failure": "Не удалось удалить текущий прогресс"
 			},
 			"deleteReadHistory": {
 				"label": "Delete Read History",
-				"confirmation": "Are you sure you want to delete your read history for {{bookTitle}}?"
+				"confirmation": "Are you sure you want to delete your read history for {{bookTitle}}?",
+				"failure": "Не удалось удалить историю чтения"
 			},
 			"deleteBook": {
 				"label": "Удалить книгу",
@@ -3057,7 +3136,12 @@
 			"url": "URL",
 			"username": "Имя пользователя",
 			"value": "Значение",
-			"version": "Версия"
+			"version": "Версия",
+			"downloaded": "Скачано",
+			"pageX": "Страница {{current}}",
+			"reset": "Сбросить",
+			"accessOpdsV2": "Доступ к OPDS v2.0",
+			"accessOpdsV1": "Доступ к OPDS v1.2"
 		},
 		"errors": {
 			"unknown": "Unknown error"
@@ -3135,7 +3219,8 @@
 				"seeProblems": "Проблемы ({{problemCount}})",
 				"hideCurated": "Скрыть подборку",
 				"showCurated": "Показать подборку",
-				"attemptSync": "Попробовать синхронизацию"
+				"attemptSync": "Попробовать синхронизацию",
+				"syncConflicts": "Конфликты синхронизации"
 			},
 			"downloadsHeaderSortMenu": {
 				"sortBy": {
@@ -3191,7 +3276,6 @@
 						"dark": "Тёмная"
 					}
 				},
-				"appPrimaryColor": "Акцент",
 				"appLanguage": "Язык",
 				"defaultServer": "Сервер по умолчанию",
 				"thumbnailRatio": "Пропорции миниатюр",
@@ -3211,6 +3295,36 @@
 						"stretch": "Растяжение",
 						"fit": "Вписывание"
 					}
+				},
+				"appPrimaryColor": {
+					"label": "Акцент",
+					"options": {
+						"chromaScale": "Насыщенность",
+						"hues": {
+							"red": "Красный",
+							"orange": "Оранжевый",
+							"amber": "Янтарный",
+							"yellow": "Жёлтый",
+							"lime": "Лаймовый",
+							"green": "Зелёный",
+							"emerald": "Изумрудный",
+							"teal": "Бирюзовый",
+							"cyan": "Голубой",
+							"sky": "Небесный",
+							"blue": "Синий",
+							"indigo": "Индиго",
+							"violet": "Фиолетовый",
+							"purple": "Пурпурный",
+							"fuchsia": "Фуксия",
+							"pink": "Розовый",
+							"rose": "Роза",
+							"slate": "Сланцевый",
+							"gray": "Серый",
+							"zinc": "Цинковый",
+							"neutral": "Нейтральный",
+							"stone": "Каменный"
+						}
+					}
 				}
 			},
 			"reading": {
@@ -3218,7 +3332,14 @@
 				"preferNativePdf": "Предпочитать нативный PDF",
 				"preferMinimalReader": "Предпочитать минимальную читалку",
 				"disableDismissGesture": "Отключить жест закрытия",
-				"incognitoReading": "Чтение инкогнито"
+				"incognitoReading": "Чтение инкогнито",
+				"maxPageViewingSeconds": {
+					"label": "Лимит секунд на страницу",
+					"errors": {
+						"minimumValue": "Не менее 1 секунды",
+						"integer": "Должно быть целым числом"
+					}
+				}
 			},
 			"stump": {
 				"label": "Stump",
@@ -3285,7 +3406,6 @@
 				},
 				"performanceMonitor": "Монитор производительности",
 				"reduceAnimations": "Меньше анимаций",
-				"maskUrls": "Маскировать URL",
 				"displayLanguageKeys": {
 					"label": "Показывать ключи локализации",
 					"options": {
@@ -3391,7 +3511,14 @@
 			},
 			"readingTimer": {
 				"label": "Таймер чтения",
-				"resetTimer": "Сбросить таймер"
+				"resetTimer": "Сбросить таймер",
+				"confirmation": {
+					"message": "Сбросить время чтения для «{{bookName}}»?\n\n{{action}}",
+					"action": {
+						"multi-session": "Все сессии чтения этого прочтения будут обнулены.",
+						"single-session": "Время чтения будет обнулено."
+					}
+				}
 			},
 			"allSettings": "Все настройки"
 		},
@@ -3541,6 +3668,38 @@
 				"ASC": "1 → 10",
 				"DESC": "10 → 1"
 			}
+		},
+		"syncConflicts": {
+			"title": "Конфликты синхронизации",
+			"remainingCount": "Осталось: {{remainingCount}}",
+			"noConflicts": {
+				"title": "Конфликтов нет",
+				"description": "Весь локальный прогресс синхронизирован с серверами"
+			},
+			"lastCommonSession": "Последняя общая сессия",
+			"localSession": "Локальная сессия",
+			"remoteSessionWithId": "Сессия на сервере {{sessionId}}",
+			"noCommonSession": "Нет общей истории чтения",
+			"noRemoteSessions": "Нет сессий на сервере",
+			"divergentProgress": {
+				"title": "Прогресс расходится",
+				"description": "Последняя общая сессия была изменена на сервере после вашей последней синхронизации"
+			},
+			"noCommonReadingHistory": {
+				"title": "Нет общей истории чтения",
+				"description": "У этой книги не было синхронизированной истории, когда вы начали читать офлайн"
+			},
+			"acceptSource": {
+				"local": "Оставить локальный",
+				"remote": "Оставить серверный",
+				"both": "Оставить оба"
+			},
+			"pullError": "Не удалось получить прогресс с сервера"
+		},
+		"widgets": {
+			"readingNow": {
+				"nothingInProgress": "Ничего не читается"
+			}
 		}
 	},
 	"seriesSettingsScene": {
@@ -3621,10 +3780,97 @@
 		"thumbnail": {
 			"heading": "Миниатюра",
 			"description": "Сменить обложку этой книги"
+		},
+		"metadataSearch": {
+			"heading": "Поиск метаданных",
+			"description": "Найдите эту книгу во внешнем источнике и выберите совпадение для применения",
+			"openButton": "Искать метаданные",
+			"searchButton": "Найти",
+			"noProviders": "Для этого типа библиотеки не настроено ни одного включённого источника метаданных. Сначала настройте его в параметрах сервера.",
+			"noResults": "По этому запросу совпадений не найдено",
+			"partialResults": "Часть результатов не удалось загрузить из источника, вероятно из-за ограничения частоты запросов. Повторите поиск, возможно найдётся больше.",
+			"searchFailed": "Не удалось выполнить поиск в источниках метаданных",
+			"form": {
+				"title": {
+					"label": "Название"
+				},
+				"author": {
+					"label": "Автор"
+				},
+				"isbn": {
+					"label": "ISBN"
+				},
+				"year": {
+					"label": "Год"
+				},
+				"number": {
+					"label": "Номер выпуска"
+				},
+				"comicVineVolumeId": {
+					"label": "ID тома ComicVine",
+					"placeholder": "например, 129260"
+				},
+				"provider": {
+					"label": "Источник",
+					"allOption": "Все включённые источники"
+				}
+			}
 		}
 	},
 	"epubReader": {
-		"failedToLoad": "Не удалось загрузить книгу"
+		"failedToLoad": "Не удалось загрузить книгу",
+		"reading": "Чтение",
+		"appearance": "Внешний вид",
+		"themeAndOptions": "Тема и параметры",
+		"locationManager": "Навигация",
+		"contents": "Содержание",
+		"bookmarks": "Закладки",
+		"annotations": "Заметки",
+		"noBookmarks": "Закладок нет",
+		"bookmark": "Закладка",
+		"noAnnotations": "Заметок нет",
+		"annotation": {
+			"addNote": "Добавить заметку",
+			"edit": "Изменить заметку",
+			"note": "Заметка",
+			"optionalNote": "Добавьте заметку (необязательно)…",
+			"selectionActions": "Действия с выделением",
+			"highlight": "Выделить",
+			"disabledInIncognito": "В режиме инкогнито заметки отключены",
+			"saveFailed": "Не удалось сохранить заметку",
+			"updateFailed": "Не удалось обновить заметку",
+			"deleteFailed": "Не удалось удалить заметку"
+		},
+		"search": {
+			"placeholder": "Введите запрос и нажмите Enter для поиска",
+			"failed": "Поиск не удался. Попробуйте ещё раз.",
+			"noResults": "Ничего не найдено.",
+			"section": "Раздел {{position}}",
+			"loadingMore": "Загрузка…",
+			"loadMore": "Загрузить ещё"
+		},
+		"controls": {
+			"columns": "Колонки",
+			"auto": "Авто",
+			"columnCount_one": "{{count}} колонка",
+			"columnCount_other": "{{count}} колонки",
+			"pageMargins": "Поля страницы",
+			"readingDirection": "Направление чтения",
+			"leftToRight": "Слева направо",
+			"rightToLeft": "Справа налево",
+			"readingMode": "Режим чтения",
+			"paged": "Постранично",
+			"continuous": "Непрерывно",
+			"previousPage": "Предыдущая страница",
+			"nextPage": "Следующая страница",
+			"toggleControls": "Показать или скрыть панель",
+			"columnCount_few": "{{count}} колонки",
+			"columnCount_many": "{{count}} колонок"
+		},
+		"errors": {
+			"openFailed": "Не удалось открыть EPUB через Readium.",
+			"navigateFailed": "Не удалось перейти к позиции"
+		}
 	},
 	"AppLayout": {
 		"logoutSuccess": "Вы вышли из системы",
@@ -4692,6 +4938,48 @@
 					"ChangeVisibilityConfirmation": {
 						"title": "Изменить видимость"
 					}
+				}
+			}
+		}
+	},
+	"thumbnailSelector": {
+		"title": "Выбор эскиза",
+		"descriptions": {
+			"chooseBookPage": "Выберите страницу этой книги для нового эскиза",
+			"chooseSeriesBook": "Выберите книгу из серии"
+		},
+		"actions": {
+			"confirmSelection": "Подтвердить выбор"
+		},
+		"errors": {
+			"uploadFailed": "Не удалось загрузить изображение",
+			"updateFailed": "Не удалось обновить эскиз"
+		}
+	},
+	"imageReader": {
+		"settings": {
+			"imageScaling": {
+				"label": "Масштабирование изображения",
+				"options": {
+					"auto": "Авто",
+					"height": "По высоте",
+					"width": "По ширине",
+					"original": "Оригинал"
+				}
+			},
+			"readingDirection": {
+				"label": "Направление чтения",
+				"options": {
+					"leftToRight": "Слева направо",
+					"rightToLeft": "Справа налево"
+				}
+			},
+			"readingMode": {
+				"label": "Режим",
+				"options": {
+					"verticalScroll": "Вертикальная прокрутка",
+					"horizontalScroll": "Горизонтальная прокрутка",
+					"paged": "Постранично"
 				}
 			}
 		}

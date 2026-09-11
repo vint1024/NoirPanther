@@ -51,8 +51,9 @@ fn seal(key: &[u8; 32], plaintext: &[u8]) -> Result<Vec<u8>, OfflineCryptoError>
 	let cipher = Aes256Gcm::new(key.into());
 	let mut nonce_bytes = [0u8; 12];
 	OsRng.fill_bytes(&mut nonce_bytes);
+	let nonce = Nonce::from(nonce_bytes);
 	let ciphertext = cipher
-		.encrypt(Nonce::from_slice(&nonce_bytes), plaintext)
+		.encrypt(&nonce, plaintext)
 		.map_err(|_| OfflineCryptoError::Encrypt)?;
 	let mut out = nonce_bytes.to_vec();
 	out.extend(ciphertext);

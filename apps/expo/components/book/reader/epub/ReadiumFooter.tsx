@@ -134,7 +134,7 @@ export default function ReadiumFooter() {
 					<MenuItem
 						show={showMenu}
 						delay={100}
-						label={t('epubMenu.annotations')}
+						label={t('epubMenu.bookmarksAndAnnotations')}
 						icon={PencilLine}
 						onPress={() => {
 							openSheet('annotations')
@@ -177,7 +177,7 @@ export default function ReadiumFooter() {
 								<Pressable
 									onPress={() => {
 										timer.pause()
-										setElapsedSeconds(timer.getCurrentTime() || 0)
+										setElapsedSeconds(timer.getTotalSeconds())
 										setShowMenu(true)
 										setShowControls(false)
 									}}

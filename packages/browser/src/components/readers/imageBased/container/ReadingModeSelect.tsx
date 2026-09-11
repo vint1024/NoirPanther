@@ -28,25 +28,20 @@ export default function ReadingModeSelect({ value, onChange }: Props) {
 
 	return (
 		<div className="py-1.5">
-			<Label htmlFor="reading-mode">
-				{t('components.readers.imageBased.container.ReadingModeSelect.label')}
-			</Label>
+			<Label htmlFor="reading-mode">{t('imageReader.settings.readingMode.label')}</Label>
 			<NativeSelect
 				id="reading-mode"
 				size="sm"
 				options={[
 					{
-						label: t('components.readers.imageBased.container.ReadingModeSelect.verticalScroll'),
+						label: t('imageReader.settings.readingMode.options.verticalScroll'),
 						value: 'CONTINUOUS_VERTICAL',
 					},
 					{
-						label: t('components.readers.imageBased.container.ReadingModeSelect.horizontalScroll'),
+						label: t('imageReader.settings.readingMode.options.horizontalScroll'),
 						value: 'CONTINUOUS_HORIZONTAL',
 					},
-					{
-						label: t('components.readers.imageBased.container.ReadingModeSelect.paged'),
-						value: 'PAGED',
-					},
+					{ label: t('imageReader.settings.readingMode.options.paged'), value: 'PAGED' },
 				]}
 				value={value}
 				onChange={handleChange}

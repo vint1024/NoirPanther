@@ -1,13 +1,12 @@
 import { BookPreferences as IBookPreferences } from '@stump/client'
 import { ReadingDirection, ReadingImageScaleFit, ReadingMode } from '@stump/graphql'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useMemo } from 'react'
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 import { useShallow } from 'zustand/react/shallow'
 
 import { useActiveServerSafe } from '~/components/activeServer'
 import { ImageReaderBookRef } from '~/components/book/reader/image/context'
-import { useAppState } from '~/lib/hooks'
 import { ColumnCount, ImageFilter, TextAlignment } from '~/modules/readium'
 
 import { ZustandMMKVStorage } from './store'
@@ -45,8 +44,6 @@ export type BookPreferences = IBookPreferences & {
 }
 export type GlobalSettings = Omit<BookPreferences, 'serverID'>
 
-type ElapsedSeconds = number
-
 type BookCacheData = {
 	dimensions: Record<number, { width: number; height: number; ratio: number }>
 }
@@ -68,9 +65,6 @@ export type ReaderStore = {
 	 */
 	bookCache: Record<string, BookCacheData>
 	setBookCache: (id: string, data: BookCacheData) => void
-
-	bookTimers: Record<string, ElapsedSeconds>
-	setBookTimer: (id: string, timer: ElapsedSeconds) => void
 
 	bookOverrides: Record<string, boolean>
 	setBookOverride: (id: string, override: boolean) => void
@@ -160,10 +154,6 @@ export const useReaderStore = create<ReaderStore>()(
 						),
 					}),
 
-				bookTimers: {},
-				setBookTimer: (id, elapsedSeconds) =>
-					set({ bookTimers: { ...get().bookTimers, [id]: elapsedSeconds } }),
-
 				bookOverrides: {},
 				setBookOverride: (id, override) =>
 					set({ bookOverrides: { ...get().bookOverrides, [id]: override } }),
@@ -233,78 +223,6 @@ export const useBookPreferences = ({ book, ...params }: Params) => {
 		updateGlobalSettings: setGlobalSettings,
 	}
 }
-
-type UseBookTimerParams = {
-	initial?: number | null
-	enabled?: boolean
-}
-
-const defaultParams: UseBookTimerParams = {
-	initial: 0,
-	enabled: true,
-}
-
-export const useBookTimer = (id: string, params: UseBookTimerParams = defaultParams) => {
-	const [initial, setInitial] = useState(params.initial)
-	const startDateRef = useRef<number | null>(null)
-
-	const getCurrentTime = useCallback(() => {
-		const bookTimer = useReaderStore.getState().bookTimers[id] || 0
-		const resolvedTimer = !!initial && initial > bookTimer ? initial : bookTimer
-
-		if (startDateRef.current === null) {
-			return resolvedTimer
-		}
-
-		const elapsed = Math.trunc((Date.now() - startDateRef.current) / 1000)
-		return resolvedTimer + elapsed
-	}, [id, initial])
-
-	const pause = useCallback(() => {
-		if (startDateRef.current === null) return
-
-		const elapsedSeconds = getCurrentTime()
-		useReaderStore.getState().setBookTimer(id, elapsedSeconds)
-
-		startDateRef.current = null
-	}, [id, getCurrentTime])
-
-	const resume = useCallback(() => {
-		if (!params.enabled || startDateRef.current !== null) return
-		startDateRef.current = Date.now()
-	}, [params.enabled])
-
-	const reset = useCallback(() => {
-		setInitial(0)
-		useReaderStore.getState().setBookTimer(id, 0)
-		startDateRef.current = startDateRef.current !== null ? Date.now() : null
-	}, [id])
-
-	useEffect(() => {
-		if (!params.enabled) {
-			pause()
-		} else {
-			resume()
-		}
-	}, [params.enabled, pause, resume])
-
-	const handleFocusedChanged = useCallback(
-		(focused: boolean) => {
-			if (!focused) {
-				pause()
-			} else {
-				resume()
-			}
-		},
-		[pause, resume],
-	)
-
-	useAppState({ onStateChanged: handleFocusedChanged })
-
-	return { getCurrentTime, pause, resume, reset }
-}
-
-export type Timer = ReturnType<typeof useBookTimer>
 
 export const useHideSystemBars = () => {
 	const { isReading, showControls } = useReaderStore(

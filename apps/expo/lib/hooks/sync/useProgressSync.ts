@@ -14,6 +14,7 @@ import { db, epubProgress, readProgress, syncStatus } from '~/db'
 import { isLocalLibrary } from '~/lib/localLibrary'
 
 import { useTranslate } from '../useTranslate'
+import { PushSyncParams, SyncParams } from './types'
 import { useServerInstances } from './utils'
 
 export function useProgressSync() {
@@ -29,34 +30,39 @@ export function useProgressSync() {
 		[getFullServer],
 	)
 
-	type PushProgressParams = {
-		forServers?: string[]
-		ignoreBookIds?: string[]
-	}
-
 	const pushProgress = useCallback(
-		async ({ forServers, ignoreBookIds }: PushProgressParams = {}) => {
-			const instances = await getInstances(forServers)
-			return executePushProgressSync(instances, ignoreBookIds)
+		async ({ forServers, ignoreBookIds, instances }: PushSyncParams = {}) => {
+			const resolvedInstances = instances ?? (await getInstances(forServers))
+			return executePushProgressSync(resolvedInstances, ignoreBookIds)
 		},
 		[getInstances],
 	)
 
 	const pullProgress = useCallback(
-		async (forServers?: string[]) => {
-			const instances = await getInstances(forServers)
-			return executePullProgressSync(instances)
+		async ({ forServers, instances, ...params }: SyncParams = {}) => {
+			const resolvedInstances = instances ?? (await getInstances(forServers, params.suppressAlerts))
+			return executePullProgressSync(resolvedInstances)
 		},
 		[getInstances],
 	)
 
 	const syncProgress = useCallback(
-		async (forServers?: string[]) => {
-			const pullResults = await pullProgress(forServers)
+		async ({ forServers, instances, ...params }: SyncParams = {}) => {
+			const resolvedInstances = instances ?? (await getInstances(forServers))
+
+			const pullResults = await pullProgress({
+				forServers,
+				instances: resolvedInstances,
+				...params,
+			})
 
 			const ignoreBookIds = Object.values(pullResults).flatMap((r) => r.failedBookIds)
 
-			const pushResults = await pushProgress({ forServers, ignoreBookIds })
+			const pushResults = await pushProgress({
+				forServers,
+				ignoreBookIds,
+				instances: resolvedInstances,
+			})
 
 			if (ignoreBookIds.length > 0) {
 				throw new Error(`Failed to pull progress for ${ignoreBookIds.length} book(s)`)
@@ -64,7 +70,7 @@ export function useProgressSync() {
 
 			return { pullResults, pushResults }
 		},
-		[pullProgress, pushProgress],
+		[getInstances, pullProgress, pushProgress],
 	)
 
 	return { syncProgress, syncServerProgress, pushProgress, pullProgress }
@@ -84,32 +90,36 @@ export function useAutoSyncActiveServer({ enabled = true }: Params = {}) {
 
 	const didSync = useRef(false)
 
+	const syncIfNeeded = useCallback(async () => {
+		if (!enabled || didSync.current || isLocalLibrary(serverId)) return
+
+		didSync.current = true
+
+		try {
+			await syncProgress({ forServers: [serverId] })
+		} catch (error) {
+			Sentry.captureException(error, {
+				extra: { serverId },
+			})
+			toast.error(t('progressSync.syncFailed'), {
+				description: error instanceof Error ? error.message : t('errors.unknown'),
+			})
+		}
+	}, [enabled, syncProgress, serverId, t])
+
 	useFocusEffect(
-		useCallback(() => {
-			const syncIfNeeded = async () => {
-				if (!enabled || didSync.current || isLocalLibrary(serverId)) return
+		useCallback(
+			() => {
+				syncIfNeeded()
 
-				didSync.current = true
-
-				try {
-					await syncProgress([serverId])
-				} catch (error) {
-					Sentry.captureException(error, {
-						extra: { serverId },
-					})
-					toast.error(t('progressSync.syncFailed'), {
-						description: error instanceof Error ? error.message : t('errors.unknown'),
-					})
+				return () => {
+					didSync.current = false
 				}
-			}
-			syncIfNeeded()
-
-			return () => {
-				didSync.current = false
-			}
+			},
 			// eslint-disable-next-line react-compiler/react-compiler
 			// eslint-disable-next-line react-hooks/exhaustive-deps
-		}, [enabled, serverId, t]),
+			[],
+		),
 	)
 }
 
@@ -146,8 +156,13 @@ export function useSyncOnlineToOfflineProgress({
 		}
 	}, [record?.elapsedSeconds])
 
+	type RemoteSessionInfo = {
+		updatedAt?: Date | null
+		sessionId: number
+	}
+
 	const syncProgress = useCallback(
-		async (onlineProgress: MediaProgressInput) => {
+		async (onlineProgress: MediaProgressInput, remoteSession?: RemoteSessionInfo) => {
 			if (!isOfflineSyncable) return
 
 			const delta = match(onlineProgress)
@@ -174,7 +189,7 @@ export function useSyncOnlineToOfflineProgress({
 							elapsedSeconds: accumulatedElapsed,
 							lastSyncedElapsedSeconds: accumulatedElapsed,
 							percentage,
-							epubProgress: epubProgress.safeParse(locator.readium).data,
+							epubProgress: epubProgress.safeParse(locator).data,
 							syncStatus: syncStatus.enum.SYNCED,
 						}) satisfies typeof readProgress.$inferInsert,
 				)
@@ -205,12 +220,24 @@ export function useSyncOnlineToOfflineProgress({
 
 			// Note: I don't throw here because I intend for this to be a background best-effort sync
 			try {
+				const anchorUpdate = remoteSession?.updatedAt
+					? { lastPulledSessionUpdatedAt: remoteSession.updatedAt }
+					: {}
+				const sessionUpdate = remoteSession?.sessionId
+					? { lastSyncedSessionId: remoteSession.sessionId }
+					: {}
+				const syncedAt = remoteSession?.updatedAt ?? new Date()
 				await db
 					.insert(readProgress)
-					.values(values)
+					.values({ ...values, ...anchorUpdate, ...sessionUpdate })
 					.onConflictDoUpdate({
 						target: readProgress.bookId,
-						set: { ...values, lastModified: new Date() },
+						set: {
+							...values,
+							lastModified: syncedAt,
+							...anchorUpdate,
+							...sessionUpdate,
+						},
 					})
 			} catch (error) {
 				console.error('Failed to sync online progress to offline DB', {

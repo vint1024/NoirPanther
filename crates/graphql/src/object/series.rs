@@ -5,7 +5,10 @@ use async_graphql::{
 };
 
 use models::{
-	entity::{library, media, reading_session, series, series_merge, series_tag, tag},
+	entity::{
+		library, media, media_metadata, reading_session, series, series_merge,
+		series_tag, tag,
+	},
 	shared::{
 		alphabet::{AvailableAlphabet, EntityLetter},
 		enums::ReadingStatus,
@@ -15,8 +18,8 @@ use models::{
 use sea_orm::{
 	prelude::*,
 	sea_query::{Expr, Query},
-	Condition, DatabaseBackend, FromQueryResult, JoinType, PaginatorTrait, QueryOrder,
-	QuerySelect, QueryTrait, Statement,
+	Condition, FromQueryResult, JoinType, PaginatorTrait, QueryOrder, QuerySelect,
+	QueryTrait,
 };
 
 use crate::{
@@ -27,6 +30,7 @@ use crate::{
 		series_finished_count::{FinishedCountLoaderKey, SeriesFinishedCountLoader},
 	},
 	object::{series_metadata::SeriesMetadata, stats::SeriesStats},
+	utils::db_statement,
 };
 
 use super::{library::Library, media::Media, tag::Tag};
@@ -149,8 +153,8 @@ impl Series {
 		let conn = ctx.data::<CoreContext>()?.conn.as_ref();
 
 		let query_result = conn
-			.query_all(Statement::from_sql_and_values(
-				DatabaseBackend::Sqlite,
+			.query_all(db_statement(
+				conn,
 				r"
 				SELECT
 					substr(COALESCE(media_metadata.title, media.name), 1, 1) AS letter,
@@ -234,7 +238,8 @@ impl Series {
 							.add(latest_only.clone()),
 					),
 			)
-			.group_by(media::Column::Id);
+			.group_by(media::Column::Id)
+			.group_by(media_metadata::Column::Id); // pgsql requires addtl grouping
 
 		let books = if let Some(name) = name_cmp {
 			let mut cursor = query.cursor_by(media::Column::Name);
@@ -340,6 +345,7 @@ impl Series {
 			height: dimensions.as_ref().map(|dim| dim.1),
 			width: dimensions.as_ref().map(|dim| dim.0),
 			metadata: self.model.thumbnail_meta.clone(),
+			..Default::default()
 		})
 	}
 
