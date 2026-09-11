@@ -8,7 +8,7 @@ use models::{
 		ordering::OrderBy,
 	},
 };
-use sea_orm::{prelude::*, FromQueryResult, QueryOrder, QuerySelect};
+use sea_orm::{prelude::*, FromQueryResult, JoinType, QueryOrder, QuerySelect};
 
 use crate::{
 	data::{AuthContext, CoreContext},
@@ -40,11 +40,19 @@ impl SeriesQuery {
 		let AuthContext { user, .. } = ctx.data::<AuthContext>()?;
 		let conn = ctx.data::<CoreContext>()?.conn.as_ref();
 
+		// The `library` sub-filter references the libraries table, which the
+		// base query does not join
+		let filters_library = filter.library.is_some()
+			|| [&filter._and, &filter._or, &filter._not]
+				.iter()
+				.filter_map(|group| group.as_ref())
+				.any(|group| group.iter().any(|f| f.library.is_some()));
+		let mut base = series::ModelWithMetadata::find_for_user(user);
+		if filters_library {
+			base = base.join(JoinType::LeftJoin, series::Relation::Library.def());
+		}
 		let conditions = filter.into_filter_with_user(&user.id);
-		let query = SeriesOrderBy::add_order_by(
-			&order_by,
-			series::ModelWithMetadata::find_for_user(user).filter(conditions),
-		)?;
+		let query = SeriesOrderBy::add_order_by(&order_by, base.filter(conditions))?;
 
 		match pagination.resolve() {
 			Pagination::Cursor(info) => {

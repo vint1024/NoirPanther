@@ -154,7 +154,7 @@ impl UserQuery {
 			.filter(user::Column::Id.eq(id.to_string()))
 			.one(conn)
 			.await?
-			.unwrap();
+			.ok_or("User not found")?;
 
 		Ok(User::from(first))
 	}

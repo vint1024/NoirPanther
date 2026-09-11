@@ -159,17 +159,17 @@ impl MediaMutation {
 			.ok_or("Media not found")?;
 
 		if is_favorite {
-			let last_insert_id =
-				favorite_media::Entity::insert(favorite_media::ActiveModel {
-					user_id: Set(user.id.clone()),
-					media_id: Set(model.media.id.clone()),
-					favorited_at: Set(DateTimeWithTimeZone::from(Utc::now())),
-				})
-				.on_conflict(OnConflict::new().do_nothing().to_owned())
-				.exec(core.conn.as_ref())
-				.await?
-				.last_insert_id;
-			tracing::debug!(?last_insert_id, "Added favorite media");
+			let inserted = favorite_media::Entity::insert(favorite_media::ActiveModel {
+				user_id: Set(user.id.clone()),
+				media_id: Set(model.media.id.clone()),
+				favorited_at: Set(DateTimeWithTimeZone::from(Utc::now())),
+			})
+			.on_conflict(OnConflict::new().do_nothing().to_owned())
+			// no RETURNING: on PostgreSQL sea-orm's `exec` expects the inserted
+			// row back and fails with RecordNotInserted when DO NOTHING fired
+			.exec_without_returning(core.conn.as_ref())
+			.await?;
+			tracing::debug!(inserted, "Added favorite media");
 		} else {
 			let affected_rows = favorite_media::Entity::delete_many()
 				.filter(

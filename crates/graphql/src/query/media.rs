@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use async_graphql::{Context, Object, Result, ID};
 use models::{
-	entity::{media, media_metadata, reading_session, user::AuthUser},
+	entity::{media, media_metadata, reading_session, series, user::AuthUser},
 	shared::{
 		alphabet::{AvailableAlphabet, EntityLetter},
 		enums::{ReadingStatus, UserPermission},
@@ -17,7 +17,7 @@ use sea_orm::{
 
 use crate::{
 	data::{AuthContext, CoreContext},
-	filter::{media::MediaFilterInput, IntoFilter},
+	filter::{media::MediaFilterInput, series::SeriesFilterInput, IntoFilter},
 	guard::{PermissionGuard, ServerOwnerGuard},
 	object::{
 		media::Media,
@@ -33,6 +33,26 @@ use crate::{
 
 #[derive(Default)]
 pub struct MediaQuery;
+
+/// Whether the filter (at any nesting level) constrains the book's series by
+/// its library, which needs the libraries table joined
+fn filter_references_library(filter: &MediaFilterInput) -> bool {
+	fn series_references_library(filter: &SeriesFilterInput) -> bool {
+		filter.library.is_some()
+			|| [&filter._and, &filter._or, &filter._not]
+				.iter()
+				.filter_map(|group| group.as_ref())
+				.any(|group| group.iter().any(series_references_library))
+	}
+	filter
+		.series
+		.as_ref()
+		.is_some_and(series_references_library)
+		|| [&filter._and, &filter._or, &filter._not]
+			.iter()
+			.filter_map(|group| group.as_ref())
+			.any(|group| group.iter().any(filter_references_library))
+}
 
 pub fn should_add_sessions_join_for_filter(filter: &MediaFilterInput) -> bool {
 	filter.reading_status.is_some()
@@ -64,6 +84,8 @@ pub fn add_sessions_join_for_filter(
 					.into(),
 			)
 			.group_by(media::Column::Id)
+			// PostgreSQL: the selected media_metadata columns must be grouped too
+			.group_by(media_metadata::Column::Id)
 	} else {
 		query
 	}
@@ -155,6 +177,11 @@ impl MediaQuery {
 		let conn = ctx.data::<CoreContext>()?.conn.as_ref();
 
 		let mut query = media::ModelWithMetadata::find_for_user(user);
+		if filter_references_library(&filter) {
+			// The `series.library` sub-filter references the libraries table,
+			// which the base query does not join
+			query = query.join(JoinType::LeftJoin, series::Relation::Library.def());
+		}
 		query = MediaOrderBy::add_order_by(&order_by, query)?;
 		query = add_sessions_join_for_filter(user, &filter, query)
 			.filter(filter.into_filter())

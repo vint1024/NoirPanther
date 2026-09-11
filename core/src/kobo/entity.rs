@@ -145,6 +145,10 @@ fn apply_reading_session_joins(
 			"finished_reading_session_last_completed_at",
 		)
 		.group_by(media::Column::Id)
+		// PostgreSQL: every selected non-aggregated column must be grouped —
+		// the joined media_metadata and (latest) reading_sessions rows too
+		.group_by(media_metadata::Column::Id)
+		.group_by(reading_session::Column::Id)
 }
 
 impl MediaWithMetadataAndReadingSessions {
@@ -181,8 +185,11 @@ impl FromQueryResult for MediaWithMetadataAndReadingSessions {
 			media,
 			metadata,
 			reading_session,
+			// COUNT(*) is BIGINT on PostgreSQL (INTEGER on SQLite): decode as i64
 			finished_reading_session_count: res
-				.try_get("", "finished_reading_session_count")?,
+				.try_get::<i64>("", "finished_reading_session_count")?
+				.try_into()
+				.unwrap_or(u32::MAX),
 			finished_reading_session_last_completed_at: res
 				.try_get("", "finished_reading_session_last_completed_at")?,
 		})

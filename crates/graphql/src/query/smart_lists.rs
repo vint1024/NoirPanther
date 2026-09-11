@@ -12,7 +12,7 @@ use crate::{
 use async_graphql::{Context, Object, Result, ID};
 use models::{
 	entity::{
-		media, series,
+		media, media_metadata, series,
 		smart_list::{self},
 	},
 	shared::enums::UserPermission,
@@ -93,10 +93,18 @@ impl SmartListsQuery {
 		let books_query =
 			build_books_query(user, smart_list.joiner, &deserialized_filters, None);
 
-		let ids: Vec<(String, Option<String>)> = books_query
+		// One row per book. Grouping by the book's primary key keeps the count
+		// exact and satisfies PostgreSQL when the filters made the builder add
+		// a GROUP BY (reading-status filters join the sessions table)
+		let ids: Vec<(String, String, Option<String>)> = books_query
 			.select_only()
+			.column(media::Column::Id)
 			.column(media::Column::SeriesId)
 			.column(series::Column::LibraryId)
+			.group_by(media::Column::Id)
+			.group_by(media_metadata::Column::Id)
+			.group_by(media::Column::SeriesId)
+			.group_by(series::Column::LibraryId)
 			.into_tuple()
 			.all(&txn)
 			.await?;
@@ -105,7 +113,7 @@ impl SmartListsQuery {
 		let mut matched_series: HashSet<String> = HashSet::new();
 		let mut matched_libraries: HashSet<String> = HashSet::new();
 
-		for (series_id, library_id) in ids {
+		for (_, series_id, library_id) in ids {
 			matched_series.insert(series_id);
 			if let Some(library_id) = library_id {
 				matched_libraries.insert(library_id);

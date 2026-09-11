@@ -141,17 +141,18 @@ impl SeriesMutation {
 			.ok_or("Series not found")?;
 
 		if is_favorite {
-			let last_insert_id =
+			let inserted =
 				favorite_series::Entity::insert(favorite_series::ActiveModel {
 					user_id: Set(user.id.clone()),
 					series_id: Set(model.series.id.clone()),
 					favorited_at: Set(DateTimeWithTimeZone::from(Utc::now())),
 				})
 				.on_conflict(OnConflict::new().do_nothing().to_owned())
-				.exec(core.conn.as_ref())
-				.await?
-				.last_insert_id;
-			tracing::debug!(?last_insert_id, "Added favorite series");
+				// no RETURNING: on PostgreSQL sea-orm's `exec` expects the inserted
+				// row back and fails with RecordNotInserted when DO NOTHING fired
+				.exec_without_returning(core.conn.as_ref())
+				.await?;
+			tracing::debug!(inserted, "Added favorite series");
 		} else {
 			let affected_rows =
 				favorite_series::Entity::delete_many()
