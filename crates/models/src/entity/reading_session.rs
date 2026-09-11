@@ -4,8 +4,8 @@ use sea_orm::{
 	entity::prelude::*,
 	prelude::async_trait::async_trait,
 	sea_query::{Alias, ConditionType, Query, SelectStatement},
-	ActiveValue, Condition, DeriveEntityModel, FromJsonQueryResult, FromQueryResult,
-	JoinType, QueryOrder, QuerySelect,
+	ActiveValue, Condition, DbBackend, DeriveEntityModel, FromJsonQueryResult,
+	FromQueryResult, JoinType, QueryOrder, QuerySelect, RelationDef,
 };
 use serde::{Deserialize, Serialize};
 
@@ -98,34 +98,45 @@ pub struct ModelWithDevice {
 	pub device: Option<reading_device::Model>,
 }
 
+/// The `reading_sessions` → `reading_devices` LEFT JOIN on the session's first
+/// device id. `device_ids` is a JSON array, and extracting its first element is
+/// backend-specific SQL (`json_extract` on SQLite, `->>` on PostgreSQL, …), so
+/// the caller passes the active [`DbBackend`].
+///
+/// sea-orm always emits the relation's own `from = to` predicate; it is OR-ed
+/// with the real condition and compares `reading_sessions.id` (text) with the
+/// device id so it never matches — but it stays type-valid on every backend
+/// (`device_ids = id` was `json = text`, an error on PostgreSQL).
+pub fn device_join(backend: DbBackend) -> RelationDef {
+	let first_device_matches = match backend {
+		DbBackend::Postgres => {
+			"reading_sessions.device_ids->>0 = reading_devices.id"
+		},
+		DbBackend::MySql => {
+			"JSON_UNQUOTE(JSON_EXTRACT(reading_sessions.device_ids, '$[0]')) = reading_devices.id"
+		},
+		// https://sqlite.org/json1.html#the_json_extract_function
+		DbBackend::Sqlite => {
+			"json_extract(reading_sessions.device_ids, '$[0]') = reading_devices.id"
+		},
+	};
+	Entity::belongs_to(reading_device::Entity)
+		.from(Column::Id)
+		.to(reading_device::Column::Id)
+		.condition_type(ConditionType::Any)
+		.on_condition(move |_left, _right| {
+			Condition::all().add(Expr::cust(first_device_matches))
+		})
+		.into()
+}
+
 impl ModelWithDevice {
-	pub fn find() -> Select<Entity> {
+	pub fn find(backend: DbBackend) -> Select<Entity> {
 		Prefixer::new(Entity::find().select_only())
 			.add_columns(Entity)
 			.add_columns(reading_device::Entity)
 			.selector
-			// TODO(devices): this is a bit scuffed. it will generated roughly:
-			/*
-				left join reading_devices on reading_sessions.device_ids = reading_devices.id OR (
-					json_extract(reading_sessions.device_ids, '$[0]') = reading_devices.id
-				)
-			*/
-			// which _works_ but the former condition is redundant and will never actually match anything,
-			// but sea-orm seems to always imbue the join with that default predicate...
-			.join(
-				JoinType::LeftJoin,
-				Entity::belongs_to(reading_device::Entity)
-					.from(Column::DeviceIds)
-					.to(reading_device::Column::Id)
-					.condition_type(ConditionType::Any)
-					// https://sqlite.org/json1.html#the_json_extract_function
-					.on_condition(|_left, _right| {
-						Condition::all().add(Expr::cust(
-							"json_extract(reading_sessions.device_ids, '$[0]') = reading_devices.id",
-						))
-					})
-					.into(),
-			)
+			.join(JoinType::LeftJoin, device_join(backend))
 	}
 }
 
@@ -271,5 +282,29 @@ impl ActiveModelBehavior for ActiveModel {
 		self.updated_at = ActiveValue::Set(Some(DateTimeWithTimeZone::from(now)));
 
 		Ok(self)
+	}
+}
+
+#[cfg(test)]
+mod device_join_tests {
+	use sea_orm::{DbBackend, QueryTrait};
+
+	use super::ModelWithDevice;
+
+	#[test]
+	fn join_renders_backend_specific_first_device_lookup() {
+		let pg = ModelWithDevice::find(DbBackend::Postgres)
+			.build(DbBackend::Postgres)
+			.to_string();
+		assert!(pg.contains(r#"LEFT JOIN "reading_devices" ON "reading_sessions"."id" = "reading_devices"."id" OR (reading_sessions.device_ids->>0 = reading_devices.id)"#), "{pg}");
+		assert!(
+			!pg.contains("device_ids\" ="),
+			"json = text comparison must not be emitted: {pg}"
+		);
+
+		let sqlite = ModelWithDevice::find(DbBackend::Sqlite)
+			.build(DbBackend::Sqlite)
+			.to_string();
+		assert!(sqlite.contains("OR (json_extract(reading_sessions.device_ids, '$[0]') = reading_devices.id)"), "{sqlite}");
 	}
 }

@@ -124,11 +124,12 @@ async fn get_progress(
 	let user = req.user();
 	let document_cpy = document.clone();
 
-	let latest_query = reading_session::ModelWithDevice::find()
-		.inner_join(media::Entity)
-		.filter(reading_session::Column::UserId.eq(user.id.clone()))
-		.filter(media::Column::KoreaderHash.eq(document_cpy.clone()))
-		.order_by_desc(reading_session::Column::UpdatedAt);
+	let latest_query =
+		reading_session::ModelWithDevice::find(conn.get_database_backend())
+			.inner_join(media::Entity)
+			.filter(reading_session::Column::UserId.eq(user.id.clone()))
+			.filter(media::Column::KoreaderHash.eq(document_cpy.clone()))
+			.order_by_desc(reading_session::Column::UpdatedAt);
 
 	let latest_session = latest_query
 		.clone()

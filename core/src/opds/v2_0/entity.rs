@@ -10,9 +10,8 @@ use models::{
 	shared::analysis::MediaAnalysisData,
 };
 use sea_orm::{
-	entity::prelude::*,
-	sea_query::{ConditionType, Expr},
-	Condition, FromQueryResult, JoinType, QuerySelect,
+	entity::prelude::*, sea_query::Expr, Condition, DbBackend, FromQueryResult, JoinType,
+	QuerySelect,
 };
 
 #[derive(Clone, Debug)]
@@ -150,7 +149,7 @@ pub struct OPDSProgressionEntity {
 }
 
 impl OPDSProgressionEntity {
-	pub fn find() -> Select<reading_session::Entity> {
+	pub fn find(backend: DbBackend) -> Select<reading_session::Entity> {
 		Prefixer::new(reading_session::Entity::find().select_only())
 			.add_columns(reading_session::Entity)
 			.add_named_columns(
@@ -172,31 +171,9 @@ impl OPDSProgressionEntity {
 					.to(media::Column::Id)
 					.into(),
 			)
-			// TODO(devices): this is a bit scuffed. it will generated roughly:
-			/*
-				left join reading_devices on reading_sessions.device_ids = reading_devices.id OR (
-					json_extract(reading_sessions.device_ids, '$[0]') = reading_devices.id
-				)
-			*/
-			// which _works_ but the former condition is redundant and will never actually match anything,
-			// but sea-orm seems to always imbue the join with that default predicate...
-			.join(
-				JoinType::LeftJoin,
-				reading_session::Entity::belongs_to(reading_device::Entity)
-					.from(reading_session::Column::DeviceIds)
-					.to(reading_device::Column::Id)
-					.condition_type(ConditionType::Any)
-					// https://sqlite.org/json1.html#the_json_extract_function
-					.on_condition(|_left, _right| {
-						// TODO(devices): sessions now store multiple devices, so not sure how to approach this.
-						// we don't use it for now, so it's fine, but should be revisited. maybe i just add e.g.
-						// find_with_kind("koreader") or something
-						Condition::all().add(Expr::cust(
-							"json_extract(reading_sessions.device_ids, '$[0]') = reading_devices.id",
-						))
-					})
-					.into(),
-			)
+			// TODO(devices): sessions now store multiple devices; only the first
+			// one is joined for now (see reading_session::device_join)
+			.join(JoinType::LeftJoin, reading_session::device_join(backend))
 	}
 }
 

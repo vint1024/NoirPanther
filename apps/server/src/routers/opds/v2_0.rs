@@ -1285,17 +1285,18 @@ async fn get_book_progression(
 	let user = req.user();
 	let newer_exists = reading_session::Entity::newer_session_exists_subquery();
 
-	let active_reading_session = OPDSProgressionEntity::find()
-		.filter(
-			Condition::all()
-				.add(reading_session::Column::UserId.eq(user.id.clone()))
-				.add(reading_session::Column::MediaId.eq(id.clone()))
-				.add(reading_session::Column::Status.eq(ReadingStatus::Reading))
-				.add(Expr::expr(Expr::exists(newer_exists)).not()),
-		)
-		.into_model::<OPDSProgressionEntity>()
-		.one(ctx.conn.as_ref())
-		.await?;
+	let active_reading_session =
+		OPDSProgressionEntity::find(ctx.conn.get_database_backend())
+			.filter(
+				Condition::all()
+					.add(reading_session::Column::UserId.eq(user.id.clone()))
+					.add(reading_session::Column::MediaId.eq(id.clone()))
+					.add(reading_session::Column::Status.eq(ReadingStatus::Reading))
+					.add(Expr::expr(Expr::exists(newer_exists)).not()),
+			)
+			.into_model::<OPDSProgressionEntity>()
+			.one(ctx.conn.as_ref())
+			.await?;
 
 	let Some(reading_session) = active_reading_session else {
 		return Ok(Json(OPDSProgression::default()));
