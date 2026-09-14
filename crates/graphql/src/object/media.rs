@@ -23,7 +23,7 @@ use crate::{
 	},
 	object::epub::Epub,
 	pagination::{CursorPagination, CursorPaginationInfo, PaginatedResponse, Pagination},
-	utils::db_statement,
+	utils::{db_statement, thumbnail_version, versioned_url},
 };
 
 use super::{
@@ -205,8 +205,19 @@ impl Media {
 			},
 		};
 
+		let core = ctx.data::<CoreContext>()?;
+		let version = thumbnail_version(
+			&core.config.get_thumbnails_dir(),
+			&self.model.id,
+			self.model.updated_at.or(Some(self.model.created_at)),
+		)
+		.await;
+
 		Ok(ImageRef {
-			url: service.format_url(format!("/api/v2/media/{}/thumbnail", self.model.id)),
+			url: versioned_url(
+				service.format_url(format!("/api/v2/media/{}/thumbnail", self.model.id)),
+				version,
+			),
 			height: dimensions.as_ref().map(|dim| dim.1),
 			width: dimensions.as_ref().map(|dim| dim.0),
 			metadata: self.model.thumbnail_meta.clone(),

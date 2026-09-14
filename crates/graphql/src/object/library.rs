@@ -25,7 +25,7 @@ use crate::{
 	guard::PermissionGuard,
 	loader::favorite::{FavoriteLibraryLoaderKey, FavoritesLoader},
 	object::{library_scan_record::LibraryScanRecord, media::Media, stats::LibraryStats},
-	utils::db_statement,
+	utils::{db_statement, thumbnail_version, versioned_url},
 };
 
 use super::{
@@ -389,6 +389,7 @@ impl Library {
 	/// qualified URL to the image.
 	async fn thumbnail(&self, ctx: &Context<'_>) -> Result<ImageRef> {
 		let service = ctx.data::<ServiceContext>()?;
+		let core = ctx.data::<CoreContext>()?;
 
 		let dimensions = self
 			.model
@@ -397,9 +398,30 @@ impl Library {
 			.and_then(|meta| meta.dimensions.as_ref())
 			.map(|dim| (dim.width, dim.height));
 
+		// A library cover without an uploaded thumbnail is derived from its
+		// first series, i.e. it changes with the library's content → version
+		// it by the last scan (or the last update, whichever is newer)
+		let fallback = [
+			self.model.last_scanned_at,
+			self.model.updated_at,
+			Some(self.model.created_at),
+		]
+		.into_iter()
+		.flatten()
+		.max();
+		let version = thumbnail_version(
+			&core.config.get_thumbnails_dir(),
+			&self.model.id,
+			fallback,
+		)
+		.await;
+
 		Ok(ImageRef {
-			url: service
-				.format_url(format!("/api/v2/library/{}/thumbnail", self.model.id)),
+			url: versioned_url(
+				service
+					.format_url(format!("/api/v2/library/{}/thumbnail", self.model.id)),
+				version,
+			),
 			height: dimensions.map(|(_, height)| height),
 			width: dimensions.map(|(width, _)| width),
 			metadata: self.model.thumbnail_meta.clone(),

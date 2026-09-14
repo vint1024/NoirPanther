@@ -30,7 +30,7 @@ use crate::{
 		series_finished_count::{FinishedCountLoaderKey, SeriesFinishedCountLoader},
 	},
 	object::{series_metadata::SeriesMetadata, stats::SeriesStats},
-	utils::db_statement,
+	utils::{db_statement, thumbnail_version, versioned_url},
 };
 
 use super::{library::Library, media::Media, tag::Tag};
@@ -331,6 +331,7 @@ impl Series {
 	/// qualified URL to the image.
 	async fn thumbnail(&self, ctx: &Context<'_>) -> Result<ImageRef> {
 		let service = ctx.data::<ServiceContext>()?;
+		let core = ctx.data::<CoreContext>()?;
 
 		let dimensions = self
 			.model
@@ -339,9 +340,18 @@ impl Series {
 			.and_then(|meta| meta.dimensions.as_ref())
 			.map(|dim| (dim.width, dim.height));
 
+		let version = thumbnail_version(
+			&core.config.get_thumbnails_dir(),
+			&self.model.id,
+			self.model.updated_at.or(Some(self.model.created_at)),
+		)
+		.await;
+
 		Ok(ImageRef {
-			url: service
-				.format_url(format!("/api/v2/series/{}/thumbnail", self.model.id)),
+			url: versioned_url(
+				service.format_url(format!("/api/v2/series/{}/thumbnail", self.model.id)),
+				version,
+			),
 			height: dimensions.as_ref().map(|dim| dim.1),
 			width: dimensions.as_ref().map(|dim| dim.0),
 			metadata: self.model.thumbnail_meta.clone(),
