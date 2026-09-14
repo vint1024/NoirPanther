@@ -45,6 +45,7 @@ use super::{
 		safely_build_and_insert_media, safely_build_series, visit_and_update_media,
 		MediaBuildOperation, MediaOperationOutput, MissingSeriesOutput,
 	},
+	walk::path_under_prefix,
 	walk_library, walk_series, ScanOptions, WalkedLibrary, WalkedSeries, WalkerCtx,
 };
 
@@ -260,6 +261,27 @@ impl JobLifecycle for LibraryScanJob {
 			if root_is_missing {
 				tracing::warn!(?root, "Library root is missing on disk");
 				missing_root_count += 1;
+				// The walker cannot discover anything under a root that is gone, so
+				// the series that lived there would stay READY forever (and
+				// cleanLibrary would never remove them). Treat every known series
+				// under this root as missing.
+				let gone = series::Entity::find()
+					.select_only()
+					.column(series::Column::Path)
+					.filter(series::Column::LibraryId.eq(self.id.clone()))
+					.filter(path_under_prefix("\"series\".\"path\"", root))
+					.filter(series::Column::Status.ne(FileStatus::Missing.to_string()))
+					.into_tuple::<String>()
+					.all(ctx.conn())
+					.await?;
+				if !gone.is_empty() {
+					tracing::warn!(
+						?root,
+						count = gone.len(),
+						"Marking the series under the missing root as missing"
+					);
+					missing_series.extend(gone.into_iter().map(PathBuf::from));
+				}
 				continue;
 			}
 
@@ -596,6 +618,39 @@ impl JobLifecycle for LibraryScanJob {
 								|result| result.rows_affected,
 							);
 						total_affected += chunk_affected_rows;
+
+						// Their books are gone with them: mark them too so they drop
+						// out of listings and cleanLibrary can remove them
+						let missing_media = media::Entity::update_many()
+							.col_expr(
+								media::Column::Status,
+								Expr::value(FileStatus::Missing.to_string()),
+							)
+							.filter(
+								media::Column::SeriesId.in_subquery(
+									Query::select()
+										.column(series::Column::Id)
+										.from(series::Entity)
+										.and_where(
+											series::Column::Path.is_in(chunk.to_vec()),
+										)
+										.to_owned(),
+								),
+							)
+							.exec(ctx.conn())
+							.await
+							.map_or_else(
+								|error| {
+									tracing::error!(error = ?error, "Failed to update media of missing series");
+									logs.push(JobExecuteLog::error(format!(
+										"Failed to update media of missing series: {:?}",
+										error.to_string()
+									)));
+									0
+								},
+								|result| result.rows_affected,
+							);
+						output.updated_media += missing_media;
 					}
 					output.updated_series = total_affected;
 
