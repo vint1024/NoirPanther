@@ -124,6 +124,29 @@ fn not_started_series_subquery(user_id: &str) -> SelectStatement {
 		.to_owned()
 }
 
+/// Returns a subquery for series ids where at least one book's latest reading
+/// session for the user is abandoned
+fn abandoned_series_subquery(user_id: &str) -> SelectStatement {
+	let newer_exists = reading_session::Entity::newer_session_exists_subquery();
+
+	let abandoned_media_ids = Query::select()
+		.distinct()
+		.column(reading_session::Column::MediaId)
+		.from(reading_session::Entity)
+		.and_where(reading_session::Column::UserId.eq(user_id))
+		.and_where(reading_session::Column::Status.eq(ReadingStatus::Abandoned))
+		.and_where(Expr::expr(Expr::exists(newer_exists)).not())
+		.to_owned();
+
+	Query::select()
+		.distinct()
+		.column(media::Column::SeriesId)
+		.from(media::Entity)
+		.and_where(media::Column::SeriesId.is_not_null())
+		.and_where(media::Column::Id.in_subquery(abandoned_media_ids))
+		.to_owned()
+}
+
 fn apply_series_reading_status_filter(
 	value: ReadingStatus,
 	user_id: &str,
@@ -133,8 +156,10 @@ fn apply_series_reading_status_filter(
 		ReadingStatus::Reading => reading_series_subquery(user_id),
 		ReadingStatus::Finished => finished_series_subquery(user_id),
 		ReadingStatus::NotStarted => not_started_series_subquery(user_id),
-		// a panic might feel heavy but it will remind me not to surface this until i add some kind of abandoned tracking
-		ReadingStatus::Abandoned => unimplemented!("Stump does not yet track abandoned status. This query should not have been possible yet"),
+		// The enum is exposed in the API (clients offer it as a filter), so this
+		// must not panic — upstream had `unimplemented!()` here, which took the
+		// request down with a worker panic.
+		ReadingStatus::Abandoned => abandoned_series_subquery(user_id),
 	};
 
 	let expr = Expr::col((series::Entity, series::Column::Id)).in_subquery(subquery);
