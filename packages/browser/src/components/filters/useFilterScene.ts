@@ -140,7 +140,17 @@ export function useSearchSeriesFilter(search: string | undefined): SeriesFilterI
 
 export function useFilterScene(): Return {
 	const [searchParams, setSearchParams] = useSearchParams()
-	const [search, setSearch] = useState<string | undefined>(undefined)
+	// Seed from the URL so a search arriving via link / quick search (`?search=…`) shows
+	// up in the header input instead of an empty, collapsed one
+	const [search, setSearch] = useState<string | undefined>(() => {
+		const value = searchParams.get('search')
+		if (!value) return undefined
+		try {
+			return decodeURIComponent(value)
+		} catch {
+			return value
+		}
+	})
 
 	const is3XLScreenOrBigger = useMediaMatch('(min-width: 1600px)')
 	const defaultPageSize = is3XLScreenOrBigger ? 40 : 20

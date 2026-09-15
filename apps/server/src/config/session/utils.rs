@@ -6,6 +6,13 @@ use tower_sessions::{cookie::SameSite, Expiry, SessionManagerLayer};
 use super::StumpSessionStore;
 
 pub const SESSION_USER_KEY: &str = "user_id";
+/// Session-data marker set at login when the client asked to be remembered
+/// (`?remember=true`). The store reads it once, in `save`, to pick the long TTL.
+pub const SESSION_REMEMBER_KEY: &str = "remember";
+/// TTL (seconds) for "remember me" sessions: 30 days. Also used for the cookie
+/// `Expires`, so the PWA on iOS keeps the cookie across app restarts instead of
+/// dropping it like a session cookie.
+pub const SESSION_REMEMBER_TTL_SECS: i64 = 30 * 24 * 60 * 60;
 pub const SESSION_NAME: &str = "stump_session";
 pub const SESSION_PATH: &str = "/";
 

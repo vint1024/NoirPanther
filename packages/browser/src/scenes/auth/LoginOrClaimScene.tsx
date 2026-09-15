@@ -4,6 +4,7 @@ import {
 	Alert,
 	AlertDescription,
 	Button,
+	CheckBox,
 	cx,
 	Form,
 	Heading,
@@ -22,6 +23,12 @@ import { toast } from 'sonner'
 import { z } from 'zod'
 
 import { useAppStore, useUserStore } from '@/stores'
+
+/** True when the page runs as an installed (standalone) PWA */
+const isStandalonePWA = () =>
+	typeof window !== 'undefined' &&
+	(window.matchMedia?.('(display-mode: standalone)').matches ||
+		(window.navigator as Navigator & { standalone?: boolean }).standalone === true)
 
 // TODO: redirect away if the user is already logged in
 export default function LoginOrClaimScene() {
@@ -113,16 +120,20 @@ export default function LoginOrClaimScene() {
 		resolver: zodResolver(schema),
 	})
 
+	// "Remember me": on by default when running as an installed PWA, where iOS drops
+	// browser-session cookies whenever the app is evicted (≈ daily logouts)
+	const [remember, setRemember] = useState(() => isStandalonePWA())
+
 	const login = useCallback(
 		async ({ username, password }: FieldValues) => {
 			try {
-				await loginUser({ password, username })
+				await loginUser({ password, remember, username })
 			} catch (error) {
 				console.error('Error logging in:', error)
 				toast.error(t('authScene.toasts.loginFailed'))
 			}
 		},
-		[loginUser, t],
+		[loginUser, remember, t],
 	)
 
 	const handleSubmit = useCallback(
@@ -253,6 +264,15 @@ export default function LoginOrClaimScene() {
 									fullWidth
 									{...form.register('password')}
 								/>
+
+								{isClaimed && (
+									<CheckBox
+										id="remember"
+										label={t('authScene.form.labels.remember')}
+										checked={remember}
+										onCheckedChange={(checked) => setRemember(checked === true)}
+									/>
+								)}
 
 								<Button
 									data-testid="loginOrRegisterButton"

@@ -3,6 +3,7 @@ import { Menu } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useMediaMatch } from 'rooks'
 
+import QuickSearch from '../../QuickSearch'
 import UserMenu from '../../UserMenu'
 import { SideBar, SideBarFooter } from '../sidebar'
 
@@ -36,6 +37,9 @@ export default function MobileSheet() {
 			position="left"
 		>
 			<div className="px-6 flex-1 overflow-y-auto">
+				<div className="pb-3">
+					<QuickSearch onSubmitted={() => setOpen(false)} />
+				</div>
 				<SideBar asChild />
 			</div>
 		</Sheet>

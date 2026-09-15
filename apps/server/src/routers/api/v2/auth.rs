@@ -21,7 +21,8 @@ use reqwest::header;
 use sea_orm::{prelude::*, IntoActiveModel, TransactionTrait};
 use sea_orm::{DatabaseConnection, EntityTrait, Set};
 use serde::{Deserialize, Serialize};
-use tower_sessions::Session;
+use time::OffsetDateTime;
+use tower_sessions::{Expiry, Session};
 use tracing::error;
 
 use crate::{
@@ -30,7 +31,10 @@ use crate::{
 			create_jwt_auth, exchange_refresh_token, extract_jti_from_refresh_token,
 			JwtTokenPair,
 		},
-		session::{delete_cookie_header, SESSION_USER_KEY},
+		session::{
+			delete_cookie_header, SESSION_REMEMBER_KEY, SESSION_REMEMBER_TTL_SECS,
+			SESSION_USER_KEY,
+		},
 		state::AppState,
 	},
 	errors::{APIError, APIResult},
@@ -126,6 +130,10 @@ pub struct AuthenticationOptions {
 	generate_token: bool,
 	#[serde(default = "default_true")]
 	create_session: bool,
+	/// Keep the session (and its cookie) for 30 days instead of a browser-session
+	/// cookie. Used by the web client's "Remember me" (default on in the PWA).
+	#[serde(default)]
+	remember: bool,
 }
 
 async fn handle_login_attempt(
@@ -210,6 +218,7 @@ async fn login(
 	Query(AuthenticationOptions {
 		generate_token,
 		create_session,
+		remember,
 	}): Query<AuthenticationOptions>,
 	Json(PasswordUserInput { username, password }): Json<PasswordUserInput>,
 ) -> APIResult<Json<LoginResponse>> {
@@ -333,6 +342,16 @@ async fn login(
 		session
 			.insert(SESSION_USER_KEY, auth_user.id.clone())
 			.await?;
+		if remember {
+			// The marker makes the store pick the long TTL; the explicit expiry turns
+			// the cookie into a persistent one (`Expires=` +30d) instead of the default
+			// `Expiry::OnSessionEnd` session cookie.
+			session.insert(SESSION_REMEMBER_KEY, true).await?;
+			session.set_expiry(Some(Expiry::AtDateTime(
+				OffsetDateTime::now_utc()
+					+ time::Duration::seconds(SESSION_REMEMBER_TTL_SECS),
+			)));
+		}
 	}
 
 	// TODO: should this be permission gated?

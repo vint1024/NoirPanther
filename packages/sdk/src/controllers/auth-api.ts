@@ -20,6 +20,11 @@ export type LoginResponse =
 export type PasswordUserInput = {
 	username: string
 	password: string
+	/**
+	 * Ask the server for a long-lived (30 days) session + persistent cookie instead of
+	 * a browser-session cookie. Only meaningful for session-based auth.
+	 */
+	remember?: boolean
 }
 
 export type OidcConfig = {
@@ -58,17 +63,16 @@ export class AuthAPI extends APIBase {
 	 * Authenticate a user with the given username and password. This will either rely on session-based
 	 * authentication or token-based authentication, depending on the API configuration.
 	 */
-	async login({ username, password }: PasswordUserInput): Promise<LoginResponse> {
-		const response = await this.api.axios.post<LoginResponse>(
-			authURL(
-				'/login',
-				this.api.isTokenAuth ? { create_session: false, generate_token: true } : undefined,
-			),
-			{
-				password,
-				username,
-			},
-		)
+	async login({ username, password, remember }: PasswordUserInput): Promise<LoginResponse> {
+		const params = this.api.isTokenAuth
+			? { create_session: false, generate_token: true }
+			: remember
+				? { remember: true }
+				: undefined
+		const response = await this.api.axios.post<LoginResponse>(authURL('/login', params), {
+			password,
+			username,
+		})
 
 		if ('forUser' in response.data) {
 			// eslint-disable-next-line @typescript-eslint/no-unused-vars

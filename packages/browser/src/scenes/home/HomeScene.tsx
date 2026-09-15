@@ -1,8 +1,10 @@
 import { useSDK, useSuspenseGraphQL } from '@stump/client'
 import { graphql } from '@stump/graphql'
 import { Helmet } from 'react-helmet'
+import { useMediaMatch } from 'rooks'
 
 import { SceneContainer } from '@/components/container'
+import QuickSearch from '@/components/QuickSearch'
 
 import ContinueReadingMedia, { usePrefetchContinueReading } from './ContinueReading'
 import NoLibraries from './NoLibraries'
@@ -35,6 +37,8 @@ export const usePrefetchHomeScene = () => {
 export default function HomeScene() {
 	const { sdk } = useSDK()
 	const { data } = useSuspenseGraphQL(query, sdk.cacheKey('numberOfLibraries'))
+	// Mobile/PWA has no sidebar "Explore" entry in sight, so offer search right on top
+	const isMobile = useMediaMatch('(max-width: 768px)')
 
 	const helmet = (
 		<Helmet>
@@ -61,6 +65,8 @@ export default function HomeScene() {
 	return (
 		<SceneContainer className="gap-6 flex flex-col">
 			{helmet}
+
+			{isMobile && <QuickSearch />}
 
 			<ContinueReadingMedia />
 			<OnDeck />

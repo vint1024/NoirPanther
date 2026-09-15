@@ -20,6 +20,7 @@ import RouteLoadingIndicator from '@/components/RouteLoadingIndicator'
 import { AppContext, PermissionEnforcerOptions } from './context'
 import { useTheme } from './hooks'
 import { useCoreEvent } from './hooks/useCoreEvent'
+import { useScrollRestoration } from './hooks/useScrollRestoration'
 import { useAppStore, useUserStore } from './stores'
 
 export function AppLayout() {
@@ -53,6 +54,16 @@ export function AppLayout() {
 	})
 
 	const hideScrollBar = storeUser?.preferences?.enableHideScrollbar ?? false
+
+	/**
+	 * Restore the scroll offset on back/forward navigation (lists, search, home…).
+	 * The scroll container is overlayscrollbars' viewport once initialized, else `#main`.
+	 */
+	const getScrollCandidates = useCallback(
+		() => [instance()?.elements().viewport, mainRef.current],
+		[instance],
+	)
+	useScrollRestoration(mainRef, getScrollCandidates)
 	const jobOverlayEnabled = storeUser?.preferences?.enableJobOverlay ?? true
 	const showJobOverlay = jobOverlayEnabled && !location.pathname.match(/\/settings\/jobs/)
 

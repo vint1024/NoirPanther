@@ -16,7 +16,8 @@
 			},
 			"labels": {
 				"username": "Username",
-				"password": "Password"
+				"password": "Password",
+				"remember": "Remember me"
 			},
 			"buttons": {
 				"createAccount": "Create Account",
@@ -4039,6 +4040,10 @@
 					"descending": "Descending",
 					"ascending": "Ascending"
 				}
+			},
+			"QuickSearch": {
+				"placeholder": "Search books…",
+				"menuLabel": "Search"
 			},
 			"Search": {
 				"search": "Search",

@@ -13,7 +13,7 @@ use tower_sessions::{
 	SessionStore,
 };
 
-use super::SESSION_USER_KEY;
+use super::{SESSION_REMEMBER_KEY, SESSION_REMEMBER_TTL_SECS, SESSION_USER_KEY};
 
 #[derive(Debug, thiserror::Error)]
 pub enum SessionError {
@@ -126,8 +126,19 @@ impl ExpiredDeletion for StumpSessionStore {
 impl SessionStore for StumpSessionStore {
 	#[tracing::instrument(skip(self))]
 	async fn save(&self, record: &Record) -> session_store::Result<()> {
+		// "Remember me" sessions get the long TTL (never shorter than the default one)
+		let remember = record
+			.data
+			.get(SESSION_REMEMBER_KEY)
+			.and_then(|v| v.as_bool())
+			.unwrap_or(false);
+		let ttl = if remember {
+			SESSION_REMEMBER_TTL_SECS.max(self.config.session_ttl)
+		} else {
+			self.config.session_ttl
+		};
 		let expiry_time: DateTime<FixedOffset> =
-			(Utc::now() + Duration::seconds(self.config.session_ttl)).into();
+			(Utc::now() + Duration::seconds(ttl)).into();
 
 		let user_id = record
 			.data
@@ -135,7 +146,7 @@ impl SessionStore for StumpSessionStore {
 			.and_then(|v| v.as_str())
 			.ok_or(SessionError::NotFound)?;
 		let session_id = record.id.to_string();
-		tracing::trace!(session_id, ?user_id, "Saving session");
+		tracing::trace!(session_id, ?user_id, remember, "Saving session");
 
 		let active_model = session::ActiveModel {
 			session_id: Set(session_id.clone()),

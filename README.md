@@ -39,6 +39,9 @@
 - **Unicode case-insensitive search** (`ulower`) — search matches regardless of letter case in any language (incl. Cyrillic); **search also matches book authors** (writers), not just titles. Works on both SQLite (custom function) and PostgreSQL (SQL wrapper over `lower()`)
 - **Book & series metadata editor** in the web UI — permission-gated (`EditMetadata`), with autocomplete and field-level locks
 - **Sliding session expiry** — active web sessions are refreshed instead of logging the user out on a fixed TTL
+- **"Remember me"** — the login form can ask for a 30-day persistent session (`?remember=true`), on by default when the web app runs as an installed PWA, where iOS otherwise drops the session cookie and logs you out about daily
+- **Scroll position restored on Back** — every list (home, book/series search, libraries, series) returns to where you left it when you navigate back
+- **Search on mobile / PWA** — a search box at the top of the home page and in the slide-out menu that opens the book search; a `?search=` arriving via link now also shows up in the search field
 - **Memory-bounded server** — tuned allocator (jemalloc + glibc arena/trim), bounded blocking pool and scanner concurrency for stable memory on large libraries
 - Content rules in the user-creation form; tag / genre / publisher autocomplete; single-series deletion
 - Fixes: metadata lock hidden without `EditMetadata` permission; writeback / file-watcher race; cross-origin EPUB reader credentials; N+1 queries; owner-rule handling; `OfflineRead` permission checks
