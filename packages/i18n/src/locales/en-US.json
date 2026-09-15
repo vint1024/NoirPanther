@@ -4409,7 +4409,9 @@
 			},
 			"BookOverviewScene": {
 				"bookNotFound": "Book not found",
-				"metadata": "Metadata"
+				"closeCover": "Close cover",
+				"metadata": "Metadata",
+				"openCover": "Open cover full screen"
 			},
 			"BookOverviewSceneHeader": {
 				"pages": "Pages",

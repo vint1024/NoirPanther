@@ -1,8 +1,8 @@
-import { Heading } from '@stump/components'
+import { Dialog, Heading } from '@stump/components'
 import { useFragment, UserPermission } from '@stump/graphql'
 import { useLocaleContext } from '@stump/i18n'
 import sortBy from 'lodash/sortBy'
-import { Suspense, useEffect, useMemo } from 'react'
+import { Suspense, useEffect, useMemo, useState } from 'react'
 import { Helmet } from 'react-helmet'
 import { useParams } from 'react-router'
 
@@ -21,6 +21,7 @@ import BooksAfterCursor from './BooksAfterCursor'
 
 export default function BookOverviewScene() {
 	const { t } = useLocaleContext()
+	const [coverOpen, setCoverOpen] = useState(false)
 	const { id } = useParams()
 	const {
 		data: { mediaById: media },
@@ -56,11 +57,37 @@ export default function BookOverviewScene() {
 				<div className="gap-4 flex h-full w-full flex-col">
 					<div className="gap-3 tablet:mb-2 flex flex-col items-center tablet:flex-row tablet:items-start">
 						<div className="max-w-sm gap-3 sm:max-w-50 flex w-full shrink-0 flex-col items-center">
-							<ProminentThumbnailImage
-								src={fragmentData.thumbnail.url}
-								alt={media.resolvedName}
-								placeholderData={fragmentData.thumbnail.metadata}
-							/>
+							{/* Click the cover → full-height lightbox (Esc / ✕ / click outside closes) */}
+							<button
+								type="button"
+								className="w-full cursor-zoom-in rounded-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+								aria-label={t('scenes.book.BookOverviewScene.openCover')}
+								onClick={() => setCoverOpen(true)}
+							>
+								<ProminentThumbnailImage
+									src={fragmentData.thumbnail.url}
+									alt={media.resolvedName}
+									placeholderData={fragmentData.thumbnail.metadata}
+								/>
+							</button>
+							<Dialog open={coverOpen} onOpenChange={setCoverOpen}>
+								<Dialog.Content
+									size="gargantuan"
+									className="p-0 sm:min-h-0 flex w-auto max-w-[96vw] items-center justify-center border-0 bg-transparent shadow-none ring-0"
+									aria-describedby={undefined}
+								>
+									<Dialog.Title className="sr-only">{media.resolvedName}</Dialog.Title>
+									<img
+										src={fragmentData.thumbnail.url}
+										alt={media.resolvedName}
+										className="shadow-2xl max-h-[92vh] max-w-[96vw] rounded-md object-contain"
+									/>
+									<Dialog.Close
+										aria-label={t('scenes.book.BookOverviewScene.closeCover')}
+										className="right-2 top-2 size-9 bg-black/60 text-white hover:bg-black/80 rounded-full"
+									/>
+								</Dialog.Content>
+							</Dialog>
 							<div className="gap-2 flex w-full flex-col">
 								<BookReaderLink book={fragmentData} />
 								<BookActionMenu book={fragmentData} />

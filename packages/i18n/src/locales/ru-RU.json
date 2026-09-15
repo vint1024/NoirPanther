@@ -4441,7 +4441,9 @@
 			},
 			"BookOverviewScene": {
 				"bookNotFound": "Книга не найдена",
-				"metadata": "Метаданные"
+				"closeCover": "Закрыть обложку",
+				"metadata": "Метаданные",
+				"openCover": "Открыть обложку на весь экран"
 			},
 			"BookOverviewSceneHeader": {
 				"pages": "Страницы",
