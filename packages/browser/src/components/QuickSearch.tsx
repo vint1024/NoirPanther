@@ -59,7 +59,7 @@ export default function QuickSearch({ onSubmitted, className, autoFocus }: Props
 				onChange={(e) => setValue(e.target.value)}
 				placeholder={t('components.filters.QuickSearch.placeholder')}
 				aria-label={t('components.filters.QuickSearch.menuLabel')}
-				className="pr-2.5 text-sm h-full w-full bg-transparent text-foreground outline-none placeholder:text-muted-foreground"
+				className="pr-2.5 text-base md:text-sm h-full w-full bg-transparent text-foreground outline-none placeholder:text-muted-foreground"
 			/>
 			<button type="submit" className="sr-only" tabIndex={-1}>
 				{t('components.filters.QuickSearch.menuLabel')}

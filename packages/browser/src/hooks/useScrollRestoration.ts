@@ -36,10 +36,14 @@ const persist = () => {
 	}, 250)
 }
 
-const remember = (key: string, top: number) => {
-	positions[key] = top
+const remember = (keys: string[], top: number) => {
+	for (const key of keys) positions[key] = top
 	persist()
 }
+
+// The initial history entry has this key; after a full reload every entry looks like it
+const INITIAL_KEY = 'default'
+const pathKey = (pathname: string, search: string) => `path:${pathname}${search}`
 
 /**
  * Remembers the scroll offset of the app's scroll container per history entry
@@ -59,6 +63,9 @@ export function useScrollRestoration(
 	const location = useLocation()
 	const navigationType = useNavigationType()
 	const key = location.key
+	// Second key by URL so the offset survives a full reload (the iOS PWA reloads the
+	// document on some back gestures, and reloads reset every history key to `default`)
+	const urlKey = pathKey(location.pathname, location.search)
 	// While a restore is in flight the container emits scroll events on its own (content
 	// shrinking/growing clamps scrollTop) — those must not overwrite the saved offset
 	const restoringRef = useRef(false)
@@ -74,11 +81,11 @@ export function useScrollRestoration(
 			if (!(target instanceof HTMLElement)) return
 			const container = host.current
 			if (!container || !container.contains(target)) return
-			remember(key, target.scrollTop)
+			remember([key, urlKey], target.scrollTop)
 		}
 		document.addEventListener('scroll', onScroll, { capture: true, passive: true })
 		return () => document.removeEventListener('scroll', onScroll, { capture: true })
-	}, [host, key])
+	}, [host, key, urlKey])
 
 	// Restore (POP) or reset (PUSH/REPLACE) when the entry changes
 	useLayoutEffect(() => {
@@ -89,7 +96,8 @@ export function useScrollRestoration(
 			return
 		}
 
-		const target = positions[key]
+		// A reloaded document (key === 'default') falls back to the URL-keyed offset
+		const target = positions[key] ?? (key === INITIAL_KEY ? positions[urlKey] : undefined)
 		if (!target) return
 
 		restoringRef.current = true
@@ -134,5 +142,5 @@ export function useScrollRestoration(
 		attempt()
 
 		return finish
-	}, [getCandidates, host, key, navigationType])
+	}, [getCandidates, host, key, navigationType, urlKey])
 }

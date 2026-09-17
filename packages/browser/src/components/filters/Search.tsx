@@ -109,7 +109,7 @@ export default function Search({
 					onBlur={handleBlur}
 					placeholder={placeholder || t('components.filters.Search.search')}
 					disabled={isDisabled}
-					className="pr-8 text-sm h-full w-full bg-transparent text-foreground outline-none placeholder:text-muted-foreground"
+					className="pr-8 text-base md:text-sm h-full w-full bg-transparent text-foreground outline-none placeholder:text-muted-foreground"
 				/>
 			) : (
 				<span className="pr-2.5 text-sm whitespace-nowrap select-none">
