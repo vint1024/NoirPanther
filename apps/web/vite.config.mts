@@ -82,9 +82,11 @@ export default defineConfig({
 			// TODO(pwa): Add more manifest definitions for better overall experience
 			manifest: {
 				id: 'stump',
-				name: 'NoirPanther PWA',
+				name: 'NoirPanther',
 				short_name: 'NoirPanther',
+				description: 'NoirPanther book server',
 				theme_color: '#0b0a10',
+				background_color: '#0b0a10',
 				icons: [
 					{
 						src: '/assets/favicon-16x16.png',

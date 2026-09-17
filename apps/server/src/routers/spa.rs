@@ -20,6 +20,10 @@ use crate::{
 
 pub const FAVICON: &str = "/favicon.ico";
 const SW: &str = "/sw.js";
+/// Web app manifest emitted by vite-plugin-pwa at the dist root. Without an explicit
+/// route it fell through to the SPA fallback and came back as index.html, so iOS
+/// could not read the app name/icons when adding the site to the home screen.
+const MANIFEST: &str = "/manifest.webmanifest";
 const INDEX: &str = "/";
 const INDEX_HTML: &str = "/index.html";
 const ASSETS: &str = "/assets";
@@ -69,6 +73,7 @@ pub(crate) fn mount(app_state: AppState) -> Router<AppState> {
 		.route(INDEX_HTML, get(index_html))
 		.route(FAVICON, get(favicon))
 		.route(SW, get(serve_sw))
+		.route(MANIFEST, get(serve_manifest))
 		.nest_service(ASSETS, static_assets)
 		.nest_service(DIST, dist_files)
 		.fallback_service(spa_fallback)
@@ -104,6 +109,18 @@ async fn serve_sw(
 	headers: HeaderMap,
 ) -> APIResult<impl IntoResponse> {
 	serve_with_no_cache(ctx, headers, "sw.js").await
+}
+
+async fn serve_manifest(
+	State(ctx): State<AppState>,
+	headers: HeaderMap,
+) -> APIResult<impl IntoResponse> {
+	let mut response = serve_with_no_cache(ctx, headers, "manifest.webmanifest").await?;
+	response.headers_mut().insert(
+		header::CONTENT_TYPE,
+		HeaderValue::from_static("application/manifest+json"),
+	);
+	Ok(response)
 }
 
 async fn serve_with_no_cache(
