@@ -6,6 +6,9 @@ import { forwardRef, useEffect, useLayoutEffect, useMemo, useRef, useState } fro
 import { AuthImage } from '../entity/AuthImage'
 import { ThumbnailPlaceholder, ThumbnailPlaceholderData } from './ThumbnailPlaceholder'
 
+/** Sources that finished loading at least once in this session (i.e. sit in the browser cache) */
+const loadedSources = new Set<string>()
+
 export type ThumbnailImageSize = {
 	height: number | string
 	width: number | string
@@ -67,7 +70,11 @@ export const ThumbnailImage = forwardRef<HTMLDivElement, ThumbnailImageProps>(
 	) => {
 		const { sdk } = useSDK()
 
-		const [isLoaded, setIsLoaded] = useState(false)
+		// A source that already loaded once in this session is in the browser cache: show it
+		// straight away instead of fading it in from the placeholder again. That fade is what
+		// made every cover on the home page "blink" when coming back to it.
+		const wasLoadedBefore = loadedSources.has(src)
+		const [isLoaded, setIsLoaded] = useState(wasLoadedBefore)
 		const [hasError, setHasError] = useState(false)
 
 		const imageRef = useRef<HTMLImageElement | null>(null)
@@ -138,6 +145,7 @@ export const ThumbnailImage = forwardRef<HTMLDivElement, ThumbnailImageProps>(
 		}, [gradient, computedStyles.borderRadius])
 
 		const handleLoad = () => {
+			loadedSources.add(src)
 			setIsLoaded(true)
 			onLoad?.()
 		}
@@ -152,9 +160,9 @@ export const ThumbnailImage = forwardRef<HTMLDivElement, ThumbnailImageProps>(
 		const imageStyle = { borderRadius: computedStyles.borderRadius }
 
 		// Lazy loading attributes for improved scroll performance
-		const lazyProps = lazy
-			? { loading: 'lazy' as const, decoding: 'async' as const }
-			: { decoding: 'async' as const }
+		// Known (cached) sources decode synchronously so the first paint already has them
+		const decoding = wasLoadedBefore ? ('sync' as const) : ('async' as const)
+		const lazyProps = lazy ? { loading: 'lazy' as const, decoding } : { decoding }
 
 		const renderImage = () => {
 			if (sdk.isTokenAuth) {
@@ -195,7 +203,7 @@ export const ThumbnailImage = forwardRef<HTMLDivElement, ThumbnailImageProps>(
 					{!hasError && (
 						<motion.div
 							key={src}
-							initial={{ opacity: 0 }}
+							initial={wasLoadedBefore ? false : { opacity: 0 }}
 							animate={{ opacity: isLoaded ? 1 : 0 }}
 							transition={{ duration: 0.3, ease: 'easeOut' }}
 							// @ts-expect-error: It has className
