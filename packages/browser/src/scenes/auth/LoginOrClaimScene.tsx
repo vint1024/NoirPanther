@@ -13,9 +13,10 @@ import {
 } from '@stump/components'
 import { useLocaleContext } from '@stump/i18n'
 import { isAxiosError } from '@stump/sdk'
+import { useQuery } from '@tanstack/react-query'
 import { motion, Variants } from 'framer-motion'
 import { ArrowRight, ShieldAlert } from 'lucide-react'
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { FieldValues, useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router'
 import { useSearchParams } from 'react-router-dom'
@@ -30,7 +31,6 @@ const isStandalonePWA = () =>
 	(window.matchMedia?.('(display-mode: standalone)').matches ||
 		(window.navigator as Navigator & { standalone?: boolean }).standalone === true)
 
-// TODO: redirect away if the user is already logged in
 export default function LoginOrClaimScene() {
 	const navigate = useNavigate()
 
@@ -43,6 +43,23 @@ export default function LoginOrClaimScene() {
 	const isDesktop = useAppStore((store) => store.platform !== 'browser')
 
 	const { sdk } = useSDK()
+
+	// Already signed in? Skip the form. Matters most for the iOS home-screen PWA:
+	// it is usually installed from this very page, so every cold start lands here
+	// with a perfectly valid session cookie — and used to show the login form anyway.
+	const { data: existingUser, isPending: isProbingSession } = useQuery({
+		queryKey: [sdk.auth.keys.me, 'login-scene-probe'],
+		queryFn: () => sdk.auth.me(),
+		retry: false,
+		staleTime: 0,
+		gcTime: 0,
+	})
+	const hasSession = !!existingUser?.id
+	useEffect(() => {
+		if (!hasSession || !existingUser) return
+		setUser(existingUser)
+		navigate(redirect, { replace: true })
+	}, [existingUser, hasSession, navigate, redirect, setUser])
 	const { t } = useLocaleContext()
 	const {
 		isClaimed,
@@ -203,6 +220,10 @@ export default function LoginOrClaimScene() {
 			)
 		}
 
+		return null
+	}
+
+	if (isProbingSession || hasSession) {
 		return null
 	}
 
