@@ -35,6 +35,8 @@ export default function MobileSheet() {
 			}
 			closeIcon={false}
 			position="left"
+			// Don't auto-focus the search box: on a phone that pops the keyboard over the menu
+			onOpenAutoFocus={(e) => e.preventDefault()}
 		>
 			<div className="px-6 flex-1 overflow-y-auto">
 				<div className="pb-3">

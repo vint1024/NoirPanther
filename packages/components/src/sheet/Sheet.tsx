@@ -1,5 +1,5 @@
 /* eslint-disable react-compiler/react-compiler */
-import { useEffect } from 'react'
+import { ComponentPropsWithoutRef, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 
 import { Button } from '../button'
@@ -20,6 +20,8 @@ export type SheetProps = {
 	onOpen?: () => void
 	onClose?: () => void
 	open?: boolean
+	/** Radix's open-autofocus hook; `e.preventDefault()` keeps focus off the first field */
+	onOpenAutoFocus?: ComponentPropsWithoutRef<typeof SheetPrimitive.Content>['onOpenAutoFocus']
 }
 
 // TODO: clean this component up, either make it controlled OR uncontrolled,
