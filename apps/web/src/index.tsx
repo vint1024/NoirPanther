@@ -7,7 +7,12 @@ import App from './App'
 function registerServiceWorkerWhenIdle() {
 	if (!import.meta.env.PROD || !('serviceWorker' in navigator)) return
 
-	const doRegister = () => registerSW()
+	const doRegister = () =>
+		registerSW({
+			// A newer build is installed and waiting; it activates on the next cold start.
+			// Deliberately no reload and no prompt here — see registerType in vite.config.mts.
+			onNeedRefresh: () => undefined,
+		})
 
 	if (document.readyState === 'complete') {
 		'requestIdleCallback' in globalThis

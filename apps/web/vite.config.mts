@@ -63,7 +63,11 @@ export default defineConfig({
 		VitePWA({
 			// We manually register in src/index.tsx to add idle scheduling and script preflight checks.
 			injectRegister: null,
-			registerType: 'autoUpdate',
+			// 'prompt' (without an actual prompt): a new service worker installs and WAITS, so the
+			// running page keeps its own (still cached) assets and is never reloaded mid-session.
+			// The update takes over on the next launch — iOS kills the home-screen app daily anyway.
+			// 'autoUpdate' reloaded the page seconds after each deploy, right in the middle of use.
+			registerType: 'prompt',
 			devOptions: {
 				enabled: false,
 			},

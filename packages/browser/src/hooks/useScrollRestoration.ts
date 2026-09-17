@@ -4,8 +4,9 @@ import { useLocation, useNavigationType } from 'react-router-dom'
 const STORAGE_KEY = 'noirpanther:scroll-positions:v2'
 const MAX_ENTRIES = 100
 // How long we keep trying to restore while the (suspended / paginated) content is
-// still rendering and the containers aren't wide/tall enough yet
-const RESTORE_TIMEOUT_MS = 3000
+// still rendering and the containers aren't wide/tall enough yet. Generous: after a
+// real document reload on a big library the home rails can take a few seconds.
+const RESTORE_TIMEOUT_MS = 8000
 
 type NestedOffset = { left: number; top: number }
 type Entry = {
