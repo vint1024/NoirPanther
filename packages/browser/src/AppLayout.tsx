@@ -63,7 +63,7 @@ export function AppLayout() {
 		() => [instance()?.elements().viewport, mainRef.current],
 		[instance],
 	)
-	useScrollRestoration(mainRef, getScrollCandidates)
+	useScrollRestoration(getScrollCandidates)
 	const jobOverlayEnabled = storeUser?.preferences?.enableJobOverlay ?? true
 	const showJobOverlay = jobOverlayEnabled && !location.pathname.match(/\/settings\/jobs/)
 

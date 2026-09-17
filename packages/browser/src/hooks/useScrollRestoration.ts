@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef } from 'react'
 import { useLocation, useNavigationType } from 'react-router-dom'
 
 const STORAGE_KEY = 'noirpanther:scroll-positions'
@@ -53,13 +53,10 @@ const pathKey = (pathname: string, search: string) => `path:${pathname}${search}
  * `getCandidates` returns the elements that may be doing the scrolling, in order of
  * preference. There can be more than one because overlayscrollbars moves scrolling
  * from `#main` into its own viewport child some time after mount — so the scroll
- * events are captured on the (stable) host, and the element to restore is resolved
- * on every attempt.
+ * events are captured on `document`, and the element to restore is resolved on
+ * every attempt.
  */
-export function useScrollRestoration(
-	host: React.RefObject<HTMLElement | null>,
-	getCandidates: () => Array<HTMLElement | null | undefined>,
-) {
+export function useScrollRestoration(getCandidates: () => Array<HTMLElement | null | undefined>) {
 	const location = useLocation()
 	const navigationType = useNavigationType()
 	const key = location.key
@@ -71,21 +68,23 @@ export function useScrollRestoration(
 	const restoringRef = useRef(false)
 
 	// Track the offset of the current entry. Scroll events don't bubble, but they do
-	// capture — so one listener on the document sees whichever descendant of the host
-	// is scrolling. (Listening on `document` rather than the host itself because the
-	// host mounts later than this effect runs on a cold load.)
+	// capture — so one listener on the document sees whichever element is scrolling.
+	// (Listening on `document` rather than the scroll container itself because the
+	// container mounts later than this effect runs on a cold load.)
 	useEffect(() => {
 		const onScroll = (e: Event) => {
 			if (restoringRef.current) return
 			const target = e.target
 			if (!(target instanceof HTMLElement)) return
-			const container = host.current
-			if (!container || !container.contains(target)) return
+			// Only the page scroller itself: nested scrollers (the horizontal card rails
+			// on the home page, tables…) also emit scroll events here, and their
+			// scrollTop is 0 — recording that would wipe the saved vertical offset
+			if (!getCandidates().includes(target)) return
 			remember([key, urlKey], target.scrollTop)
 		}
 		document.addEventListener('scroll', onScroll, { capture: true, passive: true })
 		return () => document.removeEventListener('scroll', onScroll, { capture: true })
-	}, [host, key, urlKey])
+	}, [getCandidates, key, urlKey])
 
 	// Restore (POP) or reset (PUSH/REPLACE) when the entry changes
 	useLayoutEffect(() => {
@@ -142,5 +141,5 @@ export function useScrollRestoration(
 		attempt()
 
 		return finish
-	}, [getCandidates, host, key, navigationType, urlKey])
+	}, [getCandidates, key, navigationType, urlKey])
 }
