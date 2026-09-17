@@ -40,6 +40,7 @@
 - **Book & series metadata editor** in the web UI — permission-gated (`EditMetadata`), with autocomplete and field-level locks
 - **Sliding session expiry** — active web sessions are refreshed instead of logging the user out on a fixed TTL
 - **"Remember me"** — the login form can ask for a 30-day persistent session (`?remember=true`), on by default when the web app runs as an installed PWA; the login page also skips itself when a session already exists (an iOS home-screen web app installed from the login page opens on `/auth` every time)
+- **Installable as a home-screen web app** — the manifest is actually served (upstream let it fall through to the SPA fallback), so iOS picks up the panther icon and the "NoirPanther" name; the login page hands a signed-in user straight through, and covers don't blink after the edge-swipe back
 - **Scroll position restored on Back** — every list (home, book/series search, libraries, series) returns to where you left it when you navigate back
 - **Search on mobile / PWA** — a search box at the top of the home page and in the slide-out menu that opens the book search; a `?search=` arriving via link now also shows up in the search field
 - **Memory-bounded server** — tuned allocator (jemalloc + glibc arena/trim), bounded blocking pool and scanner concurrency for stable memory on large libraries
