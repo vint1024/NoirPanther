@@ -93,8 +93,9 @@ pub struct ProcessedMediaMetadata {
 		default = "Option::default"
 	)]
 	pub tags: Option<Vec<String>>,
-	/// The language of the media
-	#[serde(alias = "Language")]
+	/// The language of the media. ComicInfo.xml calls it `LanguageISO` (upstream only
+	/// accepted `Language`, so the language of comics was never picked up)
+	#[serde(alias = "Language", alias = "LanguageISO")]
 	pub language: Option<String>,
 
 	/// The year the media was published.

@@ -222,6 +222,18 @@ mod tests {
 		assert_eq!(metadata.volume, None);
 	}
 
+	// ComicInfo.xml names the language field `LanguageISO`; only `Language` used to be read
+	#[test]
+	fn test_should_parse_comic_info_language_iso_and_age_rating() {
+		let contents = r#"<?xml version="1.0" encoding="utf-8"?>
+<ComicInfo><Series>Pepper &amp; Carrot</Series><Number>5</Number><Title>Special holiday episode</Title><Writer>David Revoy</Writer><AgeRating>Everyone 10+</AgeRating><LanguageISO>en</LanguageISO><Year>2014</Year><Manga>YesAndRightToLeft</Manga><PageCount>7</PageCount></ComicInfo>"#;
+		let metadata = metadata_from_buf(contents).expect("should parse");
+		assert_eq!(metadata.language.as_deref(), Some("en"));
+		assert_eq!(metadata.age_rating, Some(10));
+		assert_eq!(metadata.series.as_deref(), Some("Pepper & Carrot"));
+		assert_eq!(metadata.number, Some(5.0));
+	}
+
 	#[test]
 	fn test_should_parse_comic_info_tags() {
 		let contents = r#"<?xml version="1.0"?>
