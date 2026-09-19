@@ -540,6 +540,52 @@ impl EpubProcessor {
 	}
 }
 
+/// One `belongs-to-collection` entry of an OPF package, with its refinements
+#[derive(Debug, Clone)]
+struct OpfCollection {
+	id: Option<String>,
+	name: String,
+	/// `collection-type`: `series` or `set`
+	kind: Option<String>,
+	/// `group-position`
+	position: Option<String>,
+}
+
+/// The collection a `collection-type` / `group-position` meta refines: the one whose `id`
+/// matches `refines`, else the most recent one (files that don't bother with `refines`)
+fn refined_collection<'a>(
+	collections: &'a mut [OpfCollection],
+	refines: Option<&str>,
+) -> Option<&'a mut OpfCollection> {
+	let by_id = refines.and_then(|target| {
+		collections
+			.iter()
+			.position(|c| c.id.as_deref() == Some(target))
+	});
+	match by_id {
+		Some(index) => collections.get_mut(index),
+		None => collections.last_mut(),
+	}
+}
+
+/// The collection that names the book's series: the first one typed `series`. Untyped
+/// collections (older files) count as a series only when nothing is typed at all; a book
+/// that only belongs to `set`s ("100 best novels" lists) has no series
+fn pick_series_collection(collections: &[OpfCollection]) -> Option<&OpfCollection> {
+	let is_series = |c: &&OpfCollection| {
+		c.kind
+			.as_deref()
+			.is_some_and(|k| k.eq_ignore_ascii_case("series"))
+	};
+	collections.iter().find(is_series).or_else(|| {
+		collections
+			.iter()
+			.all(|c| c.kind.is_none())
+			.then(|| collections.first())
+			.flatten()
+	})
+}
+
 /// Parse OPF XML content and extract supported metadata
 fn parse_opf_xml(opf_content: &str) -> Result<HashMap<String, Vec<String>>, FileError> {
 	let mut reader = Reader::from_str(opf_content);
@@ -547,6 +593,13 @@ fn parse_opf_xml(opf_content: &str) -> Result<HashMap<String, Vec<String>>, File
 	let mut current_tag = String::new();
 	let mut buf = Vec::new();
 	let mut opf_metadata: HashMap<String, Vec<String>> = HashMap::new();
+	// EPUB 3 collections: `belongs-to-collection` metas refined (via `refines="#id"`) by
+	// `collection-type` / `group-position`. A book can sit in several — Standard Ebooks
+	// lists every "best 100 novels" set next to the actual series — so they are tracked
+	// individually and resolved after the loop
+	let mut collections: Vec<OpfCollection> = Vec::new();
+	let mut current_id: Option<String> = None;
+	let mut current_refines: Option<String> = None;
 
 	// tags which _might_ contain html, will be handled differently if encountered
 	const HTML_CONTENT_TAGS: [&str; 3] = ["description", "summary", "synopsis"];
@@ -566,9 +619,23 @@ fn parse_opf_xml(opf_content: &str) -> Result<HashMap<String, Vec<String>>, File
 					html_tag_to_read = Some((tag_name, base_tag));
 				} else {
 					current_tag = base_tag.clone();
+					current_id = None;
+					current_refines = None;
 
 					for attr in e.attributes().flatten() {
 						match attr.key.as_ref() {
+							b"id" => {
+								current_id = Some(
+									String::from_utf8_lossy(&attr.value).to_string(),
+								);
+							},
+							b"refines" => {
+								current_refines = Some(
+									String::from_utf8_lossy(&attr.value)
+										.trim_start_matches('#')
+										.to_string(),
+								);
+							},
 							b"opf:scheme" if base_tag == "identifier" => {
 								let scheme =
 									String::from_utf8_lossy(&attr.value).to_lowercase();
@@ -663,22 +730,28 @@ fn parse_opf_xml(opf_content: &str) -> Result<HashMap<String, Vec<String>>, File
 					if !content.is_empty() {
 						match current_tag.as_str() {
 							"belongs-to-collection" => {
-								opf_metadata
-									.entry("collection_name".to_string())
-									.or_default()
-									.push(content.clone());
+								collections.push(OpfCollection {
+									id: current_id.clone(),
+									name: content.clone(),
+									kind: None,
+									position: None,
+								});
 							},
 							"collection-type" => {
-								opf_metadata
-									.entry("collection_type".to_string())
-									.or_default()
-									.push(content.clone());
+								if let Some(collection) = refined_collection(
+									&mut collections,
+									current_refines.as_deref(),
+								) {
+									collection.kind = Some(content.clone());
+								}
 							},
 							"group-position" => {
-								opf_metadata
-									.entry("collection_position".to_string())
-									.or_default()
-									.push(content.clone());
+								if let Some(collection) = refined_collection(
+									&mut collections,
+									current_refines.as_deref(),
+								) {
+									collection.position = Some(content.clone());
+								}
 							},
 							"identifier" => {
 								// Some books seem to have prefixed identifiers (e.g., "isbn:9780062444134")
@@ -736,6 +809,17 @@ fn parse_opf_xml(opf_content: &str) -> Result<HashMap<String, Vec<String>>, File
 		}
 
 		buf.clear();
+	}
+
+	if let Some(series) = pick_series_collection(&collections) {
+		opf_metadata.insert("collection_name".to_string(), vec![series.name.clone()]);
+		if let Some(kind) = &series.kind {
+			opf_metadata.insert("collection_type".to_string(), vec![kind.clone()]);
+		}
+		if let Some(position) = &series.position {
+			opf_metadata
+				.insert("collection_position".to_string(), vec![position.clone()]);
+		}
 	}
 
 	tracing::trace!(?opf_metadata, "Extracted OPF metadata");
@@ -981,6 +1065,79 @@ mod tests {
 			Ok(None) => panic!("No metadata returned"),
 			Err(e) => panic!("Failed to get metadata: {:?}", e),
 		}
+	}
+
+	fn opf_with_metadata(metadata: &str) -> String {
+		format!(
+			r#"<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://www.idpf.org/2007/opf" version="3.0">
+	<metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+		<dc:title>Test</dc:title>
+{metadata}
+	</metadata>
+</package>"#
+		)
+	}
+
+	// Standard Ebooks: the real series sits next to "best of" sets, one of them unnumbered
+	#[test]
+	fn test_opf_collections_pick_the_series_not_the_sets() {
+		let opf = opf_with_metadata(
+			r##"		<meta id="collection-1" property="belongs-to-collection">Haycraft-Queen Cornerstones</meta>
+		<meta property="collection-type" refines="#collection-1">set</meta>
+		<meta id="collection-2" property="belongs-to-collection">Sherlock Holmes</meta>
+		<meta property="collection-type" refines="#collection-2">series</meta>
+		<meta property="group-position" refines="#collection-2">3</meta>
+		<meta id="collection-3" property="belongs-to-collection">Top 100 Mysteries</meta>
+		<meta property="collection-type" refines="#collection-3">set</meta>
+		<meta property="group-position" refines="#collection-3">21</meta>"##,
+		);
+		let metadata = parse_opf_xml(&opf).expect("should parse");
+		assert_eq!(
+			metadata.get("collection_name"),
+			Some(&vec!["Sherlock Holmes".to_string()])
+		);
+		assert_eq!(
+			metadata.get("collection_position"),
+			Some(&vec!["3".to_string()])
+		);
+
+		let processed = ProcessedMediaMetadata::from(metadata);
+		assert_eq!(processed.series.as_deref(), Some("Sherlock Holmes"));
+		assert_eq!(processed.number, Some(3.0));
+	}
+
+	#[test]
+	fn test_opf_collections_sets_only_means_no_series() {
+		let opf = opf_with_metadata(
+			r##"		<meta id="collection-1" property="belongs-to-collection">The Guardian's Best 100 Novels</meta>
+		<meta property="collection-type" refines="#collection-1">set</meta>
+		<meta property="group-position" refines="#collection-1">31</meta>"##,
+		);
+		let metadata = parse_opf_xml(&opf).expect("should parse");
+		assert_eq!(metadata.get("collection_name"), None);
+		assert_eq!(metadata.get("collection_position"), None);
+
+		let processed = ProcessedMediaMetadata::from(metadata);
+		assert_eq!(processed.series, None);
+		assert_eq!(processed.number, None);
+	}
+
+	#[test]
+	fn test_opf_collections_untyped_collection_is_a_series() {
+		let opf = opf_with_metadata(
+			r##"		<meta id="c1" property="belongs-to-collection">Oz</meta>
+		<meta property="group-position" refines="#c1">2</meta>"##,
+		);
+		let metadata = parse_opf_xml(&opf).expect("should parse");
+		assert_eq!(
+			metadata.get("collection_name"),
+			Some(&vec!["Oz".to_string()])
+		);
+		assert_eq!(
+			metadata.get("collection_position"),
+			Some(&vec!["2".to_string()])
+		);
 	}
 
 	#[test]
