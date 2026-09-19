@@ -5,6 +5,14 @@ import { Timer } from '@/stores/reader'
 
 export type ImageReaderBookRef = NonNullable<BookReaderSceneQuery['mediaById']>
 
+/**
+ * A book as the shared reader hooks see it. `readingDirection` is NoirPanther-only and only
+ * selected by the image reader's query — the EPUB reader passes a book without it (Readium
+ * takes the direction from the EPUB itself)
+ */
+export type ReaderBookRef = Omit<ImageReaderBookRef, 'readingDirection'> &
+	Partial<Pick<ImageReaderBookRef, 'readingDirection'>>
+
 export type NextInSeriesBookRef = {
 	id: string
 	name: string

@@ -2,7 +2,7 @@ import { Bookmark } from '@stump/graphql'
 import type { EpubSearchResponse } from '@stump/sdk'
 import { createContext, useContext } from 'react'
 
-import { ImageReaderBookRef } from '@/components/readers/imageBased/context'
+import { ReaderBookRef } from '@/components/readers/imageBased/context'
 
 import { noop } from '../../../utils/misc'
 import type { EpubAnnotation } from './annotations/types'
@@ -53,7 +53,7 @@ export type EpubReaderBookMeta = {
 }
 
 export type EpubReaderMeta = {
-	bookEntity: ImageReaderBookRef
+	bookEntity: ReaderBookRef
 	bookMeta: EpubReaderBookMeta | null
 	progress: number | null
 }
@@ -100,7 +100,7 @@ export const EpubReaderContext = createContext<EpubReaderContextProps>({
 		visible: false,
 	},
 	readerMeta: {
-		bookEntity: {} as ImageReaderBookRef,
+		bookEntity: {} as ReaderBookRef,
 		bookMeta: null,
 		progress: null,
 	},

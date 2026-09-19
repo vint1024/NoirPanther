@@ -4,11 +4,11 @@ import { BookReaderSceneQuery, ReadingImageScaleFit } from '@stump/graphql'
 import { useCallback, useMemo } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 
-import { ImageReaderBookRef } from '@/components/readers/imageBased/context'
+import { ReaderBookRef } from '@/components/readers/imageBased/context'
 import { useReaderStore } from '@/stores'
 
 type Params = {
-	book: ImageReaderBookRef
+	book: ReaderBookRef
 }
 
 type Return = Omit<
@@ -41,7 +41,15 @@ export function useBookPreferences({ book }: Params): Return {
 	 * should never be null once the query resolves
 	 */
 	const libraryConfig = useMemo(() => book.libraryConfig, [book])
-	const libraryDefaults = useMemo(() => defaultsFromLibraryConfig(libraryConfig), [libraryConfig])
+	// NoirPanther: `book.readingDirection` is resolved by the server — the direction the file
+	// itself asks for (ComicInfo `Manga` = RTL), falling back to the library default
+	const libraryDefaults = useMemo(
+		() => ({
+			...defaultsFromLibraryConfig(libraryConfig),
+			...(book.readingDirection ? { readingDirection: book.readingDirection } : {}),
+		}),
+		[libraryConfig, book.readingDirection],
+	)
 
 	const bookPreferences = useMemo(
 		() => buildPreferences(storedBookPreferences ?? {}, settings, libraryDefaults),

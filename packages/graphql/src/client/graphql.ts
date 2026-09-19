@@ -1484,6 +1484,12 @@ export type Media = {
   readHistory: Array<ReadthroughRecord>;
   readProgress?: Maybe<ResumeReadingCursor>;
   /**
+   * NoirPanther: the direction this book should open in. The file's own metadata wins
+   * (ComicInfo.xml `Manga` = `YesAndRightToLeft`), otherwise the library default applies.
+   * Readers use it as the initial value only — a reader's own setting still overrides it.
+   */
+  readingDirection: ReadingDirection;
+  /**
    * The path to the media file **relative** to the library path. This is only useful for
    * displaying a truncated path when in the context of a library, e.g. limited space
    * on a mobile device.
@@ -1611,6 +1617,11 @@ export type MediaMetadata = {
   pageCount?: Maybe<Scalars['Int']['output']>;
   pencillers: Array<Scalars['String']['output']>;
   publisher?: Maybe<Scalars['String']['output']>;
+  /**
+   * NoirPanther: the reading direction the file itself asks for (ComicInfo.xml `Manga` =
+   * `YesAndRightToLeft`); `None` means the library default applies
+   */
+  readingDirection?: Maybe<ReadingDirection>;
   series?: Maybe<Scalars['String']['output']>;
   seriesGroup?: Maybe<Scalars['String']['output']>;
   storyArc?: Maybe<Scalars['String']['output']>;
@@ -1717,6 +1728,7 @@ export enum MediaMetadataModelOrdering {
   PageCount = 'PAGE_COUNT',
   Pencillers = 'PENCILLERS',
   Publisher = 'PUBLISHER',
+  ReadingDirection = 'READING_DIRECTION',
   Series = 'SERIES',
   SeriesGroup = 'SERIES_GROUP',
   StoryArc = 'STORY_ARC',
@@ -6256,7 +6268,7 @@ export type BookReaderSceneQueryVariables = Exact<{
 }>;
 
 
-export type BookReaderSceneQuery = { __typename?: 'Query', mediaById?: { __typename?: 'Media', id: string, resolvedName: string, pages: number, extension: string, readProgress?: { __typename?: 'ResumeReadingCursor', percentageCompleted?: any | null, page?: number | null, elapsedSeconds: number } | null, libraryConfig: { __typename?: 'LibraryConfig', defaultReadingImageScaleFit: ReadingImageScaleFit, defaultReadingMode: ReadingMode, defaultReadingDir: ReadingDirection }, analysisData?: { __typename?: 'MediaAnalysisData', dimensions: Array<{ __typename?: 'PageDimension', height: number, width: number }> } | null, nextInSeries: { __typename?: 'PaginatedMediaResponse', nodes: Array<{ __typename?: 'Media', id: string, name: string, thumbnail: { __typename?: 'ImageRef', url: string } }> } } | null };
+export type BookReaderSceneQuery = { __typename?: 'Query', mediaById?: { __typename?: 'Media', id: string, resolvedName: string, pages: number, extension: string, readingDirection: ReadingDirection, readProgress?: { __typename?: 'ResumeReadingCursor', percentageCompleted?: any | null, page?: number | null, elapsedSeconds: number } | null, libraryConfig: { __typename?: 'LibraryConfig', defaultReadingImageScaleFit: ReadingImageScaleFit, defaultReadingMode: ReadingMode, defaultReadingDir: ReadingDirection }, analysisData?: { __typename?: 'MediaAnalysisData', dimensions: Array<{ __typename?: 'PageDimension', height: number, width: number }> } | null, nextInSeries: { __typename?: 'PaginatedMediaResponse', nodes: Array<{ __typename?: 'Media', id: string, name: string, thumbnail: { __typename?: 'ImageRef', url: string } }> } } | null };
 
 export type UpdateReadProgressMutationVariables = Exact<{
   id: Scalars['ID']['input'];
@@ -11910,6 +11922,7 @@ export const BookReaderSceneDocument = new TypedDocumentString(`
       page
       elapsedSeconds
     }
+    readingDirection
     libraryConfig {
       defaultReadingImageScaleFit
       defaultReadingMode

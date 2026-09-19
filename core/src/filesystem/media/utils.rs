@@ -222,6 +222,31 @@ mod tests {
 		assert_eq!(metadata.volume, None);
 	}
 
+	// NoirPanther: ComicInfo.xml `Manga` → per-book reading direction
+	#[test]
+	fn test_should_parse_comic_info_manga_reading_direction() {
+		use models::shared::enums::ReadingDirection;
+
+		let parse = |manga: &str| {
+			let contents = format!(
+				"<?xml version=\"1.0\"?>\n<ComicInfo><Title>T</Title>{manga}</ComicInfo>"
+			);
+			metadata_from_buf(&contents)
+				.expect("should parse")
+				.reading_direction
+		};
+
+		assert_eq!(
+			parse("<Manga>YesAndRightToLeft</Manga>"),
+			Some(ReadingDirection::Rtl)
+		);
+		// `Yes` marks the book as manga but says nothing about the direction
+		assert_eq!(parse("<Manga>Yes</Manga>"), None);
+		assert_eq!(parse("<Manga>No</Manga>"), None);
+		assert_eq!(parse("<Manga>Unknown</Manga>"), None);
+		assert_eq!(parse(""), None);
+	}
+
 	// ComicInfo.xml names the language field `LanguageISO`; only `Language` used to be read
 	#[test]
 	fn test_should_parse_comic_info_language_iso_and_age_rating() {

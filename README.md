@@ -8,7 +8,7 @@
 >
 > - Repository: <https://github.com/vint1024/NoirPanther> (development mirror: <https://git.vint1024.net/vint1024/stump.git>)
 > - Upstream (original): <https://github.com/stumpapp/stump>
-> - Current release: **`0.1.7-r2`** = everything in Stump **0.1.7** + [what this fork adds](#what-this-fork-adds). See [Versioning](#versioning).
+> - Current release: **`0.1.7-r3`** = everything in Stump **0.1.7** + [what this fork adds](#what-this-fork-adds). See [Versioning](#versioning).
 >
 > **All modifications in this fork were developed with heavy assistance from AI tooling.**
 
@@ -21,7 +21,7 @@ Registry — no login required:
 | --------------------------------------- | --------------------------------------------------------------- |
 | `ghcr.io/vint1024/noirpanther:latest`   | the newest release                                              |
 | `ghcr.io/vint1024/noirpanther:0.1.7`    | the newest fork revision built on Stump 0.1.7                   |
-| `ghcr.io/vint1024/noirpanther:0.1.7-r2` | exactly this release (pinned — updates only when you change it) |
+| `ghcr.io/vint1024/noirpanther:0.1.7-r3` | exactly this release (pinned — updates only when you change it) |
 
 ### With the built-in SQLite database
 
@@ -135,7 +135,7 @@ a fork revision after it: **`<Stump version>-r<N>`**.
 - `-r2`, `-r3`, … — our own fixes and features on top of the same Stump release.
 - When Stump publishes `0.1.8` and it is merged here, the numbering restarts: `0.1.8-r1`.
 
-Each release is a git tag `v<version>` (e.g. `v0.1.7-r2`), a [GitHub release](https://github.com/vint1024/NoirPanther/releases)
+Each release is a git tag `v<version>` (e.g. `v0.1.7-r3`), a [GitHub release](https://github.com/vint1024/NoirPanther/releases)
 with notes, and a Docker image with the same tag. The server checks that releases page itself:
 when a newer one exists, **Settings → Server → General** shows a notice with a link to the release
 notes. (The check asks the GitHub API from the server; nothing about your server is sent.)
@@ -164,6 +164,7 @@ notes. (The check asks the GitHub API from the server; nothing about your server
 - **Book clubs, enabled and at scale** — switched on in production builds (upstream still hides them) with cursor-paginated members / past books / discussions, keyset discussion history, and DataLoader fixes for the member graph
 - **PostgreSQL-ready fork**: on Postgres the string-backed book-club role columns are fixed (upstream declares them INTEGER, which breaks clubs there), `ulower()` is provided as a SQL wrapper, and `scripts/db/sqlite_to_postgres.py` copies an existing SQLite database into a freshly migrated PostgreSQL one (used to move this fork's own servers off SQLite); see [Install with Docker Compose](#with-postgresql). The whole API was then audited against PostgreSQL (every client operation, OPDS 1.2/2.0, KOReader, Kobo, scans, content rules, smart lists, book clubs) and the upstream queries that only worked on SQLite were fixed: library scans (`LIKE … ESCAPE` placeholders), metadata / visit / device upserts (`ON CONFLICT` targets), reading-status filters and Kobo sync (`GROUP BY`), OPDS progression (JSON device join), re-favoriting, `series.library` sub-filters
 - **Cover lightbox**: click a book cover on its page to view it full-height (Esc, ✕ or a click outside closes it)
+- **Manga opens right-to-left by itself**: the `Manga` tag of `ComicInfo.xml` (`YesAndRightToLeft`) becomes a per-book reading direction (upstream only has a per-library default); the web reader and the NoirPanther app start such books RTL, the reader's own setting still overrides it
 - **Clean titles and comic languages from file metadata**: EPUBs with several `dc:title` elements (main / subtitle / full title) get the main title instead of a multi-line mash-up; EPUB 3 collections are resolved through `refines`, so only a real `series` collection becomes the series (not the "100 best novels" sets listed beside it); `LanguageISO` from `ComicInfo.xml` is read (upstream only accepts a non-standard `Language` tag)
 - **Covers that actually refresh**: thumbnail URLs carry a version (`?v=…`) that changes when a cover is regenerated or a library rescanned, so browsers and the NoirPanther app stop showing stale covers despite the one-year cache header
 - **Unicode case-insensitive search** (`ulower`) — search matches regardless of letter case in any language (incl. Cyrillic); **search also matches book authors** (writers), not just titles. Works on both SQLite (custom function) and PostgreSQL (SQL wrapper over `lower()`)
@@ -179,7 +180,7 @@ notes. (The check asks the GitHub API from the server; nothing about your server
 
 ### Packaging
 
-- Version **`0.1.7-r2`** (see [Versioning](#versioning)), build channel **`NoirPanther (stable)`**
+- Version **`0.1.7-r3`** (see [Versioning](#versioning)), build channel **`NoirPanther (stable)`**
 - Docker images for `amd64` + `arm64` published to **`ghcr.io/vint1024/noirpanther`** by the [`NoirPanther Docker image`](.github/workflows/noirpanther_docker.yml) workflow on GitHub's native runners — pushing a `v<version>` tag builds the image and creates the GitHub release (Rust 1.97 / Node 24 toolchain; `CARGO_BUILD_JOBS` build-arg caps compile parallelism for small Docker VMs) — see [Install with Docker Compose](#install-with-docker-compose)
 
 > A from-scratch **proprietary** client — **NoirPanther** — is built against this fork's API: <https://git.vint1024.net/vint1024/noirpanther.git>

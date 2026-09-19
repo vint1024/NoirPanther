@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use merge::Merge;
+use models::shared::enums::ReadingDirection;
 use sea_orm::{prelude::*, Set};
 use serde::{Deserialize, Serialize};
 use serde_with::skip_serializing_none;
@@ -97,6 +98,15 @@ pub struct ProcessedMediaMetadata {
 	/// accepted `Language`, so the language of comics was never picked up)
 	#[serde(alias = "Language", alias = "LanguageISO")]
 	pub language: Option<String>,
+	/// NoirPanther: the reading direction requested by the file. ComicInfo.xml carries it in
+	/// `Manga` (`Unknown` / `No` / `Yes` / `YesAndRightToLeft`) — only the last one says
+	/// anything about direction
+	#[serde(
+		default,
+		alias = "Manga",
+		deserialize_with = "manga_reading_direction_deserializer"
+	)]
+	pub reading_direction: Option<ReadingDirection>,
 
 	/// The year the media was published.
 	#[serde(
@@ -248,6 +258,7 @@ impl ProcessedMediaMetadata {
 			teams: Set(self.teams.map(|v| v.join(", "))),
 			page_count: Set(self.page_count),
 			language: Set(self.language),
+			reading_direction: Set(self.reading_direction),
 			identifier_amazon: Set(self.identifier_amazon),
 			identifier_calibre: Set(self.identifier_calibre),
 			identifier_google: Set(self.identifier_google),
@@ -257,6 +268,20 @@ impl ProcessedMediaMetadata {
 			..Default::default()
 		}
 	}
+}
+
+/// ComicInfo.xml `Manga` → reading direction: `YesAndRightToLeft` is RTL, anything else
+/// (`Unknown`, `No`, `Yes`) leaves the direction unspecified
+fn manga_reading_direction_deserializer<'de, D>(
+	deserializer: D,
+) -> Result<Option<ReadingDirection>, D::Error>
+where
+	D: serde::Deserializer<'de>,
+{
+	let value = Option::<String>::deserialize(deserializer)?;
+	Ok(value
+		.filter(|v| v.trim().eq_ignore_ascii_case("YesAndRightToLeft"))
+		.map(|_| ReadingDirection::Rtl))
 }
 
 /// The first value that isn't blank, trimmed

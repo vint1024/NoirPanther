@@ -38,6 +38,7 @@ mod m20260804_000000_smart_list_role_to_integer;
 mod m20260815_205755_avatar_image_metadata;
 mod m20260816_000000_drop_legacy_epubcfi;
 mod m20260911_000000_pg_book_club_role_text;
+mod m20260919_000000_media_metadata_reading_direction;
 
 pub struct Migrator;
 
@@ -82,6 +83,7 @@ impl MigratorTrait for Migrator {
 			Box::new(m20260815_205755_avatar_image_metadata::Migration),
 			Box::new(m20260816_000000_drop_legacy_epubcfi::Migration),
 			Box::new(m20260911_000000_pg_book_club_role_text::Migration),
+			Box::new(m20260919_000000_media_metadata_reading_direction::Migration),
 		]
 	}
 }

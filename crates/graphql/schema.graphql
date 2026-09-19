@@ -1391,6 +1391,12 @@ type Media {
 	libraryId: String!
 	library: Library!
 	libraryConfig: LibraryConfig!
+	"""
+	NoirPanther: the direction this book should open in. The file's own metadata wins
+	(ComicInfo.xml `Manga` = `YesAndRightToLeft`), otherwise the library default applies.
+	Readers use it as the initial value only — a reader's own setting still overrides it.
+	"""
+	readingDirection: ReadingDirection!
 	analysisData: MediaAnalysisData
 	"""
 	A reference to the thumbnail image for the media. This will be a fully
@@ -1474,6 +1480,11 @@ type MediaMetadata {
 	identifierMobiAsin: String
 	identifierUuid: String
 	language: String
+	"""
+	NoirPanther: the reading direction the file itself asks for (ComicInfo.xml `Manga` =
+	`YesAndRightToLeft`); `None` means the library default applies
+	"""
+	readingDirection: ReadingDirection
 	month: Int
 	notes: String
 	number: Decimal
@@ -1588,6 +1599,7 @@ enum MediaMetadataModelOrdering {
 	IDENTIFIER_UUID
 	INKERS
 	LANGUAGE
+	READING_DIRECTION
 	LETTERERS
 	LINKS
 	MONTH

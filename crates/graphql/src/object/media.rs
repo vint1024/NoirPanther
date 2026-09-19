@@ -4,7 +4,7 @@ use async_graphql::{
 
 use models::{
 	entity::{library, media, media_analysis, series, tag},
-	shared::{analysis::MediaAnalysisData, image::ImageRef},
+	shared::{analysis::MediaAnalysisData, enums::ReadingDirection, image::ImageRef},
 };
 use num_traits::cast::ToPrimitive;
 use sea_orm::{prelude::*, sea_query::Query, FromQueryResult, QuerySelect};
@@ -166,6 +166,29 @@ impl Media {
 			.await?
 			.map(LibraryConfig::from)
 			.ok_or_else(|| "Library config not found".into())
+	}
+
+	/// NoirPanther: the direction this book should open in. The file's own metadata wins
+	/// (ComicInfo.xml `Manga` = `YesAndRightToLeft`), otherwise the library default applies.
+	/// Readers use it as the initial value only — a reader's own setting still overrides it.
+	async fn reading_direction(&self, ctx: &Context<'_>) -> Result<ReadingDirection> {
+		if let Some(direction) = self
+			.metadata
+			.as_ref()
+			.and_then(|m| m.model.reading_direction)
+		{
+			return Ok(direction);
+		}
+
+		let Some(series_id) = self.model.series_id.clone() else {
+			return Ok(ReadingDirection::default());
+		};
+		let loader = ctx.data::<DataLoader<LibraryConfigLoader>>()?;
+		Ok(loader
+			.load_one(LibraryConfigLoaderKey { series_id })
+			.await?
+			.map(|config| config.default_reading_dir)
+			.unwrap_or_default())
 	}
 
 	async fn analysis_data(

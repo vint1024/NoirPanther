@@ -4,7 +4,10 @@ use sea_orm::{prelude::*, QueryOrder, QuerySelect};
 use serde::Serialize;
 use serde_with::skip_serializing_none;
 
-use crate::shared::ordering::{OrderBy, OrderDirection};
+use crate::shared::{
+	enums::ReadingDirection,
+	ordering::{OrderBy, OrderDirection},
+};
 
 #[skip_serializing_none]
 #[derive(
@@ -62,6 +65,10 @@ pub struct Model {
 	pub inkers: Option<String>,
 	#[sea_orm(column_type = "Text", nullable)]
 	pub language: Option<String>,
+	/// NoirPanther: the reading direction the file itself asks for (ComicInfo.xml `Manga` =
+	/// `YesAndRightToLeft`); `None` means the library default applies
+	#[sea_orm(column_type = "Text", nullable)]
+	pub reading_direction: Option<ReadingDirection>,
 	#[sea_orm(column_type = "Text", nullable)]
 	#[graphql(skip)]
 	pub letterers: Option<String>,
