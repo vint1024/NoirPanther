@@ -8,6 +8,7 @@ use models::{
 	},
 	shared::{
 		alphabet::{AvailableAlphabet, EntityLetter},
+		enums::UserPermission,
 		ordering::{OrderBy, OrderDirection},
 	},
 };
@@ -15,6 +16,7 @@ use sea_orm::{prelude::*, FromQueryResult, QueryOrder, QuerySelect, QueryTrait};
 
 use crate::{
 	data::{AuthContext, CoreContext},
+	guard::PermissionGuard,
 	object::{library::Library, missing_entity::MissingEntity, stats::LibraryStats},
 	pagination::{
 		CursorPaginationInfo, OffsetPaginationInfo, PaginatedResponse, Pagination,
@@ -200,6 +202,10 @@ impl LibraryQuery {
 		Ok(last_visited)
 	}
 
+	// NoirPanther: upstream left this open to every signed-in user — it lists file-system
+	// paths (and thereby titles) of any library by id, including libraries the caller
+	// can't see. It backs the "clean library" maintenance screen, so gate it the same way.
+	#[graphql(guard = "PermissionGuard::one(UserPermission::ManageLibrary)")]
 	async fn library_missing_entities(
 		&self,
 		ctx: &Context<'_>,

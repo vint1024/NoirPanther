@@ -16,7 +16,10 @@ use crate::{
 	},
 };
 
-use super::{library_exclusion, media_metadata, series, series_metadata, user::AuthUser};
+use super::{
+	content_access_rule, library_exclusion, media_metadata, series, series_metadata,
+	user::AuthUser,
+};
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, SimpleObject, Ordering)]
 #[graphql(name = "MediaModel")]
@@ -158,6 +161,22 @@ fn apply_series_metadata_join(query: Select<Entity>) -> Select<Entity> {
 	)
 }
 
+/// NoirPanther: per-user content access rules (tag / genre / publisher). The condition is
+/// self-contained (subqueries), so it needs no extra joins. 🔴 Every `*_for_user` select
+/// below MUST go through this — the v0.1.7 upstream merge took this file as "theirs" and
+/// silently dropped the calls, which left rule-hidden BOOKS visible (series and libraries
+/// kept their filters). `visibility_filters_are_applied` below guards against a repeat.
+fn apply_content_rules_filter(
+	query: Select<Entity>,
+	rules: &[content_access_rule::Model],
+) -> Select<Entity> {
+	if let Some(condition) = content_access_rule::media_filter(rules) {
+		query.filter(condition)
+	} else {
+		query
+	}
+}
+
 fn apply_library_hidden_filter(query: Select<Entity>, user: &AuthUser) -> Select<Entity> {
 	query.filter(series::Column::LibraryId.not_in_subquery(
 		library_exclusion::Entity::library_hidden_to_user_query(user),
@@ -169,6 +188,7 @@ impl Entity {
 		let select = Entity::find().left_join(media_metadata::Entity);
 		let select = apply_series_metadata_join(select);
 		let select = apply_library_hidden_filter(select, user);
+		let select = apply_content_rules_filter(select, &user.content_rules);
 		apply_age_restriction_filter(select, user.age_restriction.clone())
 	}
 
@@ -176,6 +196,7 @@ impl Entity {
 		let select = select.left_join(media_metadata::Entity);
 		let select = apply_series_metadata_join(select);
 		let select = apply_library_hidden_filter(select, user);
+		let select = apply_content_rules_filter(select, &user.content_rules);
 		apply_age_restriction_filter(select, user.age_restriction.clone())
 	}
 
@@ -233,6 +254,7 @@ impl ModelWithMetadata {
 		let select = ModelWithMetadata::find();
 		let select = apply_series_metadata_join(select);
 		let select = apply_library_hidden_filter(select, user);
+		let select = apply_content_rules_filter(select, &user.content_rules);
 		apply_age_restriction_filter(select, user.age_restriction.clone())
 	}
 
@@ -240,6 +262,7 @@ impl ModelWithMetadata {
 		let select = ModelWithMetadata::find_by_id(id);
 		let select = apply_series_metadata_join(select);
 		let select = apply_library_hidden_filter(select, user);
+		let select = apply_content_rules_filter(select, &user.content_rules);
 		apply_age_restriction_filter(select, user.age_restriction.clone())
 	}
 }
@@ -455,6 +478,59 @@ mod tests {
 	use super::*;
 	use crate::tests::common::*;
 	use pretty_assertions::assert_eq;
+
+	// NoirPanther regression guard: the v0.1.7 upstream merge took this file as "theirs" and
+	// dropped the content-rule filter from every `*_for_user` select, so rule-hidden books
+	// became visible. If this fails after a merge — re-add `apply_content_rules_filter`.
+	#[test]
+	fn visibility_filters_are_applied() {
+		use sea_orm::{DbBackend, QueryTrait};
+
+		let user = AuthUser {
+			is_server_owner: false,
+			content_rules: vec![content_access_rule::Model {
+				id: 1,
+				user_id: "42".to_string(),
+				dimension: crate::shared::enums::ContentRuleDimension::Genre,
+				mode: crate::shared::enums::ContentRuleMode::Exclude,
+				values: serde_json::json!(["Horror"]),
+				restrict_on_unset: false,
+			}],
+			..get_default_user()
+		};
+		let marker = "horror";
+
+		let selects = [
+			(
+				"Entity::find_for_user",
+				Entity::find_for_user(&user).build(DbBackend::Postgres),
+			),
+			(
+				"Entity::apply_for_user",
+				Entity::apply_for_user(&user, Entity::find()).build(DbBackend::Postgres),
+			),
+			(
+				"ModelWithMetadata::find_for_user",
+				ModelWithMetadata::find_for_user(&user).build(DbBackend::Postgres),
+			),
+			(
+				"ModelWithMetadata::find_by_id_for_user",
+				ModelWithMetadata::find_by_id_for_user("1".to_string(), &user)
+					.build(DbBackend::Postgres),
+			),
+		];
+		for (name, statement) in selects {
+			let sql = statement.to_string().to_lowercase();
+			assert!(
+				sql.contains(marker),
+				"{name} does not apply the user's content access rules: {sql}"
+			);
+			assert!(
+				sql.contains("library_exclusion") || sql.contains("library_hidden"),
+				"{name} does not apply the hidden-library filter: {sql}"
+			);
+		}
+	}
 
 	#[test]
 	fn test_age_restriction_filter_restrict_on_unset() {

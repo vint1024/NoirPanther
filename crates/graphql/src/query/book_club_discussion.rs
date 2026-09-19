@@ -241,7 +241,12 @@ impl BookClubDiscussionQuery {
 		ctx: &Context<'_>,
 		book_club_id: ID,
 	) -> Result<Vec<BookClubDiscussion>> {
+		let AuthContext { user, .. } = ctx.data::<AuthContext>()?;
 		let conn = ctx.data::<CoreContext>()?.conn.as_ref();
+
+		// NoirPanther: every other discussion query checks club access; upstream forgot this
+		// one, so the discussions of a private club were listable by id
+		verify_read_access(book_club_id.as_ref(), user, conn).await?;
 
 		let current_book_position =
 			match book_club_book::Entity::get_current_or_next_position(

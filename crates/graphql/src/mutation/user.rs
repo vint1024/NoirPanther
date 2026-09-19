@@ -677,10 +677,23 @@ async fn update_user(
 		return Err("You do not have permission to change the username".into());
 	}
 
+	// NoirPanther: `permissions`, `age_restriction` and `max_sessions_allowed` are privileged.
+	// Upstream applied them for ANY caller, so `updateViewer` (or `updateUser` on yourself)
+	// let a regular user grant themselves MANAGE_USERS & co., lift their own age
+	// restriction or raise their session limit. Only the server owner may change them — the
+	// same rule that already governs editing another user. For everyone else they are
+	// ignored rather than rejected: the profile form legitimately echoes the current values
+	// back together with a new username/password.
+	let may_edit_privileged_fields = by_user.is_server_owner;
+
 	let mut update_user = user::ActiveModel {
 		id: Set(for_user_id.clone()),
 		username: Set(input.username.clone()),
-		max_sessions_allowed: Set(input.max_sessions_allowed),
+		max_sessions_allowed: if may_edit_privileged_fields {
+			Set(input.max_sessions_allowed)
+		} else {
+			NotSet
+		},
 		..Default::default()
 	};
 
@@ -695,11 +708,22 @@ async fn update_user(
 	let txn = conn.begin().await?;
 
 	let is_updating_server_owner = by_user.is_server_owner && by_user.id == for_user_id;
-	if !is_updating_server_owner {
+	if may_edit_privileged_fields && !is_updating_server_owner {
 		update_user_age_restriction(&for_user_id, &input.age_restriction, &txn).await?;
 
 		let permissions = PermissionSet::new(input.permissions.clone());
 		update_user.permissions = Set(permissions.resolve_into_string());
+	} else if !may_edit_privileged_fields {
+		let requested =
+			PermissionSet::new(input.permissions.clone()).resolve_into_string();
+		let current =
+			PermissionSet::new(by_user.permissions.clone()).resolve_into_string();
+		if requested != current {
+			tracing::warn!(
+				user_id = %by_user.id,
+				"Ignored an attempt to change own permissions without being the server owner"
+			);
+		}
 	}
 
 	let updated_user_entity = update_user.update(&txn).await?;
