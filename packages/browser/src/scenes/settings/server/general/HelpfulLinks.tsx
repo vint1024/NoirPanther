@@ -17,7 +17,7 @@ export default function HelpfulLinks() {
 			<div className="gap-12 md:gap-8 flex flex-row flex-wrap">
 				{/* NoirPanther (this fork) links first, upstream Stump links after. */}
 				<Link
-					href="https://github.com/vint1024/stump"
+					href="https://github.com/vint1024/NoirPanther"
 					target="__blank"
 					rel="noopener noreferrer"
 					className={cn('space-x-2 text-sm flex items-center hover:underline', TEXT_VARIANTS.label)}
@@ -28,7 +28,7 @@ export default function HelpfulLinks() {
 				</Link>
 
 				<Link
-					href="https://github.com/vint1024/stump/releases"
+					href="https://github.com/vint1024/NoirPanther/releases"
 					target="__blank"
 					rel="noopener noreferrer"
 					className={cn('space-x-2 text-sm flex items-center hover:underline', TEXT_VARIANTS.label)}

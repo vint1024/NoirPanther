@@ -1,5 +1,5 @@
 #!/bin/bash
-# Dump the NoirPanther PostgreSQL database into ./db-backups (run from the stack directory, e.g. /Users/homeserver/docker/noir-panter).
+# Dump the NoirPanther PostgreSQL database into ./db-backups. Put this file next to docker-compose.yml (it uses the `db` service).
 set -euo pipefail
 export PATH=/usr/local/bin:$PATH
 cd "$(dirname "$0")"

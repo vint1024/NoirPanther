@@ -26,10 +26,10 @@ export class ServerAPI extends APIBase {
 	}
 
 	/**
-	 * Check for updates to the Stump instance
+	 * Check whether a newer NoirPanther release exists (the server asks GitHub)
 	 */
 	async checkUpdate(): Promise<UpdateCheck> {
-		const { data: update } = await this.axios.get<UpdateCheck>(serverURL('/update'))
+		const { data: update } = await this.axios.get<UpdateCheck>(serverURL('/check-for-update'))
 		return update
 	}
 

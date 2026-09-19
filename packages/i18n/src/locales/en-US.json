@@ -1971,11 +1971,12 @@
 			"description": "General settings related to your NoirPanther server instance",
 			"sections": {
 				"updateAvailable": {
-					"message": "Your server is not up to date. Please update to the latest version!"
+					"message": "A newer NoirPanther release is available: {{version}}. Pull the new image to update.",
+					"releaseNotes": "Release notes"
 				},
 				"serverInfo": {
 					"title": "Server information",
-					"description": "Basic details about your NoirPanther server instance — a fork of Stump with additional features. The semantic version matches the Stump release it is built on; the exact build is the commit below.",
+					"description": "Basic details about your NoirPanther server instance — a fork of Stump with additional features. The version starts with the Stump release it is built from; the rN after it is the NoirPanther revision on top of that release.",
 					"build": {
 						"label": "Build",
 						"description": "Details about the version and build",

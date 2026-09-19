@@ -80,12 +80,45 @@ async fn version() -> APIResult<Json<StumpVersion>> {
 	}))
 }
 
+/// The GitHub repository whose releases this build is checked against. NoirPanther
+/// releases are tagged `v<upstream semver>-r<N>` (e.g. `v0.1.7-r2`): the semver is the
+/// Stump release the build is based on, `rN` is the fork revision on top of it.
+const RELEASES_REPO: &str = "vint1024/NoirPanther";
+
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdateCheck {
 	current_semver: String,
 	latest_semver: String,
 	has_update_available: bool,
+	/// Link to the latest release page, when one is known
+	release_url: Option<String>,
+}
+
+/// Parses `X.Y.Z` or `X.Y.Z-rN` (with or without a leading `v`) into a tuple that
+/// orders the way releases do: upstream version first, then the fork revision
+/// (a bare `X.Y.Z` counts as revision 0).
+fn parse_release_version(version: &str) -> Option<(u64, u64, u64, u64)> {
+	let version = version.trim().trim_start_matches('v');
+	let (base, revision) = match version.split_once('-') {
+		Some((base, suffix)) => (base, suffix.strip_prefix('r')?.parse().ok()?),
+		None => (version, 0),
+	};
+	let mut parts = base.split('.').map(|part| part.parse::<u64>().ok());
+	let parsed = (parts.next()??, parts.next()??, parts.next()??, revision);
+	parts.next().is_none().then_some(parsed)
+}
+
+/// Whether `latest` is a newer release than `current`. Versions that don't follow the
+/// release scheme (local/dev builds) fall back to a plain inequality check.
+fn is_newer_release(current: &str, latest: &str) -> bool {
+	match (
+		parse_release_version(current),
+		parse_release_version(latest),
+	) {
+		(Some(current), Some(latest)) => latest > current,
+		_ => latest.trim_start_matches('v') != current.trim_start_matches('v'),
+	}
 }
 
 async fn check_for_updates() -> APIResult<Json<UpdateCheck>> {
@@ -93,36 +126,43 @@ async fn check_for_updates() -> APIResult<Json<UpdateCheck>> {
 
 	let client = reqwest::Client::new();
 	let github_response = client
-		.get("https://api.github.com/repos/stumpapp/stump/releases/latest")
-		.header(USER_AGENT, "stumpapp/stump")
+		.get(format!(
+			"https://api.github.com/repos/{RELEASES_REPO}/releases/latest"
+		))
+		.header(USER_AGENT, RELEASES_REPO)
 		.send()
 		.await?;
 
 	if github_response.status().is_success() {
 		let github_json: serde_json::Value = github_response.json().await?;
 
-		let mut latest_semver = github_json["tag_name"].as_str().ok_or_else(|| {
-			APIError::InternalServerError(
-				"Failed to parse latest release tag name".to_string(),
-			)
-		})?;
-		if latest_semver.starts_with('v') && latest_semver.len() > 1 {
-			latest_semver = &latest_semver[1..];
-		}
+		let latest_semver = github_json["tag_name"]
+			.as_str()
+			.ok_or_else(|| {
+				APIError::InternalServerError(
+					"Failed to parse latest release tag name".to_string(),
+				)
+			})?
+			.trim_start_matches('v')
+			.to_string();
 
-		let has_update_available = latest_semver != current_semver;
+		let has_update_available = is_newer_release(&current_semver, &latest_semver);
 
 		Ok(Json(UpdateCheck {
 			current_semver,
-			latest_semver: latest_semver.to_string(),
+			latest_semver,
 			has_update_available,
+			release_url: github_json["html_url"].as_str().map(str::to_string),
 		}))
 	} else {
 		match github_response.status().as_u16() {
-			404 => Ok(Json(UpdateCheck {
+			// No releases yet, or GitHub rate limited this address: not an error worth
+			// surfacing in the settings page
+			403 | 404 | 429 => Ok(Json(UpdateCheck {
 				current_semver,
 				latest_semver: "unknown".to_string(),
 				has_update_available: false,
+				release_url: None,
 			})),
 			_ => Err(APIError::InternalServerError(format!(
 				"Failed to fetch latest release: {}",
@@ -169,4 +209,32 @@ async fn health(State(ctx): State<AppState>) -> impl IntoResponse {
 	// road if needed
 
 	(status_code, Json(payload))
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn parses_release_versions() {
+		assert_eq!(parse_release_version("0.1.7"), Some((0, 1, 7, 0)));
+		assert_eq!(parse_release_version("v0.1.7-r2"), Some((0, 1, 7, 2)));
+		assert_eq!(parse_release_version("0.1.7-r12"), Some((0, 1, 7, 12)));
+		assert_eq!(parse_release_version("0.1.7-vint-0.5.0"), None);
+		assert_eq!(parse_release_version("0.1"), None);
+		assert_eq!(parse_release_version("0.1.7.1"), None);
+	}
+
+	#[test]
+	fn compares_releases() {
+		assert!(is_newer_release("0.1.7-r1", "0.1.7-r2"));
+		assert!(is_newer_release("0.1.7-r9", "0.1.7-r10"));
+		assert!(is_newer_release("0.1.7-r5", "0.1.8-r1"));
+		assert!(!is_newer_release("0.1.7-r2", "0.1.7-r2"));
+		assert!(!is_newer_release("0.1.7-r2", "v0.1.7-r2"));
+		// A server built ahead of the published release is not "out of date"
+		assert!(!is_newer_release("0.1.7-r3", "0.1.7-r2"));
+		// Builds outside the scheme: anything different counts as an update
+		assert!(is_newer_release("0.1.7-vint-0.5.0", "0.1.7-r1"));
+	}
 }

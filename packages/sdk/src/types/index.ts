@@ -34,6 +34,7 @@ export type UpdateCheck = {
 	currentSemver: string
 	latestSemver: string
 	hasUpdateAvailable: boolean
+	releaseUrl?: string | null
 }
 
 export type StumpVersion = {

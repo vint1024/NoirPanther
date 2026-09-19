@@ -5,23 +5,23 @@ import { useMemo } from 'react'
 export default function ApplicationVersion() {
 	const version = useStumpVersion()
 
-	// Show the upstream-equivalent base version (v0.1.4); the fork suffix on the
-	// build is represented by the exact commit shown alongside it.
-	const baseSemver = version?.semver?.split('-')[0]
+	// NoirPanther versions are `<Stump semver>-r<N>` (e.g. 0.1.7-r2) and releases are
+	// tagged `v<semver>`; the exact build is the commit shown alongside it.
+	const semver = version?.semver
 
 	const url = useMemo(() => {
 		if (!version) return undefined
 
 		const { rev } = version
-		const repoUrl = 'https://github.com/vint1024/stump'
-		if (baseSemver && baseSemver !== '0.0.0') {
-			return `${repoUrl}/releases/tag/v${baseSemver}`
+		const repoUrl = 'https://github.com/vint1024/NoirPanther'
+		if (semver && /-r\d+$/.test(semver)) {
+			return `${repoUrl}/releases/tag/v${semver}`
 		} else if (rev) {
 			return `${repoUrl}/commit/${rev}`
 		} else {
 			return repoUrl
 		}
-	}, [version, baseSemver])
+	}, [version, semver])
 
 	if (!version) return null
 
@@ -34,7 +34,7 @@ export default function ApplicationVersion() {
 			underline={false}
 		>
 			<span>
-				v{baseSemver}
+				v{semver}
 				{!!version.rev && ` - ${version.rev}`}
 			</span>
 		</Link>

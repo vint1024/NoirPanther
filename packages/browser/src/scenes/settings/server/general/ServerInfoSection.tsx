@@ -15,7 +15,7 @@ import { intlFormat } from 'date-fns'
 import { Info } from 'lucide-react'
 import { useMemo } from 'react'
 
-const REPO_URL = 'https://github.com/vint1024/stump'
+const REPO_URL = 'https://github.com/vint1024/NoirPanther'
 const IS_DEV = import.meta.env.DEV
 
 export default function ServerInfoSection() {
@@ -23,13 +23,13 @@ export default function ServerInfoSection() {
 
 	const { t } = useLocaleContext()
 
-	// Display the upstream-equivalent semantic version (v0.1.4): the build carries
-	// a fork suffix (e.g. 0.1.4-vint-0.3.0); the exact build is the commit below.
-	const baseSemver = useMemo(() => version?.semver?.split('-')[0], [version])
-
+	// NoirPanther releases are versioned `<Stump semver>-r<N>` (e.g. 0.1.7-r2): built from
+	// that Stump release, `rN` being the fork revision on top of it. Releases are tagged
+	// `v<semver>`; builds outside the scheme (local/dev) just link to the repository.
+	const semver = version?.semver
 	const versionUrl = useMemo(
-		() => (baseSemver ? `${REPO_URL}/releases/tag/v${baseSemver}` : REPO_URL),
-		[baseSemver],
+		() => (semver && /-r\d+$/.test(semver) ? `${REPO_URL}/releases/tag/v${semver}` : REPO_URL),
+		[semver],
 	)
 
 	const commitUrl = useMemo(
@@ -83,7 +83,7 @@ export default function ServerInfoSection() {
 							)}
 							underline={false}
 						>
-							<span>v{baseSemver}</span>
+							<span>v{semver}</span>
 						</Link>
 					</div>
 				)}

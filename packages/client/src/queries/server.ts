@@ -17,11 +17,16 @@ export function useCheckForServerUpdate() {
 	const { data, isLoading } = useQuery({
 		queryKey: [sdk.server.keys.checkUpdate],
 		queryFn: () => sdk.server.checkUpdate(),
+		// The server asks GitHub on every call — no need to repeat it while the app is open
+		staleTime: Infinity,
+		retry: false,
 	})
 
 	return {
 		isLoading,
 		updateAvailable: data?.hasUpdateAvailable ?? false,
+		latestVersion: data?.latestSemver,
+		releaseUrl: data?.releaseUrl ?? undefined,
 	}
 }
 

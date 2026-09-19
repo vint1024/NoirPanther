@@ -1,5 +1,5 @@
 import { useCheckForServerUpdate, useUploadConfig } from '@stump/client'
-import { Alert, AlertDescription } from '@stump/components'
+import { Alert, AlertDescription, Link } from '@stump/components'
 import { UserPermission } from '@stump/graphql'
 import { useLocaleContext } from '@stump/i18n'
 import { AlertTriangle } from 'lucide-react'
@@ -20,7 +20,7 @@ export default function GeneralServerSettingsScene() {
 	const { t } = useLocaleContext()
 	const { checkPermission } = useAppContext()
 
-	const { updateAvailable } = useCheckForServerUpdate()
+	const { updateAvailable, latestVersion, releaseUrl } = useCheckForServerUpdate()
 	const { uploadConfig } = useUploadConfig({ enabled: checkPermission(UserPermission.UploadFile) })
 
 	return (
@@ -39,7 +39,14 @@ export default function GeneralServerSettingsScene() {
 						<Alert variant="warning">
 							<AlertTriangle />
 							<AlertDescription>
-								{t('settingsScene.server/general.sections.updateAvailable.message')}
+								{t('settingsScene.server/general.sections.updateAvailable.message', {
+									version: latestVersion,
+								})}{' '}
+								{releaseUrl && (
+									<Link href={releaseUrl} target="_blank" rel="noopener noreferrer">
+										{t('settingsScene.server/general.sections.updateAvailable.releaseNotes')}
+									</Link>
+								)}
 							</AlertDescription>
 						</Alert>
 					)}

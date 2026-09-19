@@ -1,19 +1,28 @@
 name: NoirPanther Docker image
 
 # Builds the NoirPanther server image for amd64 + arm64 on GitHub's native runners and
-# publishes it to the GitHub Container Registry:
-#   ghcr.io/vint1024/noirpanther:<version>  and  :latest
+# publishes it to the GitHub Container Registry, then creates the GitHub release:
+#   ghcr.io/vint1024/noirpanther:<version>   e.g. :0.1.7-r2  (pinned)
+#   ghcr.io/vint1024/noirpanther:<base>      e.g. :0.1.7     (latest revision on that Stump release)
+#   ghcr.io/vint1024/noirpanther:latest
+#
+# Versioning: `<Stump semver>-r<N>` — built from that Stump release, `rN` is the fork
+# revision on top of it. Release tags are `v<version>` (upstream only uses bare `vX.Y.Z`).
 #
 # Triggers:
-#   - pushing a tag `noirpanther-v*`  (e.g. `git tag noirpanther-v0.1.7-vint-0.5.0 && git push github --tags`)
-#   - manually from the Actions tab (workflow_dispatch)
+#   - pushing a tag `v*-r*`  (e.g. `git tag v0.1.7-r2 && git push github v0.1.7-r2`)
+#   - manually from the Actions tab (workflow_dispatch) — image only, no release
 #
-# Auth uses the built-in GITHUB_TOKEN (packages: write) — no secrets to manage.
+# The GitHub release is what running servers check for updates
+# (`/api/v2/check-for-update` → releases/latest). Its notes come from
+# `.github/release-notes/<tag>.md` when that file exists.
+#
+# Auth uses the built-in GITHUB_TOKEN (packages + contents: write) — no secrets to manage.
 
 on:
   push:
     tags:
-      - 'noirpanther-v*'
+      - 'v*-r*'
   workflow_dispatch:
     inputs:
       version:
@@ -27,7 +36,7 @@ on:
         default: true
 
 permissions:
-  contents: read
+  contents: write
   packages: write
 
 concurrency:
@@ -109,8 +118,8 @@ jobs:
         id: tags
         run: |
           VERSION="${{ github.event.inputs.version }}"
-          if [ -z "$VERSION" ] && [[ "${GITHUB_REF}" == refs/tags/noirpanther-v* ]]; then
-            VERSION="${GITHUB_REF#refs/tags/noirpanther-v}"
+          if [ -z "$VERSION" ] && [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            VERSION="${GITHUB_REF#refs/tags/v}"
           fi
           if [ -z "$VERSION" ]; then
             VERSION="$(grep -m1 '^version' Cargo.toml | sed -E 's/.*"([^"]+)".*/\1/')"
@@ -118,6 +127,9 @@ jobs:
           TAGS="-t ${IMAGE}:${VERSION}"
           if [ "${{ github.event_name }}" = "push" ] || [ "${{ github.event.inputs.latest }}" = "true" ]; then
             TAGS="$TAGS -t ${IMAGE}:latest"
+            # Moving tag for the Stump release this build is based on (0.1.7-r2 → 0.1.7)
+            BASE="${VERSION%%-r[0-9]*}"
+            if [ "$BASE" != "$VERSION" ]; then TAGS="$TAGS -t ${IMAGE}:${BASE}"; fi
           fi
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "tags=$TAGS" >> "$GITHUB_OUTPUT"
@@ -147,3 +159,28 @@ jobs:
 
       - name: Inspect
         run: docker buildx imagetools inspect "${IMAGE}:${{ steps.tags.outputs.version }}"
+
+      - name: Create the GitHub release
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.tags.outputs.version }}
+        run: |
+          TAG="v${VERSION}"
+          NOTES=".github/release-notes/${TAG}.md"
+          {
+            if [ -f "$NOTES" ]; then cat "$NOTES"; echo; fi
+            echo '## Install / update'
+            echo
+            echo '```bash'
+            echo "docker pull ${IMAGE}:${VERSION}"
+            echo '```'
+            echo
+            echo "Also published as \`${IMAGE}:latest\` and \`${IMAGE}:${VERSION%%-r[0-9]*}\`."
+            echo "See the README for docker compose examples (SQLite and PostgreSQL)."
+          } > /tmp/release-notes.md
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release edit "$TAG" --title "NoirPanther server ${VERSION}" --notes-file /tmp/release-notes.md --latest
+          else
+            gh release create "$TAG" --verify-tag --title "NoirPanther server ${VERSION}" --notes-file /tmp/release-notes.md --latest
+          fi
