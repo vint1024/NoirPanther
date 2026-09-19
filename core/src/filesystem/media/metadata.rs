@@ -258,6 +258,14 @@ impl ProcessedMediaMetadata {
 	}
 }
 
+/// The first value that isn't blank, trimmed
+fn first_non_empty(values: Vec<String>) -> Option<String> {
+	values
+		.into_iter()
+		.map(|value| value.trim().to_string())
+		.find(|value| !value.is_empty())
+}
+
 // NOTE: this is primarily used for converting the EPUB metadata into a common Metadata struct
 impl From<HashMap<String, Vec<String>>> for ProcessedMediaMetadata {
 	fn from(map: HashMap<String, Vec<String>>) -> Self {
@@ -265,11 +273,12 @@ impl From<HashMap<String, Vec<String>>> for ProcessedMediaMetadata {
 
 		for (key, value) in map {
 			match key.to_lowercase().as_str() {
-				"title" => metadata.title = Some(value.join("\n").to_string()),
-				"title_sort" => metadata.title_sort = Some(value.join("\n").to_string()),
-				"series" | "collection_name" => {
-					metadata.series = Some(value.join("\n").to_string())
-				},
+				// An EPUB may carry several `dc:title` elements (main title, subtitle,
+				// full title — Standard Ebooks does). The first one is the main title;
+				// joining them produced multi-line names like "Frankenstein\nOr, the…"
+				"title" => metadata.title = first_non_empty(value),
+				"title_sort" => metadata.title_sort = first_non_empty(value),
+				"series" | "collection_name" => metadata.series = first_non_empty(value),
 				"number" | "series_index" | "collection_position" => {
 					metadata.number =
 						value.into_iter().next().and_then(|n| n.parse().ok());
@@ -390,6 +399,29 @@ impl From<HashMap<String, Vec<String>>> for ProcessedMediaMetadata {
 #[cfg(test)]
 mod tests {
 	use super::*;
+
+	#[test]
+	fn test_epub_multiple_titles_use_the_main_one() {
+		let map = HashMap::from([
+			(
+				"title".to_string(),
+				vec![
+					"Frankenstein".to_string(),
+					"Or, the Modern Prometheus".to_string(),
+					"Frankenstein, or the Modern Prometheus".to_string(),
+				],
+			),
+			(
+				"series".to_string(),
+				vec!["  ".to_string(), "Gothic Classics".to_string()],
+			),
+		]);
+
+		let metadata = ProcessedMediaMetadata::from(map);
+		assert_eq!(metadata.title.as_deref(), Some("Frankenstein"));
+		assert_eq!(metadata.series.as_deref(), Some("Gothic Classics"));
+		assert_eq!(metadata.title_sort, None);
+	}
 
 	#[test]
 	fn test_from_hashmap() {
