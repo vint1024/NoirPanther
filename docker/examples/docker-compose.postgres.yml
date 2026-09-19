@@ -12,14 +12,14 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U stump -d stump"]
+      test: ['CMD-SHELL', 'pg_isready -U stump -d stump']
       interval: 5s
       timeout: 3s
       retries: 30
     restart: unless-stopped
 
   noir-panter:
-    image: stump:vint-dev
+    image: ghcr.io/vint1024/noirpanther:latest
     container_name: noir-panter
     depends_on:
       db:

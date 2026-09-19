@@ -50,7 +50,7 @@
 ### Packaging
 
 - Semantic version **`v0.1.7`** (internal build identifier `0.1.7-vint-0.5.0`), build channel **`NoirPanther (stable)`**
-- Docker `arm64` image (Rust 1.97 / Node 24 toolchain; `CARGO_BUILD_JOBS` build-arg caps compile parallelism for small Docker VMs)
+- Docker images for `amd64` + `arm64` published to **`ghcr.io/vint1024/noirpanther`** by a GitHub Actions workflow on native runners (Rust 1.97 / Node 24 toolchain; `CARGO_BUILD_JOBS` build-arg caps compile parallelism for small Docker VMs) — see [Install with Docker Compose](#install-with-docker-compose)
 
 > A from-scratch **proprietary** client — **NoirPanther** — is built against this fork's API: <https://git.vint1024.net/vint1024/noirpanther.git>
 
@@ -130,6 +130,46 @@ And more not mentioned. The [documentation](https://www.stumpapp.dev) will provi
 You can track the [project boards](https://github.com/stumpapp/stump/projects?query=is%3Aopen) to see what efforts are currently being worked on or planned.
 
 Feel free to create an issue or discussion if you have anything else you'd like to see!
+
+## Install with Docker Compose
+
+Multi-arch images (`linux/amd64`, `linux/arm64`) are published to the GitHub Container
+Registry: **`ghcr.io/vint1024/noirpanther`** — `:latest` plus a tag per version
+(e.g. `:0.1.7-vint-0.5.0`).
+
+```yaml
+# docker-compose.yml
+services:
+  noirpanther:
+    image: ghcr.io/vint1024/noirpanther:latest
+    container_name: noirpanther
+    volumes:
+      - ./noirpanther_config:/config # database, thumbnails, avatars, logs
+      - /path/to/your/books:/data
+    ports:
+      - 10801:10801
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=UTC
+      - STUMP_CONFIG_DIR=/config
+    restart: unless-stopped
+```
+
+```bash
+docker compose up -d
+```
+
+Open `http://<host>:10801` — the first account you create becomes the server owner. Then
+add a library pointing at `/data`. Updating: `docker compose pull && docker compose up -d`.
+
+- PostgreSQL instead of the built-in SQLite: [`docker/examples/docker-compose.postgres.yml`](docker/examples/docker-compose.postgres.yml)
+  (+ [`backup-postgres.sh`](docker/examples/backup-postgres.sh)).
+- The same file lives at [`docker/examples/docker-compose.yml`](docker/examples/docker-compose.yml).
+- Images are built by the [`NoirPanther Docker image`](.github/workflows/noirpanther_docker.yml)
+  workflow (push a `noirpanther-v*` tag or run it from the Actions tab).
+- Any Stump client works with the server; the NoirPanther app adds the fork-only features on top
+  (and keeps a compatibility mode for vanilla Stump servers).
 
 ## Getting Started
 
