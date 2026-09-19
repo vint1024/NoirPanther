@@ -18,6 +18,9 @@ export default defineConfig({
 		assetsDir: './assets',
 		manifest: true,
 		outDir: '../dist',
+		// `dist` sits outside the vite root (`src`), so vite would not clear it on its own:
+		// every build left its hashed chunks behind and they all ended up in the image
+		emptyOutDir: true,
 		rollupOptions: {
 			output: {
 				// Keep the framework core (react, router, i18next + our i18n package,
