@@ -104,6 +104,10 @@ impl IntoResponse for AuthError {
 pub enum APIError {
 	#[error("Your account has been locked by an administrator")]
 	AccountLocked,
+	/// NoirPanther: too many failed sign-ins from one address; it is refused until the window
+	/// passes. The account is untouched, so nobody can lock a user out by guessing at them.
+	#[error("{0}")]
+	TooManyRequests(String),
 	#[error("{0}")]
 	BadRequest(String),
 	#[error("Request cancelled")]
@@ -157,6 +161,7 @@ impl APIError {
 	pub fn status_code(&self) -> StatusCode {
 		match self {
 			APIError::AccountLocked => StatusCode::FORBIDDEN,
+			APIError::TooManyRequests(_) => StatusCode::TOO_MANY_REQUESTS,
 			APIError::BadRequest(_) => StatusCode::BAD_REQUEST,
 			APIError::CancelledRequest => {
 				StatusCode::from_u16(499).expect("499 is a valid HTTP status code")

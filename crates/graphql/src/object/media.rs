@@ -229,8 +229,6 @@ impl Media {
 			},
 		};
 
-		let core = ctx.data::<CoreContext>()?;
-
 		Ok(ImageRef {
 			url: service.cache_friendly_url(
 				format!("/api/v2/media/{}/thumbnail", self.model.id),

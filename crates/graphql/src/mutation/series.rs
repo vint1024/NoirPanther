@@ -13,7 +13,7 @@ use sea_orm::{
 use stump_core::{
 	image::{
 		bump_series_thumbnail_fallbacks, generate_thumbnail_from_book, remove_thumbnails,
-		GenerateThumbnailOptions, ThumbnailGenerationJobParams,
+		ThumbnailGenerationJobParams,
 	},
 	job::StumpJob,
 	media::analysis::{AnalysisJobConfig, MediaAnalysisJobScope},

@@ -166,6 +166,9 @@ docker compose pull && docker compose up -d
 - **Book clubs** — enabled and built to work with large clubs
 - **PostgreSQL-ready** — the upstream queries that only worked on SQLite are fixed, and there is a
   script to move an existing SQLite database over
+- **Sign-in throttling that cannot be weaponised** — a run of wrong passwords blocks that address
+  for a few minutes instead of locking the account, so nobody can lock you out by guessing at your
+  username
 - **Search that finds things** — case-insensitive in any language, and it matches authors too
 
 ## Inherited from Stump

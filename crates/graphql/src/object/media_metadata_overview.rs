@@ -71,7 +71,6 @@ impl MediaMetadataOverview {
 	async fn genres(&self, ctx: &Context<'_>) -> Result<Vec<String>> {
 		let AuthContext { user, .. } = ctx.data::<AuthContext>()?;
 		let conn: &DatabaseConnection = ctx.data::<CoreContext>()?.conn.as_ref();
-		let AuthContext { user, .. } = ctx.data::<AuthContext>()?;
 		let series_id = self.series_id.clone();
 		get_unique_values_inner!(Genres, conn, series_id, Some(user))
 	}
@@ -79,7 +78,6 @@ impl MediaMetadataOverview {
 	async fn writers(&self, ctx: &Context<'_>) -> Result<Vec<String>> {
 		let AuthContext { user, .. } = ctx.data::<AuthContext>()?;
 		let conn: &DatabaseConnection = ctx.data::<CoreContext>()?.conn.as_ref();
-		let AuthContext { user, .. } = ctx.data::<AuthContext>()?;
 		let series_id = self.series_id.clone();
 		get_unique_values_inner!(Writers, conn, series_id, Some(user))
 	}
@@ -87,7 +85,6 @@ impl MediaMetadataOverview {
 	async fn pencillers(&self, ctx: &Context<'_>) -> Result<Vec<String>> {
 		let AuthContext { user, .. } = ctx.data::<AuthContext>()?;
 		let conn: &DatabaseConnection = ctx.data::<CoreContext>()?.conn.as_ref();
-		let AuthContext { user, .. } = ctx.data::<AuthContext>()?;
 		let series_id = self.series_id.clone();
 		get_unique_values_inner!(Pencillers, conn, series_id, Some(user))
 	}
@@ -95,7 +92,6 @@ impl MediaMetadataOverview {
 	async fn inkers(&self, ctx: &Context<'_>) -> Result<Vec<String>> {
 		let AuthContext { user, .. } = ctx.data::<AuthContext>()?;
 		let conn: &DatabaseConnection = ctx.data::<CoreContext>()?.conn.as_ref();
-		let AuthContext { user, .. } = ctx.data::<AuthContext>()?;
 		let series_id = self.series_id.clone();
 		get_unique_values_inner!(Inkers, conn, series_id, Some(user))
 	}
@@ -103,7 +99,6 @@ impl MediaMetadataOverview {
 	async fn colorists(&self, ctx: &Context<'_>) -> Result<Vec<String>> {
 		let AuthContext { user, .. } = ctx.data::<AuthContext>()?;
 		let conn: &DatabaseConnection = ctx.data::<CoreContext>()?.conn.as_ref();
-		let AuthContext { user, .. } = ctx.data::<AuthContext>()?;
 		let series_id = self.series_id.clone();
 		get_unique_values_inner!(Colorists, conn, series_id, Some(user))
 	}
@@ -111,7 +106,6 @@ impl MediaMetadataOverview {
 	async fn letterers(&self, ctx: &Context<'_>) -> Result<Vec<String>> {
 		let AuthContext { user, .. } = ctx.data::<AuthContext>()?;
 		let conn: &DatabaseConnection = ctx.data::<CoreContext>()?.conn.as_ref();
-		let AuthContext { user, .. } = ctx.data::<AuthContext>()?;
 		let series_id = self.series_id.clone();
 		get_unique_values_inner!(Letterers, conn, series_id, Some(user))
 	}
@@ -119,7 +113,6 @@ impl MediaMetadataOverview {
 	async fn cover_artists(&self, ctx: &Context<'_>) -> Result<Vec<String>> {
 		let AuthContext { user, .. } = ctx.data::<AuthContext>()?;
 		let conn: &DatabaseConnection = ctx.data::<CoreContext>()?.conn.as_ref();
-		let AuthContext { user, .. } = ctx.data::<AuthContext>()?;
 		let series_id = self.series_id.clone();
 		get_unique_values_inner!(CoverArtists, conn, series_id, Some(user))
 	}
@@ -127,7 +120,6 @@ impl MediaMetadataOverview {
 	async fn editors(&self, ctx: &Context<'_>) -> Result<Vec<String>> {
 		let AuthContext { user, .. } = ctx.data::<AuthContext>()?;
 		let conn: &DatabaseConnection = ctx.data::<CoreContext>()?.conn.as_ref();
-		let AuthContext { user, .. } = ctx.data::<AuthContext>()?;
 		let series_id = self.series_id.clone();
 		get_unique_values_inner!(Editors, conn, series_id, Some(user))
 	}
@@ -135,7 +127,6 @@ impl MediaMetadataOverview {
 	async fn publishers(&self, ctx: &Context<'_>) -> Result<Vec<String>> {
 		let AuthContext { user, .. } = ctx.data::<AuthContext>()?;
 		let conn: &DatabaseConnection = ctx.data::<CoreContext>()?.conn.as_ref();
-		let AuthContext { user, .. } = ctx.data::<AuthContext>()?;
 		let series_id = self.series_id.clone();
 		let values: Vec<String> =
 			get_base_query(media_metadata::Column::Publisher, series_id, Some(user))
@@ -148,7 +139,6 @@ impl MediaMetadataOverview {
 	async fn characters(&self, ctx: &Context<'_>) -> Result<Vec<String>> {
 		let AuthContext { user, .. } = ctx.data::<AuthContext>()?;
 		let conn: &DatabaseConnection = ctx.data::<CoreContext>()?.conn.as_ref();
-		let AuthContext { user, .. } = ctx.data::<AuthContext>()?;
 		let series_id = self.series_id.clone();
 		get_unique_values_inner!(Characters, conn, series_id, Some(user))
 	}
@@ -156,7 +146,6 @@ impl MediaMetadataOverview {
 	async fn teams(&self, ctx: &Context<'_>) -> Result<Vec<String>> {
 		let AuthContext { user, .. } = ctx.data::<AuthContext>()?;
 		let conn: &DatabaseConnection = ctx.data::<CoreContext>()?.conn.as_ref();
-		let AuthContext { user, .. } = ctx.data::<AuthContext>()?;
 		let series_id = self.series_id.clone();
 		get_unique_values_inner!(Teams, conn, series_id, Some(user))
 	}
@@ -164,7 +153,6 @@ impl MediaMetadataOverview {
 	async fn series(&self, ctx: &Context<'_>) -> Result<Vec<String>> {
 		let AuthContext { user, .. } = ctx.data::<AuthContext>()?;
 		let conn: &DatabaseConnection = ctx.data::<CoreContext>()?.conn.as_ref();
-		let AuthContext { user, .. } = ctx.data::<AuthContext>()?;
 		let series_id = self.series_id.clone();
 		get_unique_values_inner!(Series, conn, series_id, Some(user))
 	}

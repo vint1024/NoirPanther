@@ -99,24 +99,12 @@ pub async fn enforce_max_sessions(
 	Ok(())
 }
 
-async fn lock_account(conn: &DatabaseConnection, user_id: String) -> APIResult<()> {
-	let affected_rows = user::Entity::update_many()
-		.filter(user::Column::Id.eq(user_id.clone()))
-		.col_expr(user::Column::IsLocked, Expr::value(true))
-		.exec(conn)
-		.await?
-		.rows_affected;
-	tracing::debug!(?affected_rows, "Locked user account");
-
-	let deleted_sessions = session::Entity::delete_many()
-		.filter(session::Column::UserId.eq(user_id))
-		.exec(conn)
-		.await?
-		.rows_affected;
-	tracing::debug!(?deleted_sessions, "Removed all sessions for locked user");
-
-	Ok(())
-}
+/// NoirPanther: how long a run of failed sign-ins keeps an address out, and how many failures it
+/// takes. Short enough that a person who mistyped their password is not stuck for long, small
+/// enough that guessing passwords is pointless. The block is per (account, address) and expires
+/// on its own — see the login handler for why the account is no longer locked outright.
+const FAILED_LOGIN_WINDOW_SECS: i64 = 15 * 60;
+const MAX_FAILED_LOGINS_PER_ADDRESS: u64 = 9;
 
 #[derive(Deserialize)]
 pub struct PasswordUserInput {
@@ -270,8 +258,7 @@ async fn login(
 	}
 
 	let today: DateTime<FixedOffset> = Utc::now().into();
-	// TODO: make this configurable via environment variable so knowledgeable attackers can't bypass this
-	let twenty_four_hours_ago = today - Duration::hours(24);
+	let attempt_window_start = today - Duration::seconds(FAILED_LOGIN_WINDOW_SECS);
 
 	// Check if this is an OIDC-only user (no password set)
 	if user.hashed_password.is_empty() && user.oidc_issuer_id.is_some() {
@@ -295,21 +282,23 @@ async fn login(
 		return Err(APIError::Unauthorized);
 	}
 
-	let should_lock_account = !provided_valid_credentials && {
-		user_login_activity::Entity::find()
-			.filter(
-				user_login_activity::Column::UserId
-					.eq(user.id.clone())
-					.and(
-						user_login_activity::Column::Timestamp
-							.gte(twenty_four_hours_ago)
-							.and(user_login_activity::Column::Timestamp.lte(today)),
-					)
-					.and(user_login_activity::Column::AuthenticationSuccessful.eq(false)),
-			)
-			.count(state.conn.as_ref())
-			.await? >= 9
-	};
+	// NoirPanther: upstream counts a user's failed logins over 24 hours from anywhere and, at
+	// nine, locks the account until an administrator unlocks it by hand. That hands a stranger
+	// who knows a username a way to lock anyone out, the server owner included. We count the
+	// failures from THIS address instead, over a short window, and refuse that address for the
+	// rest of the window — the account itself is never touched, and the block lifts by itself.
+	let recent_failures_from_this_address = user_login_activity::Entity::find()
+		.filter(
+			user_login_activity::Column::UserId
+				.eq(user.id.clone())
+				.and(user_login_activity::Column::IpAddress.eq(client_ip.to_string()))
+				.and(user_login_activity::Column::Timestamp.gte(attempt_window_start))
+				.and(user_login_activity::Column::AuthenticationSuccessful.eq(false)),
+		)
+		.count(state.conn.as_ref())
+		.await?;
+	let address_is_throttled =
+		recent_failures_from_this_address >= MAX_FAILED_LOGINS_PER_ADDRESS;
 
 	let login_track_result = handle_login_attempt(
 		state.conn.as_ref(),
@@ -324,8 +313,17 @@ async fn login(
 		error!(error = ?err, "Failed to track login attempt!");
 	}
 
-	if should_lock_account {
-		lock_account(state.conn.as_ref(), user.id.clone()).await?;
+	if address_is_throttled {
+		tracing::warn!(
+			username = %user.username,
+			address = %client_ip,
+			failures = recent_failures_from_this_address,
+			"Too many failed logins from this address; refusing it for now"
+		);
+		return Err(APIError::TooManyRequests(format!(
+			"Too many failed sign-in attempts. Try again in {} minutes.",
+			FAILED_LOGIN_WINDOW_SECS / 60
+		)));
 	}
 
 	if !provided_valid_credentials {

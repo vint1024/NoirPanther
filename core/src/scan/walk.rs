@@ -400,12 +400,14 @@ pub async fn walk_series(
 		max_depth,
 		options,
 		dir_mtimes,
-		// our path-based existing-media match (below) handles merged folders, so the
-		// series_id scoping upstream added is not needed here
-		series_id: _,
+		// our path-based existing-media match (below) handles merged folders, so we do not
+		// scope the lookup by the series upstream passes here — it only goes into the log
+		series_id: scoped_series_id,
 		..
 	}: WalkerCtx,
 ) -> CoreResult<WalkedSeries> {
+	tracing::trace!(?path, ?scoped_series_id, "Walking a series directory");
+
 	if tokio::fs::metadata(path).await.is_err() {
 		tracing::error!(
 			"Failed to walk: {} is missing or inaccessible",

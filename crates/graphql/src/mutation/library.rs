@@ -16,7 +16,7 @@ use models::{
 };
 use sea_orm::{
 	prelude::*,
-	sea_query::{Expr, OnConflict, Query},
+	sea_query::{Expr, Query},
 	Condition, IntoActiveModel, QueryOrder, QuerySelect, Set, TransactionTrait,
 };
 use stump_core::{
@@ -47,7 +47,6 @@ use crate::{
 	},
 	mutation::tag::sync_tags,
 	object::{library::Library, library_config::LibraryConfig},
-	utils::db_statement,
 };
 
 #[derive(Default, SimpleObject)]
@@ -458,16 +457,15 @@ impl LibraryMutation {
 			.await?;
 
 		let scan_after_update = input.scan_after_persist;
-		let (add_watcher, remove_watcher) =
-			match input.config.as_ref().map(|config| config.watch) {
-				Some(watch) => (
-					// previously wasn't but now is = add watcher
-					watch != existing_config.watch,
-					// previously was but now isn't = remove watcher
-					!watch && existing_config.watch,
-				),
-				_ => (false, false),
-			};
+		let (add_watcher, _) = match input.config.as_ref().map(|config| config.watch) {
+			Some(watch) => (
+				// previously wasn't but now is = add watcher
+				watch != existing_config.watch,
+				// previously was but now isn't = remove watcher
+				!watch && existing_config.watch,
+			),
+			_ => (false, false),
+		};
 
 		let tags = input.tags.take();
 
