@@ -20,9 +20,10 @@ async fn web_app_is_served_with_a_content_security_policy() {
 	for directive in [
 		"frame-ancestors 'none'", // nobody may frame the app (clickjacking)
 		"form-action 'self'",     // an injected form cannot post off-site (phishing)
-		"frame-src 'none'",       // an injected iframe loads nothing
-		"object-src 'none'",      // no plugins
-		"base-uri 'self'",        // no rewriting of relative URLs
+		// the EPUB reader frames its own blob: content, so only off-site frames are blocked
+		"frame-src 'self' blob:",
+		"object-src 'none'",          // no plugins
+		"base-uri 'self'",            // no rewriting of relative URLs
 		"img-src 'self' data: blob:", // no third-party tracking pixels
 	] {
 		assert!(
@@ -46,10 +47,7 @@ async fn web_app_refuses_content_type_sniffing_and_leaks_no_referrer() {
 	};
 
 	assert_eq!(header("x-content-type-options"), "nosniff");
-	assert_eq!(
-		header("referrer-policy"),
-		"strict-origin-when-cross-origin"
-	);
+	assert_eq!(header("referrer-policy"), "strict-origin-when-cross-origin");
 }
 
 /// The session cookie is what authenticates the web app, so it must never be readable from
@@ -79,6 +77,12 @@ async fn session_cookie_is_http_only_and_same_site() {
 		cookie.contains("stump_session="),
 		"login must set the session cookie, got: {cookie}"
 	);
-	assert!(cookie.contains("HttpOnly"), "cookie must be HttpOnly: {cookie}");
-	assert!(cookie.contains("SameSite=Lax"), "cookie must be SameSite: {cookie}");
+	assert!(
+		cookie.contains("HttpOnly"),
+		"cookie must be HttpOnly: {cookie}"
+	);
+	assert!(
+		cookie.contains("SameSite=Lax"),
+		"cookie must be SameSite: {cookie}"
+	);
 }

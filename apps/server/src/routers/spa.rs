@@ -32,8 +32,10 @@ const DIST: &str = "/dist";
 /// NoirPanther: the web app shipped without a single security header. Book descriptions are
 /// rendered as HTML (they come from files downloaded off the internet), the app could be framed
 /// by any site, and responses were open to content-type sniffing. These headers close the parts
-/// the markup sanitizer cannot: no framing, no off-site form posts, no third-party images or
-/// frames, no plugins. `unsafe-inline` stays because index.html boots with an inline script and
+/// the markup sanitizer cannot: nobody may frame the app, forms cannot post off-site, and
+/// images and frames may only come from this server — the EPUB reader renders book content in
+/// blob: frames of its own, which is why `frame-src` allows `self` and `blob:` rather than
+/// nothing at all. `unsafe-inline` stays because index.html boots with an inline script and
 /// the styles are injected at runtime — script injection is already prevented in the renderer.
 fn security_headers() -> tower::layer::util::Stack<
 	SetResponseHeaderLayer<HeaderValue>,
@@ -45,15 +47,20 @@ fn security_headers() -> tower::layer::util::Stack<
 		>,
 	>,
 > {
+	// The readers build their content locally — EPUB pages are blob: frames with blob:
+	// stylesheets, PDF rendering runs in a blob: worker — so same-origin blob: and data: are
+	// allowed for every resource type they touch. What stays closed is what an injected
+	// description could abuse: remote frames and images, off-site form posts, plugins, and
+	// framing of the app itself.
 	const CSP: &str = "default-src 'self'; \
 		script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:; \
-		style-src 'self' 'unsafe-inline'; \
+		style-src 'self' 'unsafe-inline' blob:; \
 		img-src 'self' data: blob:; \
-		font-src 'self' data:; \
+		font-src 'self' data: blob:; \
 		media-src 'self' data: blob:; \
-		connect-src 'self' ws: wss:; \
+		connect-src 'self' ws: wss: blob: data:; \
 		worker-src 'self' blob:; \
-		frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; \
+		frame-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; \
 		frame-ancestors 'none'";
 
 	ServiceBuilder::new()

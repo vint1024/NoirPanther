@@ -1,5 +1,6 @@
 mod common;
 mod epub;
+mod fork;
 mod graphql;
 mod kobo;
 mod koreader;
