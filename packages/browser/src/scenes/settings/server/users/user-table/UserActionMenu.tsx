@@ -9,7 +9,7 @@ import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 
 import { useAppContext } from '@/context'
-import paths from '@/paths'
+import { usePaths } from '@/paths'
 
 import { User } from './UserTable'
 
@@ -36,6 +36,7 @@ type Props = {
 
 export default function UserActionMenu({ user, onSelectForInspect, onSelectForDeletion }: Props) {
 	const { t } = useLocaleContext()
+	const paths = usePaths()
 	const { sdk } = useSDK()
 	const { isServerOwner, user: byUser, checkPermission } = useAppContext()
 
@@ -139,6 +140,7 @@ export default function UserActionMenu({ user, onSelectForInspect, onSelectForDe
 			handleSetLockStatus,
 			onSelectForDeletion,
 			canManageUsers,
+			paths,
 		],
 	)
 

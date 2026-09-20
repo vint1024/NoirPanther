@@ -19,9 +19,9 @@ use sea_orm::{
 };
 use stump_core::{
 	config::StumpConfig,
-	filesystem::{
-		get_saved_thumbnail, get_thumbnail, media::get_page_async, ContentType, FileError,
-	},
+	fs_utils::ContentType,
+	image::thumbnail::{get_saved_thumbnail, get_thumbnail},
+	media::processor::get_page,
 	Ctx,
 };
 
@@ -77,7 +77,7 @@ pub(crate) async fn get_media_thumbnail(
 	}
 
 	let generated_thumb =
-		get_thumbnail(config.get_thumbnails_dir(), &book.id, image_format).await?;
+		get_thumbnail(config.thumbnails_directory(), &book.id, image_format).await?;
 
 	let adjusted_config = StumpConfig {
 		pdf_prerender_range: 0, // Disable PDF prerendering for thumbnails since we only need the first page
@@ -87,7 +87,7 @@ pub(crate) async fn get_media_thumbnail(
 	if let Some((content_type, bytes)) = generated_thumb {
 		Ok((content_type, bytes))
 	} else {
-		Ok(get_page_async(&book.path, 1, &adjusted_config).await?)
+		Ok(get_page(&book.path, 1, &adjusted_config).await?)
 	}
 }
 
@@ -162,16 +162,7 @@ async fn get_media_page(
 		.await?
 		.ok_or(APIError::NotFound("Book not found".to_string()))?;
 
-	let content =
-		match get_page_async(&book.path, page.try_into()?, ctx.config.as_ref()).await {
-			Ok(result) => result,
-			Err(e) => {
-				if matches!(e, FileError::NoImageError) {
-					return Err(APIError::NotFound("Page not found".to_string()));
-				}
-				return Err(APIError::InternalServerError(e.to_string()));
-			},
-		};
+	let content = get_page(&book.path, page.try_into()?, ctx.config.as_ref()).await?;
 
 	Ok(ImageResponse::from(content))
 }

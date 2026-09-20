@@ -5,7 +5,7 @@ import { useLocaleContext } from '@stump/i18n'
 import { useCallback } from 'react'
 
 import { usePrefetchSeries } from '@/scenes/series'
-import { usePrefetchSeriesBooks } from '@/scenes/series/tabs/books/SeriesBooksScene'
+import { usePrefetchSeriesBooks } from '@/scenes/series/tabs/books/queries'
 
 import paths from '../../paths'
 import pluralizeStat from '../../utils/pluralize'

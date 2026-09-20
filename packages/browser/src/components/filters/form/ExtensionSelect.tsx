@@ -11,11 +11,11 @@ export default function ExtensionSelect() {
 	return (
 		<div className="py-1.5">
 			<Label htmlFor="extension" className="mb-1.5">
-				{t('components.filters.form.ExtensionSelect.label')}
+				{t('mediaFilterForm.extensionSelect.label')}
 			</Label>
 			<NativeSelect
 				options={[
-					{ label: t('components.filters.form.ExtensionSelect.any'), value: '' },
+					{ label: t('mediaFilterForm.extensionSelect.any'), value: '' },
 					{ label: 'CBZ', value: 'cbz' },
 					{ label: 'CBR', value: 'cbr' },
 					{ label: 'ZIP', value: 'zip' },

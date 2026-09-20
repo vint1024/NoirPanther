@@ -23,7 +23,7 @@ use crate::{
 	},
 	object::epub::Epub,
 	pagination::{CursorPagination, CursorPaginationInfo, PaginatedResponse, Pagination},
-	utils::{db_statement, thumbnail_version, versioned_url},
+	utils::db_statement,
 };
 
 use super::{
@@ -210,6 +210,7 @@ impl Media {
 	async fn thumbnail(&self, ctx: &Context<'_>) -> Result<ImageRef> {
 		let service = ctx.data::<ServiceContext>()?;
 		let loader = ctx.data::<DataLoader<MediaAnalysisLoader>>()?;
+		let last_modified = self.model.updated_at;
 
 		let dimensions = match self
 			.model
@@ -229,22 +230,16 @@ impl Media {
 		};
 
 		let core = ctx.data::<CoreContext>()?;
-		let version = thumbnail_version(
-			&core.config.get_thumbnails_dir(),
-			&self.model.id,
-			self.model.updated_at.or(Some(self.model.created_at)),
-		)
-		.await;
 
 		Ok(ImageRef {
-			url: versioned_url(
-				service.format_url(format!("/api/v2/media/{}/thumbnail", self.model.id)),
-				version,
+			url: service.cache_friendly_url(
+				format!("/api/v2/media/{}/thumbnail", self.model.id),
+				&last_modified,
 			),
 			height: dimensions.as_ref().map(|dim| dim.1),
 			width: dimensions.as_ref().map(|dim| dim.0),
 			metadata: self.model.thumbnail_meta.clone(),
-			..Default::default()
+			last_modified,
 		})
 	}
 

@@ -3,7 +3,7 @@ import { useLocaleContext } from '@stump/i18n'
 import { Minus } from 'lucide-react'
 import { useCallback } from 'react'
 import { useFormContext, useWatch } from 'react-hook-form'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 
 import AddFieldsDialog from '../AddFieldsDialog'
 import { useMetadataEditorContext } from '../context'

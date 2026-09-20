@@ -10,9 +10,12 @@ import {
 } from '@stump/components'
 import { graphql } from '@stump/graphql'
 import { useLocaleContext } from '@stump/i18n'
+import { useQueryClient } from '@tanstack/react-query'
 import { AlertTriangle } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { toast } from 'sonner'
+
+import { invalidateThumbnailQueries } from '@/utils/query'
 
 import { useLibraryManagement } from '../../context'
 
@@ -24,6 +27,7 @@ const mutation = graphql(`
 
 export default function DeleteLibraryThumbnails() {
 	const { t } = useLocaleContext()
+	const queryClient = useQueryClient()
 	const {
 		library: { id },
 	} = useLibraryManagement()
@@ -37,6 +41,7 @@ export default function DeleteLibraryThumbnails() {
 	const handleDeleteThumbnails = useCallback(async () => {
 		try {
 			await deleteThumbnails({ id })
+			await invalidateThumbnailQueries(queryClient)
 			toast.success(
 				t('scenes.library.tabs.settings.options.thumbnails.DeleteLibraryThumbnails.deleteSuccess'),
 			)
@@ -51,7 +56,7 @@ export default function DeleteLibraryThumbnails() {
 				toast.error(fallbackMessage)
 			}
 		}
-	}, [id, deleteThumbnails, t])
+	}, [id, deleteThumbnails, queryClient, t])
 
 	return (
 		<>

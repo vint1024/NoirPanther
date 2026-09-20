@@ -7,7 +7,7 @@ import { useMediaMatch, useToggle } from 'rooks'
 
 import { useBookClubContext } from '@/components/bookClub'
 import GenericEmptyState from '@/components/GenericEmptyState'
-import paths from '@/paths'
+import { usePaths } from '@/paths'
 
 import BookClubBookItem from './BookClubBookItem'
 
@@ -32,6 +32,7 @@ const query = graphql(`
 
 export default function BookClubBooks() {
 	const { t } = useLocaleContext()
+	const paths = usePaths()
 	const { bookClub, viewerCanManage } = useBookClubContext()
 
 	const isMobile = useMediaMatch('(max-width: 768px)')

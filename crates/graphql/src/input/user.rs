@@ -80,3 +80,8 @@ pub struct UpdateUserPreferencesInput {
 pub struct NavigationArrangementInput {
 	pub sections: Vec<ArrangementSection>,
 }
+
+#[derive(InputObject, Debug)]
+pub struct HomeArrangementInput {
+	pub sections: Vec<ArrangementSection>,
+}

@@ -4,13 +4,14 @@ import { FilterableArrangementEntityLink, graphql, UserPermission } from '@stump
 import { useLocaleContext } from '@stump/i18n'
 import { CircleSlash2, Library, LibrarySquare } from 'lucide-react'
 import { Suspense, useMemo } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation } from 'react-router'
 import AutoSizer from 'react-virtualized-auto-sizer'
 
 import { LastVisitedLibrary } from '@/components/library'
 import { EntityOptionProps } from '@/components/navigation/types'
+import useCurrentLibraryId from '@/components/navigation/useCurrentLibraryId'
 import { useAppContext } from '@/context'
-import paths from '@/paths'
+import { usePaths } from '@/paths'
 
 import TopBarLinkListItem from '../../TopBarLinkListItem'
 
@@ -33,6 +34,7 @@ export default function LibraryNavigationItem({
 	width,
 }: Props) {
 	const { t } = useLocaleContext()
+	const paths = usePaths()
 	const { sdk } = useSDK()
 	const {
 		data: {
@@ -41,6 +43,7 @@ export default function LibraryNavigationItem({
 	} = useSuspenseGraphQL(query, sdk.cacheKey('libraries'))
 
 	const location = useLocation()
+	const currentLibraryId = useCurrentLibraryId()
 
 	const { checkPermission } = useAppContext()
 
@@ -85,7 +88,7 @@ export default function LibraryNavigationItem({
 							<div key={library.id} className="w-full">
 								<TopBarLinkListItem
 									to={paths.librarySeries(library.id)}
-									isActive={location.pathname.startsWith(paths.librarySeries(library.id))}
+									isActive={currentLibraryId === library.id}
 									className="h-9"
 								>
 									{library.emoji ? (

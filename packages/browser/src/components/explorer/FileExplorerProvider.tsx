@@ -4,7 +4,7 @@ import { useCallback, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 
-import paths from '@/paths'
+import { usePaths } from '@/paths'
 
 import { ExplorerContext, ExplorerLayout, IExplorerContext } from './context'
 import FileExplorer from './FileExplorer'
@@ -18,6 +18,7 @@ type Props = Pick<IExplorerContext, 'libraryID' | 'rootPath' | 'uploadConfig'>
 
 export default function FileExplorerProvider({ rootPath, ...ctx }: Props) {
 	const { t } = useLocaleContext()
+	const paths = usePaths()
 	const navigate = useNavigate()
 	const { sdk } = useSDK()
 

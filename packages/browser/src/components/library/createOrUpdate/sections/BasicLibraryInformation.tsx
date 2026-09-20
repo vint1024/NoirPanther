@@ -88,6 +88,15 @@ export default function BasicLibraryInformation({ onPickDirectory }: Props) {
 						</Text>
 					)}
 				</div>
+
+				<Input
+					label={t(getKey('oneshotsDirectory.label'))}
+					id="oneshotsDirectory"
+					placeholder={t(getKey('oneshotsDirectory.placeholder'))}
+					errorMessage={errors.oneshotsDirectory?.message}
+					description={t(getKey('oneshotsDirectory.description'))}
+					{...form.register('oneshotsDirectory')}
+				/>
 			</div>
 
 			<div className="gap-y-3 flex flex-col">

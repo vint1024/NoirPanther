@@ -3,7 +3,7 @@ import { Label, Text } from '@stump/components'
 import { graphql } from '@stump/graphql'
 import { useLocaleContext } from '@stump/i18n'
 
-import paths from '@/paths'
+import { usePaths } from '@/paths'
 
 import { EntityCard } from '../entity'
 
@@ -25,6 +25,7 @@ type Props = {
 
 export default function LastVisitedLibrary({ container }: Props) {
 	const { t } = useLocaleContext()
+	const paths = usePaths()
 	const { sdk } = useSDK()
 	const {
 		data: { lastVisitedLibrary: library },

@@ -13,7 +13,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { FieldValues, useForm } from 'react-hook-form'
 import z from 'zod'
 
-import { useSeriesContextSafe } from '@/scenes/series'
+import { useSeriesContextSafe } from '@/scenes/series/context'
 
 import { useFilterContext } from '..'
 import AgeRatingFilter from './AgeRatingFilter'
@@ -86,7 +86,7 @@ export default function MediaFilterForm() {
 
 	const defaultValue = useMemo(() => {
 		const flattenMetadata = {
-			age_rating: (filters?.metadata as MediaMetadataFilterInput)?.ageRating?.eq ?? null,
+			age_rating: (filters?.metadata as MediaMetadataFilterInput)?.ageRating?.lte ?? null,
 			character: (filters?.metadata as MediaMetadataFilterInput)?.characters?.likeAnyOf ?? [],
 			colorist: (filters?.metadata as MediaMetadataFilterInput)?.colorists?.likeAnyOf ?? [],
 			editor: (filters?.metadata as MediaMetadataFilterInput)?.editors?.likeAnyOf ?? [],

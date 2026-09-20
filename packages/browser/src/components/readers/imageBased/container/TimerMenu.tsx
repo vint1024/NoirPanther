@@ -25,14 +25,10 @@ export default function TimerMenu() {
 
 			<Dropdown.Content align="end" onCloseAutoFocus={(e) => e.preventDefault()}>
 				<Dropdown.Item onClick={() => setBookPreferences({ trackElapsedTime: !trackElapsedTime })}>
-					{trackElapsedTime
-						? t('components.readers.imageBased.container.TimerMenu.stopTimer')
-						: t('components.readers.imageBased.container.TimerMenu.startTimer')}
+					{trackElapsedTime ? t('imageReader.timerMenu.stop') : t('imageReader.timerMenu.start')}
 				</Dropdown.Item>
 
-				<Dropdown.Item onClick={timer.reset}>
-					{t('components.readers.imageBased.container.TimerMenu.resetTimer')}
-				</Dropdown.Item>
+				<Dropdown.Item onClick={timer.reset}>{t('imageReader.timerMenu.reset')}</Dropdown.Item>
 			</Dropdown.Content>
 		</Dropdown>
 	)

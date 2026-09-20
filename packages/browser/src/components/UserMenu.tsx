@@ -2,7 +2,7 @@ import { Avatar, cn, ConfirmationModal, Dropdown, Text } from '@stump/components
 import { useLocaleContext } from '@stump/i18n'
 import { Bell, Server, Settings } from 'lucide-react'
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import AutoSizer from 'react-virtualized-auto-sizer'
 
 import { usePaths } from '@/paths'

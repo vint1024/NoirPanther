@@ -2,7 +2,7 @@ import { cn } from '@stump/components'
 import { useLocaleContext } from '@stump/i18n'
 import { SearchIcon } from 'lucide-react'
 import { FormEvent, useCallback, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 
 import { usePaths } from '@/paths'
 

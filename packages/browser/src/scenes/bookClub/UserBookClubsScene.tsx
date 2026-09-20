@@ -5,7 +5,7 @@ import { useLocaleContext } from '@stump/i18n'
 import { Helmet } from 'react-helmet'
 
 import { SceneContainer } from '@/components/container'
-import paths from '@/paths'
+import { usePaths } from '@/paths'
 
 // TODO(book-clubs): This query needs a complete rewrite
 const query = graphql(`
@@ -31,6 +31,7 @@ type Club = UserBookClubsSceneQuery['bookClubs'][number]
  */
 export default function UserBookClubsScene() {
 	const { t } = useLocaleContext()
+	const paths = usePaths()
 	const {
 		data: { bookClubs },
 	} = useSuspenseGraphQL(query, ['bookClubs'])

@@ -2,16 +2,18 @@ import { getThumbnailTintColor } from '@stump/client'
 import { cn, Text } from '@stump/components'
 import { ImageRef, InterfaceRoundness } from '@stump/graphql'
 import { useLocaleContext } from '@stump/i18n'
-import { useCallback, useMemo } from 'react'
+import { useMemo } from 'react'
 
 import { Link } from '@/context'
 import { useFancyAnimations } from '@/hooks/useFancyAnimations'
 import { usePreferences } from '@/hooks/usePreferences'
 import { useTheme } from '@/hooks/useTheme'
 import { usePaths } from '@/paths'
+import { usePrefetchBooksAfterCursor } from '@/scenes/book'
 import { usePrefetchSeries } from '@/scenes/series'
-import { usePrefetchSeriesBooks } from '@/scenes/series/tabs/books/SeriesBooksScene'
+import { usePrefetchSeriesBooks } from '@/scenes/series/tabs/books/queries'
 
+import { usePrefetchBook } from '../book'
 import { ThumbnailImage } from '../thumbnail/ThumbnailImage'
 
 type ThumbnailConfig = {
@@ -61,6 +63,7 @@ type Props = {
 	width: number
 	thumbnailData: ImageRef[]
 	className?: string
+	oneshotBookId?: string
 }
 
 export function StackedSeriesCard({
@@ -71,6 +74,7 @@ export function StackedSeriesCard({
 	width: cardWidth,
 	thumbnailData,
 	className,
+	oneshotBookId,
 }: Props) {
 	const { t } = useLocaleContext()
 	const { isDarkVariant, getColor: getThemeColor } = useTheme()
@@ -82,11 +86,17 @@ export function StackedSeriesCard({
 
 	const prefetchSeries = usePrefetchSeries()
 	const prefetchSeriesBooks = usePrefetchSeriesBooks()
+	// for when oneshot, it leads to book pages
+	const prefetchBook = usePrefetchBook()
+	const prefetchBooksAfterCursor = usePrefetchBooksAfterCursor()
 
-	const prefetch = useCallback(
-		() => Promise.all([prefetchSeries(id), prefetchSeriesBooks(id)]),
-		[prefetchSeries, prefetchSeriesBooks, id],
-	)
+	const prefetch = () => {
+		if (oneshotBookId) {
+			Promise.all([prefetchBook(oneshotBookId), prefetchBooksAfterCursor(oneshotBookId)])
+		} else {
+			Promise.all([prefetchSeries(id), prefetchSeriesBooks(id)])
+		}
+	}
 
 	const baseThumbnailWidth = cardWidth * 0.7
 	const baseThumbnailHeight = baseThumbnailWidth / thumbnailRatio
@@ -212,13 +222,15 @@ export function StackedSeriesCard({
 	`
 	const clipPathString = clipPath.replace(/\s+/g, ' ').trim()
 
+	const linkTo = oneshotBookId ? paths.bookOverview(oneshotBookId) : paths.seriesOverview(id)
+
 	if (thumbnailData.length === 0) {
 		return null
 	}
 
 	return (
 		<Link
-			to={paths.seriesOverview(id)}
+			to={linkTo}
 			className={cn('group relative block w-full', !shouldFancyHover && 'hover:opacity-80')}
 			onMouseEnter={prefetch}
 		>

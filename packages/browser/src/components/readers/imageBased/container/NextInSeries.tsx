@@ -49,9 +49,7 @@ export default function NextInSeries() {
 
 				<div className="gap-4 flex flex-col">
 					<div>
-						<Label className="opacity-80">
-							{t('components.readers.imageBased.container.NextInSeries.nextUp')}
-						</Label>
+						<Label className="opacity-80">{t('imageReader.nextInSeries.title')}</Label>
 						<Text size="lg">{nextInSeries.name}</Text>
 					</div>
 
@@ -61,7 +59,7 @@ export default function NextInSeries() {
 					/>
 
 					<ButtonOrLink variant="secondary" href={paths.bookReader(nextInSeries.id)}>
-						{t('components.readers.imageBased.container.NextInSeries.read')}
+						{t('imageReader.nextInSeries.read')}
 					</ButtonOrLink>
 				</div>
 			</>

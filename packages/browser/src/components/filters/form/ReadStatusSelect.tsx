@@ -8,18 +8,18 @@ export default function ReadStatusSelect() {
 	return (
 		<GenericFilterMultiselect
 			name="read_status"
-			label={t('components.filters.form.ReadStatusSelect.label')}
+			label={t('mediaFilterForm.readStatusSelect.label')}
 			options={[
 				{
-					label: t('components.filters.form.ReadStatusSelect.completed'),
+					label: t('mediaFilterForm.readStatusSelect.options.completed'),
 					value: 'finished',
 				},
 				{
-					label: t('components.filters.form.ReadStatusSelect.reading'),
+					label: t('mediaFilterForm.readStatusSelect.options.reading'),
 					value: 'reading',
 				},
 				{
-					label: t('components.filters.form.ReadStatusSelect.unread'),
+					label: t('mediaFilterForm.readStatusSelect.options.unread'),
 					value: 'not_started',
 				},
 			]}

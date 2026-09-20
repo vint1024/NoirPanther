@@ -43,6 +43,67 @@
 			"subtitleEditing": "Предварительный просмотр правок вашей библиотеки будет показан ниже"
 		}
 	},
+	"bookManagementScene": {
+		"metadataSearch": {
+			"heading": "Поиск метаданных",
+			"description": "Найдите эту книгу во внешнем источнике и выберите совпадение для применения",
+			"openButton": "Искать метаданные",
+			"searchButton": "Найти",
+			"noProviders": "Для этого типа библиотеки не настроено ни одного включённого источника метаданных. Сначала настройте его в параметрах сервера.",
+			"noResults": "По этому запросу совпадений не найдено",
+			"partialResults": "Часть результатов не удалось загрузить из источника, вероятно из-за ограничения частоты запросов. Повторите поиск, возможно найдётся больше.",
+			"searchFailed": "Не удалось выполнить поиск в источниках метаданных",
+			"form": {
+				"title": {
+					"label": "Название"
+				},
+				"author": {
+					"label": "Автор"
+				},
+				"isbn": {
+					"label": "ISBN"
+				},
+				"year": {
+					"label": "Год"
+				},
+				"number": {
+					"label": "Номер выпуска"
+				},
+				"comicVineVolumeId": {
+					"label": "ID тома ComicVine",
+					"placeholder": "например, 129260"
+				},
+				"provider": {
+					"label": "Источник",
+					"allOption": "Все включённые источники"
+				}
+			}
+		},
+		"heading": "Управление",
+		"subtitle": "Изменение этой книги",
+		"developmentAlert": "Управление книгами находится в разработке, функциональность пока ограничена",
+		"analysis": {
+			"heading": "Анализ",
+			"description": "Повторно проанализировать книгу, чтобы обновить метаданные из файла",
+			"button": "Анализировать книгу",
+			"buttonTitle": "Анализировать эту книгу",
+			"inProgress": "Анализ уже выполняется"
+		},
+		"writeback": {
+			"heading": "Записать метаданные в файл",
+			"description": "Встроить метаданные из NoirPanther в сам файл EPUB (OPF), чтобы они путешествовали вместе с файлом. Архив переписывается атомарно",
+			"button": "Записать метаданные в файл",
+			"toasts": {
+				"written": "Метаданные записаны в файл",
+				"nothingToWrite": "Нечего записывать — у книги нет сохранённых метаданных",
+				"failed": "Не удалось записать метаданные в файл"
+			}
+		},
+		"thumbnail": {
+			"heading": "Миниатюра",
+			"description": "Сменить обложку этой книги"
+		}
+	},
 	"bookOverviewScene": {
 		"fileInformation": {
 			"heading": "Информация о файле",
@@ -248,6 +309,11 @@
 				"description": "Путь к папке библиотеки на вашем сервере",
 				"placeholder": "/путь/к/библиотеке"
 			},
+			"oneshotsDirectory": {
+				"label": "Папка одиночных книг",
+				"description": "Имя папки с одиночными книгами относительно пути библиотеки. Если не заполнено, одиночные книги не обрабатываются",
+				"placeholder": "_oneshots"
+			},
 			"description": {
 				"label": "Описание",
 				"description": "Краткое описание вашей библиотеки",
@@ -256,6 +322,20 @@
 			"tags": {
 				"label": "Метки",
 				"description": "Используется для категоризации вашей библиотеки или обеспечения соблюдения правил доступа"
+			},
+			"libraryType": {
+				"label": "Содержимое библиотеки",
+				"description": "Тип контента в этой библиотеке",
+				"options": {
+					"COMIC": "Комиксы",
+					"MANGA": "Манга",
+					"BOOK": "Книги",
+					"LIGHT_NOVEL": "Ранобэ",
+					"MANHWA": "Манхва",
+					"WEB_NOVEL": "Веб-новеллы",
+					"WEBTOON": "Вебтуны",
+					"MIXED": "Смешанное"
+				}
 			},
 			"defaultLibraryView": {
 				"label": "Вид библиотеки по умолчанию",
@@ -459,20 +539,6 @@
 				"description": "Необязательные дополнительные папки этой библиотеки в добавление к основному пути",
 				"addFolder": "Добавить папку",
 				"removeFolder": "Убрать папку"
-			},
-			"libraryType": {
-				"label": "Содержимое библиотеки",
-				"description": "Тип контента в этой библиотеке",
-				"options": {
-					"COMIC": "Комиксы",
-					"MANGA": "Манга",
-					"BOOK": "Книги",
-					"LIGHT_NOVEL": "Ранобэ",
-					"MANHWA": "Манхва",
-					"WEB_NOVEL": "Веб-новеллы",
-					"WEBTOON": "Вебтуны",
-					"MIXED": "Смешанное"
-				}
 			}
 		},
 		"scan": {
@@ -527,6 +593,7 @@
 					"quality": "Качество",
 					"name": "Название",
 					"path": "Путь",
+					"oneshotsDirectory": "Папка одиночных книг",
 					"description": "Описание",
 					"tags": "Метки",
 					"pattern": "Шаблон",
@@ -589,6 +656,7 @@
 		"tabs": {
 			"books": "Книги",
 			"series": "Серии",
+			"oneshots": "Одиночные",
 			"files": "Файлы"
 		}
 	},
@@ -822,6 +890,10 @@
 	},
 	"errorScene": {
 		"heading": "Уупс, что-то пошло не так",
+		"criticalHeading": "Произошла критическая ошибка",
+		"emptyMessage": "Сообщение об ошибке пустое.",
+		"copiedDetails": "Сведения об ошибке скопированы в буфер обмена",
+		"imageAlt": "Иллюстрация «идут работы»",
 		"message": "Произошла ошибка:",
 		"buttons": {
 			"report": "Сообщить об ошибке",
@@ -830,11 +902,7 @@
 			"goHomeTitle": "Вернуться на главную",
 			"reportTitle": "Сообщить об этой ошибке как о возможном баге на GitHub",
 			"copyTitle": "Скопировать сведения об ошибке в буфер обмена"
-		},
-		"criticalHeading": "Произошла критическая ошибка",
-		"emptyMessage": "Сообщение об ошибке пустое.",
-		"copiedDetails": "Сведения об ошибке скопированы в буфер обмена",
-		"imageAlt": "Иллюстрация «идут работы»"
+		}
 	},
 	"homeScene": {
 		"onDeck": {
@@ -863,6 +931,39 @@
 			"emptyState": {
 				"heading": "Нет данных для отображения",
 				"message": "Здесь будут отображаться недавно добавленные книги"
+			}
+		},
+		"allSectionsHidden": {
+			"label": "Показывать нечего",
+			"description": "Вы скрыли всё — надеемся, вам нравится пустота",
+			"customizeHome": "Настроить главную страницу"
+		}
+	},
+	"mediaFilterForm": {
+		"ageRatingFilter": {
+			"label": "Возрастной рейтинг",
+			"anyAge": {
+				"label": "Любой возраст",
+				"description": "Фильтр по возрастному рейтингу не применяется"
+			},
+			"custom": {
+				"label": "Возраст N и младше",
+				"description": {
+					"media": "Показывать только книги с возрастным рейтингом N или ниже, где N — число, введённое ниже",
+					"series": "Показывать только серии с возрастным рейтингом N или ниже, где N — число, введённое ниже"
+				}
+			}
+		},
+		"extensionSelect": {
+			"label": "Расширение",
+			"any": "Любое"
+		},
+		"readStatusSelect": {
+			"label": "Статус прочтения",
+			"options": {
+				"completed": "Прочитано",
+				"reading": "Чтение",
+				"unread": "Не прочитано"
 			}
 		}
 	},
@@ -1503,16 +1604,11 @@
 						"confirm": "Сохранить изменения"
 					}
 				},
-				"locale": {
-					"localeSelector": {
-						"label": "Язык"
-					},
-					"heading": "Язык и локализация",
-					"subtitle": [
-						"NoirPanther поддерживает несколько языков и локализаций, установите предпочитаемые. Пожалуйста, подумайте о помощи в улучшении качества",
-						"Переводы NoirPanther",
-						"если вы можете!"
-					]
+				"language": {
+					"label": "Язык",
+					"contributeIfAble": "Если есть возможность, помогите с переводами Stump!",
+					"contribute": "Помочь",
+					"noThanks": "Нет, спасибо"
 				}
 			}
 		},
@@ -1566,6 +1662,16 @@
 				"fontSelect": {
 					"label": "Шрифт",
 					"description": "Настроить шрифт, используемый в приложении"
+				},
+				"interfaceRoundness": {
+					"label": "Скругление интерфейса",
+					"description": "Насколько скруглены углы элементов интерфейса",
+					"options": {
+						"none": "Нет",
+						"normal": "Обычное",
+						"rounded": "Скруглённое",
+						"pill": "Пилюля"
+					}
 				},
 				"thumbnailPreview": {
 					"label": "Предпросмотр",
@@ -1666,9 +1772,25 @@
 						"noLimit": "Без ограничения"
 					}
 				},
+				"displayAndSpacing": {
+					"label": "Отображение и отступы",
+					"description": "Настройки представления контента и информации"
+				},
 				"additionalPreferences": {
 					"label": "Дополнительные предпочтения",
 					"description": "Дополнительные настройки внешнего вида и поведения NoirPanther"
+				},
+				"contentBrowsing": {
+					"label": "Просмотр контента",
+					"description": "Настройки, влияющие на просмотр и навигацию по спискам контента"
+				},
+				"motionAndAnimation": {
+					"label": "Движение и анимация",
+					"description": "Настройки визуального представления и движения"
+				},
+				"activityAndStatus": {
+					"label": "Активность и статус",
+					"description": "Индикаторы, оверлеи и функции, связанные с фоновой активностью"
 				},
 				"hideScrollbarToggle": {
 					"label": "Скрывать полосу прокрутки",
@@ -1706,6 +1828,17 @@
 					"label": "Льготный период сессии чтения",
 					"description": "Если активность не обнаружена в течение этого времени (в секундах), следующее обновление начнёт новую сессию"
 				},
+				"homeArrangement": {
+					"title": "Главная страница",
+					"description": "Настройте разделы главной страницы",
+					"label": "Разделы главной",
+					"hint": "Перетаскивайте разделы, меняя порядок, или скрывайте их совсем",
+					"reorder": "Переместить: {{section}}",
+					"reset": "Сбросить",
+					"saveFailed": "Не удалось сохранить изменения",
+					"unsupported": "Неверная конфигурация",
+					"unsupportedDescription": "Сбросьте настройки по умолчанию и попробуйте снова"
+				},
 				"showThumbnailsInHeader": {
 					"label": "Миниатюры в заголовках",
 					"description": "Если вам нравятся миниатюры, эта настройка покажет их в большем числе мест",
@@ -1713,32 +1846,6 @@
 						"enabled": "Миниатюры будут показываться в большем числе мест",
 						"disabled": "Миниатюры не будут показываться в дополнительных местах"
 					}
-				},
-				"interfaceRoundness": {
-					"label": "Скругление интерфейса",
-					"description": "Насколько скруглены углы элементов интерфейса",
-					"options": {
-						"none": "Нет",
-						"normal": "Обычное",
-						"rounded": "Скруглённое",
-						"pill": "Пилюля"
-					}
-				},
-				"displayAndSpacing": {
-					"label": "Отображение и отступы",
-					"description": "Настройки представления контента и информации"
-				},
-				"contentBrowsing": {
-					"label": "Просмотр контента",
-					"description": "Настройки, влияющие на просмотр и навигацию по спискам контента"
-				},
-				"motionAndAnimation": {
-					"label": "Движение и анимация",
-					"description": "Настройки визуального представления и движения"
-				},
-				"activityAndStatus": {
-					"label": "Активность и статус",
-					"description": "Индикаторы, оверлеи и функции, связанные с фоновой активностью"
 				}
 			}
 		},
@@ -1805,12 +1912,18 @@
 			"description": "Опции по умолчанию для читалки NoirPanther. Они привязаны только к вашему текущему устройству",
 			"sections": {
 				"universal": {
+					"label": "Общие",
+					"description": "Настройки, которые действуют для книг всех форматов",
 					"sections": {
 						"readingDirection": {
 							"label": "Направление чтения",
 							"description": "Направление смены страниц в процессе чтения"
 						}
 					}
+				},
+				"formats": {
+					"label": "Форматы",
+					"description": "Настройте читалку для каждого формата отдельно"
 				},
 				"imageBasedBooks": {
 					"label": "Книги на основе изображений",
@@ -1951,7 +2064,6 @@
 				},
 				"optionalFeatures": {
 					"label": "Дополнительные функции",
-					"description": "Управление дополнительными функциями, уникальными для десктопного приложения",
 					"bundledServer": {
 						"label": "Встроенный сервер",
 						"description": "Запускать встроенный сервер в фоновом режиме, пока запущено десктопное приложение (требуется перезапуск)"
@@ -1961,6 +2073,10 @@
 						"description": "Отображать активность вашего NoirPanther в Discord, используя Discord Rich Presence",
 						"reconnect": "Переподключиться к Discord",
 						"updateError": "Не удалось обновить!"
+					},
+					"restartRequired": {
+						"title": "Нужен перезапуск",
+						"description": "Изменения вступят в силу после перезапуска приложения"
 					}
 				}
 			}
@@ -1977,15 +2093,9 @@
 				"serverInfo": {
 					"title": "Информация о сервере",
 					"description": "Основные сведения о вашем сервере NoirPanther — форке Stump с дополнительными возможностями. Версия начинается с релиза Stump, из которого собран сервер; rN после него — номер доработки NoirPanther поверх этого релиза.",
-					"build": {
-						"label": "Сборка",
-						"description": "Подробности о версии и сборке",
-						"version": {
-							"semver": "Версия",
-							"commitHash": "Точный коммит",
-							"date": "Дата сборки"
-						}
-					},
+					"version": "Версия",
+					"exactCommit": "Точный коммит",
+					"build": "Сборка",
 					"nonStableChannel": {
 						"title": "Вы используете сборку NoirPanther от vint1024",
 						"description": [
@@ -1993,10 +2103,27 @@
 							""
 						]
 					},
+					"debugInfo": {
+						"label": "Отладочные сведения",
+						"description": "Скопируйте и вставьте, когда сообщаете о проблеме на GitHub",
+						"copyDebugInfoFailed": "Не удалось скопировать отладочные сведения"
+					},
 					"semanticVersion": "Семантическая версия",
 					"buildChannel": "Канал сборки",
-					"exactCommit": "Точный коммит",
 					"buildDate": "Дата сборки"
+				},
+				"changelog": {
+					"label": "История изменений",
+					"description": "Посмотрите, что изменилось в последних версиях"
+				},
+				"serverConfig": {
+					"label": "Конфигурация сервера",
+					"description": "Часть параметров сервера, доступных для изменения отсюда",
+					"publicUrl": {
+						"label": "Общедоступный URL",
+						"description": "Адрес, по которому сервер доступен снаружи вашей сети",
+						"updateFailed": "Не удалось обновить адрес"
+					}
 				},
 				"helpfulLinks": {
 					"title": "Полезные ссылки",
@@ -2005,13 +2132,6 @@
 						"documentation": "Документация",
 						"changelog": "История изменений"
 					}
-				},
-				"serverPublicUrl": {
-					"label": "Общедоступный URL",
-					"description": "URL, по которому сервер доступен извне вашей локальной сети, если применимо. Это даст доступ к пригласительным ссылкам и другим функциям",
-					"updateSuccess": "Публичный URL успешно обновлён",
-					"updateError": "Не удалось обновить публичный URL",
-					"unknownError": "Произошла неизвестная ошибка"
 				},
 				"customEmojis": {
 					"title": "Свои эмодзи",
@@ -2028,14 +2148,16 @@
 					"noCustomEmojis": "Свои эмодзи пока не добавлены",
 					"invalidName": "Введите корректное имя эмодзи",
 					"uploadError": "Не удалось загрузить эмодзи",
-					"uploadSuccess": "Эмодзи загружен",
-					"renameSuccess": "Эмодзи переименован",
 					"renameError": "Не удалось переименовать эмодзи",
-					"deleteSuccess": "Эмодзи удалён",
 					"deleteError": "Не удалось удалить эмодзи",
 					"provideName": "Укажите название эмодзи",
 					"renamePlaceholder": "emoji_name",
 					"previewAlt": "предпросмотр эмодзи"
+				},
+				"serverPublicUrl": {
+					"updateSuccess": "Публичный URL успешно обновлён",
+					"updateError": "Не удалось обновить публичный URL",
+					"unknownError": "Произошла неизвестная ошибка"
 				}
 			}
 		},
@@ -2079,7 +2201,7 @@
 					"description": "Некоторые задачи могут быть настроены для запуска по расписанию. Изменения в этой конфигурации вступят в силу после перезапуска сервера",
 					"restartRequiredTitle": "Нужен перезапуск",
 					"restartRequired": "Изменения этой конфигурации вступят в силу после перезапуска сервера",
-					"newScheduledJob": "Новая задача по расписанию",
+					"createScheduledJob": "Создать запланированную задачу",
 					"deleteScheduledJob": {
 						"title": "Удалить задачу по расписанию",
 						"description": "Точно удалить «{{name}}»? Это действие нельзя отменить.",
@@ -2165,6 +2287,11 @@
 						"emptySubtitle": "У вас не может быт задач, если у вас нет задач",
 						"deleteAllMessage": "История задач и статистика могут быть удалены из базы данных в любое время. Это действие не может быть отменено"
 					},
+					"inspector": {
+						"title": "Подробности задачи",
+						"description": "Необработанный вывод задачи и связанные записи журнала",
+						"associatedLogs": "Связанные записи журнала"
+					},
 					"deleteJobHistory": {
 						"title": "Удалить историю задач",
 						"description": "Безвозвратно удалить всю историю задач из базы данных",
@@ -2179,6 +2306,12 @@
 			"helmet": "Управление пользователями",
 			"title": "Пользователи",
 			"description": "Управление пользователями на этом сервере",
+			"userStats": {
+				"users": "Пользователи",
+				"booksCompleted": "Книг прочитано",
+				"booksInProgress": "Книг в процессе",
+				"topReader": "Самый активный читатель"
+			},
 			"createUser": {
 				"helmet": "Создать пользователя",
 				"title": "Создать пользователя",
@@ -2532,6 +2665,8 @@
 			"helmet": "Интеграции метаданных",
 			"title": "Интеграции метаданных",
 			"addProvider": "Добавить провайдера",
+			"createProviderError": "Не удалось создать источник",
+			"updateProviderError": "Не удалось обновить источник",
 			"noProviders": "Провайдеры пока не настроены. Добавьте первого, чтобы начать",
 			"providers": {
 				"title": "Провайдеры",
@@ -2544,9 +2679,9 @@
 					"validationError": "Автопроверка токена не прошла",
 					"validationRequestError": "Запрос проверки не удался",
 					"validationRequestErrorUnknown": "Во время проверки произошла неизвестная ошибка",
-					"noBearerPrefixRequired": "Уберите префикс «Bearer » из API-токена",
 					"providerStatusError": "Источник ответил со статусом {{status}}",
-					"providerError": "Источник ответил ошибкой: {{message}}"
+					"providerError": "Источник ответил ошибкой: {{message}}",
+					"noBearerPrefixRequired": "Уберите префикс «Bearer » из API-токена"
 				},
 				"apiTokenExpiresAt": {
 					"label": "Срок действия API-токена",
@@ -2587,9 +2722,7 @@
 			"deleteDialog": {
 				"title": "Удалить провайдера",
 				"description": "Точно удалить {{providerName}}? Это действие нельзя отменить."
-			},
-			"createProviderError": "Не удалось создать источник",
-			"updateProviderError": "Не удалось обновить источник"
+			}
 		},
 		"server/tags": {
 			"helmet": "Управление тегами",
@@ -2757,6 +2890,9 @@
 			"emptyState": "Предпросмотр вашего изображения появится здесь",
 			"prompt": "Перетащите изображение сюда или нажмите для выбора",
 			"remove": "Удалить изображение",
+			"fileTooLarge": "Файл слишком большой",
+			"onlyOneFile": "Можно загрузить только один файл",
+			"noFile": "Файл не выбран",
 			"confirmSelection": "Подтвердить выбор",
 			"errors": {
 				"fileTooLarge": "Файл слишком большой (максимум 20 МБ)",
@@ -2764,10 +2900,21 @@
 				"onlyOneFile": "Допускается только 1 файл",
 				"noFiles": "Файлы не выбраны",
 				"uploadFailed": "Не удалось загрузить изображение"
-			},
-			"fileTooLarge": "Файл слишком большой",
-			"onlyOneFile": "Можно загрузить только один файл",
-			"noFile": "Файл не выбран"
+			}
+		}
+	},
+	"thumbnailSelector": {
+		"title": "Выбор эскиза",
+		"descriptions": {
+			"chooseBookPage": "Выберите страницу этой книги для нового эскиза",
+			"chooseSeriesBook": "Выберите книгу из серии"
+		},
+		"actions": {
+			"confirmSelection": "Подтвердить выбор"
+		},
+		"errors": {
+			"uploadFailed": "Не удалось загрузить изображение",
+			"updateFailed": "Не удалось обновить эскиз"
 		}
 	},
 	"common": {
@@ -2776,6 +2923,7 @@
 		"cancel": "Отменить",
 		"clear": "Очистить",
 		"confirm": "Подтвердить",
+		"copy": "Копировать",
 		"created": "Создано",
 		"delete": "Удалить",
 		"deleteConfirmation": {
@@ -2818,21 +2966,32 @@
 		"remove": "Удалить",
 		"goBack": "Вернуться",
 		"goToServers": "Перейти к серверам",
+		"notConfigured": "Не настроено",
 		"notReady": "Эта функция еще не готова",
 		"notUsedYet": "Пока не используется",
 		"never": "Никогда",
+		"open": "Открыть",
+		"none": "Отсутствует",
 		"scan": "Сканирование",
 		"somethingWentWrong": "Что-то пошло не так",
 		"back": "Назад",
 		"continue": "Продолжить",
 		"book": "Книга",
+		"book_one": "Книга",
+		"book_other": "Книги",
+		"xBooks_one": "{{count}} книга",
+		"xBooks_other": "{{count}} книги",
+		"seeMore": "Показать больше",
 		"series": "Серия",
 		"fileUpload": {
 			"someRejected": "Часть файлов отклонена. Проверьте типы файлов и попробуйте снова",
 			"tooManyFiles": "Выбрано слишком много файлов",
 			"noValidFiles": "Не выбрано ни одного подходящего файла"
 		},
-		"unknownError": "Произошла неизвестная ошибка"
+		"unknownError": "Произошла неизвестная ошибка",
+		"view": "Открыть",
+		"xBooks_few": "{{count}} книги",
+		"xBooks_many": "{{count}} книг"
 	},
 	"userPermissions": {
 		"ACCESS_API_KEYS": {
@@ -2998,14 +3157,9 @@
 	},
 	"mobileApp": {
 		"addOrEditServer": {
-			"addServer": {
-				"title": "Добавить сервер",
-				"subtitle": "Настройте новый сервер для доступа к вашему контенту"
-			},
-			"editServer": {
-				"title": "Изменить сервер",
-				"subtitle": "Изменить сервер"
-			},
+			"createServer": "Добавить сервер",
+			"updateServer": "Сохранить сервер",
+			"basicInfo": "Основное",
 			"kind": "Тип",
 			"customHeaders": {
 				"label": "Свои заголовки",
@@ -3013,12 +3167,8 @@
 				"invalidHeader": "Некорректный заголовок"
 			},
 			"auth": {
-				"label": "Аутентификация",
-				"token": {
-					"label": "Токен",
-					"placeholder": "Токен как есть"
-				},
-				"basic": "Basic",
+				"section": "Аутентификация",
+				"method": "Способ",
 				"login": {
 					"label": "Логин",
 					"description": "Вход будет запрошен при обращении к контенту, когда потребуется"
@@ -3026,17 +3176,77 @@
 				"none": {
 					"label": "Нет",
 					"description": "Для этого сервера аутентификация не требуется или передаётся через URL"
-				}
+				},
+				"token": {
+					"label": "Токен",
+					"placeholder": "Токен как есть"
+				},
+				"basic": "Basic"
 			},
 			"serverNamePlaceholder": "Мой сервер",
 			"catalogUrl": "URL каталога",
+			"primaryUrl": "Основной адрес",
 			"failedToConnect": "Не удалось подключиться к серверу",
 			"didConnect": "Подключено",
 			"checkConnection": "Проверить подключение",
+			"optionalSettings": "Необязательные настройки",
 			"setAsDefaultServer": "Сделать сервером по умолчанию",
 			"validation": {
 				"nameAlreadyExists": "Имя уже занято",
 				"cannotSetAuthorizationHeader": "Нельзя задать заголовок Authorization"
+			},
+			"networking": "Сеть",
+			"advancedOptions": "Дополнительно"
+		},
+		"serverSettingsSheet": {
+			"configuration": {
+				"label": "Настройки",
+				"networkSettings": "Настройки сети"
+			}
+		},
+		"serverNetworkSettings": {
+			"activeProfile": {
+				"label": "Активный профиль",
+				"localIsActive": "Активен локальный профиль",
+				"primaryIsActive": "Активен основной профиль",
+				"autoSwitchToLocalDidNotWork": "Не удалось переключиться на активный профиль. Проверьте подключение к сети"
+			},
+			"localProfile": "Локальный профиль",
+			"primaryUrl": "Основной адрес",
+			"autoSwitchToLocal": {
+				"label": "Автоматически переключаться на локальный профиль",
+				"description": "Переключаться на локальный профиль, когда это возможно"
+			},
+			"localUrl": "Локальный адрес",
+			"saveUrlChanges": "Сохранить адреса",
+			"swapUrls": {
+				"label": "Поменять адреса местами",
+				"swap": "Поменять",
+				"confirmationText": "Поменять местами внешний и локальный адреса? Изменение вступит в силу сразу",
+				"noLocalUrlSet": {
+					"title": "Локальный адрес не задан",
+					"description": "Сначала задайте локальный адрес, потом его можно будет сделать основным"
+				}
+			},
+			"wifiNetwork": {
+				"label": "Сеть Wi-Fi",
+				"noAssociatedNetwork": "Сеть Wi-Fi не привязана",
+				"notConnectedToWifi": "Вы не подключены к Wi-Fi. Подключитесь к локальной сети, чтобы настроить локальный профиль",
+				"connectedTip": "Если текущей сети нет в списке, приложению может не хватать разрешения на доступ к геопозиции",
+				"addNetwork": "Добавить «{{ssid}}»",
+				"permissionNotGranted": {
+					"label": "Нет разрешения",
+					"description": "Чтобы определить активную сеть Wi-Fi, нужно разрешение на доступ к геопозиции"
+				},
+				"permissionFailedToBeGranted": {
+					"title": "Не удалось получить разрешение",
+					"description": "Приложению не удалось получить доступ к геопозиции. Проверьте настройки устройства и попробуйте снова"
+				},
+				"requestPermission": "Запросить доступ к геопозиции",
+				"removeWifi": {
+					"label": "Удалить",
+					"confirmationText": "Убрать сеть «{{ssid}}» из локального профиля?"
+				}
 			}
 		},
 		"bookActions": {
@@ -3085,10 +3295,15 @@
 			"links": "Links",
 			"year": "Год",
 			"identifier": "Identifier",
-			"identifiers": "Identifiers"
+			"identifiers": "Identifiers",
+			"issue": "Выпуск"
 		},
 		"common": {
 			"book": "Книга",
+			"book_one": "Книга",
+			"book_other": "Книги",
+			"xBooks_one": "{{count}} книга",
+			"xBooks_other": "{{count}} книги",
 			"cancel": "Отмена",
 			"chapter": "Глава",
 			"clear": "Очистить",
@@ -3100,12 +3315,14 @@
 			"delete": "Удалить",
 			"dismiss": "Dismiss",
 			"download": "Download",
+			"downloaded": "Скачано",
 			"downloads": "Загрузки",
 			"done": "Done",
 			"edit": "Изменить",
 			"enabled": "Включено",
 			"enable": "Включить",
 			"error": "Ошибка",
+			"exit": "Выйти",
 			"favorite": "Favorite",
 			"finished": "Finished",
 			"grid": "Сетка",
@@ -3114,10 +3331,12 @@
 			"name": "Название",
 			"none": "Нет",
 			"notAvailable": "Not Available",
+			"notConfigured": "Не настроено",
 			"options": "Параметры",
 			"page": "Страница",
 			"pages": "Страницы",
 			"pageXOfY": "Page {{current}} of {{total}}",
+			"pageX": "Страница {{current}}",
 			"password": "Пароль",
 			"progress": "Прогресс",
 			"publication": "Публикация",
@@ -3127,10 +3346,12 @@
 			"readthrough": "Readthrough",
 			"readMore": "Читать дальше",
 			"refresh": "Refresh",
+			"reset": "Сбросить",
 			"save": "Сохранить",
 			"select": "Выбрать",
 			"settings": "Настройки",
 			"servers": "Серверы",
+			"test": "Проверить",
 			"thisBook": "эту книгу",
 			"thisServer": "этот сервер",
 			"unknown": "Неизвестно",
@@ -3139,11 +3360,11 @@
 			"username": "Имя пользователя",
 			"value": "Значение",
 			"version": "Версия",
-			"downloaded": "Скачано",
-			"pageX": "Страница {{current}}",
-			"reset": "Сбросить",
+			"view": "Открыть",
 			"accessOpdsV2": "Доступ к OPDS v2.0",
-			"accessOpdsV1": "Доступ к OPDS v1.2"
+			"accessOpdsV1": "Доступ к OPDS v1.2",
+			"xBooks_few": "{{count}} книги",
+			"xBooks_many": "{{count}} книг"
 		},
 		"errors": {
 			"unknown": "Unknown error"
@@ -3263,6 +3484,33 @@
 			},
 			"syncFailed": "Failed to sync offline progress"
 		},
+		"syncConflicts": {
+			"title": "Конфликты синхронизации",
+			"remainingCount": "Осталось: {{remainingCount}}",
+			"noConflicts": {
+				"title": "Конфликтов нет",
+				"description": "Весь локальный прогресс синхронизирован с серверами"
+			},
+			"lastCommonSession": "Последняя общая сессия",
+			"localSession": "Локальная сессия",
+			"remoteSessionWithId": "Сессия на сервере {{sessionId}}",
+			"noCommonSession": "Нет общей истории чтения",
+			"noRemoteSessions": "Нет сессий на сервере",
+			"divergentProgress": {
+				"title": "Прогресс расходится",
+				"description": "Последняя общая сессия была изменена на сервере после вашей последней синхронизации"
+			},
+			"noCommonReadingHistory": {
+				"title": "Нет общей истории чтения",
+				"description": "У этой книги не было синхронизированной истории, когда вы начали читать офлайн"
+			},
+			"acceptSource": {
+				"local": "Оставить локальный",
+				"remote": "Оставить серверный",
+				"both": "Оставить оба"
+			},
+			"pullError": "Не удалось получить прогресс с сервера"
+		},
 		"search": {
 			"label": "Search This Server",
 			"description": "Find specific content on this server",
@@ -3276,26 +3524,6 @@
 					"options": {
 						"light": "Светлая",
 						"dark": "Тёмная"
-					}
-				},
-				"appLanguage": "Язык",
-				"defaultServer": "Сервер по умолчанию",
-				"thumbnailRatio": "Пропорции миниатюр",
-				"thumbnailPlaceholder": {
-					"label": "Заглушка миниатюры",
-					"options": {
-						"grayscale": "Оттенки серого",
-						"averageColor": "Средний цвет",
-						"colorful": "Цветная",
-						"thumbhash": "Thumbhash"
-					}
-				},
-				"thumbnailResizeMode": {
-					"label": "Масштабирование миниатюр",
-					"options": {
-						"cover": "Заполнение",
-						"stretch": "Растяжение",
-						"fit": "Вписывание"
 					}
 				},
 				"appPrimaryColor": {
@@ -3326,6 +3554,26 @@
 							"neutral": "Нейтральный",
 							"stone": "Каменный"
 						}
+					}
+				},
+				"appLanguage": "Язык",
+				"defaultServer": "Сервер по умолчанию",
+				"thumbnailRatio": "Пропорции миниатюр",
+				"thumbnailPlaceholder": {
+					"label": "Заглушка миниатюры",
+					"options": {
+						"grayscale": "Оттенки серого",
+						"averageColor": "Средний цвет",
+						"colorful": "Цветная",
+						"thumbhash": "Thumbhash"
+					}
+				},
+				"thumbnailResizeMode": {
+					"label": "Масштабирование миниатюр",
+					"options": {
+						"cover": "Заполнение",
+						"stretch": "Растяжение",
+						"fit": "Вписывание"
 					}
 				}
 			},
@@ -3362,6 +3610,7 @@
 				"label": "Управление",
 				"dataUsage": {
 					"label": "Использование данных",
+					"noServersAdded": "Серверы не добавлены",
 					"nonStumpData": "Данные вне NoirPanther",
 					"serversTotal": "Всего по серверам",
 					"totalFiles": "Всего файлов",
@@ -3419,7 +3668,8 @@
 				"debugAnalytics": {
 					"label": "Отладочная аналитика",
 					"description": "Отправлять дополнительные отладочные события для диагностики проблем"
-				}
+				},
+				"maskUrls": "Скрывать адреса"
 			},
 			"contactInfo": {
 				"label": "Контакты",
@@ -3671,36 +3921,138 @@
 				"DESC": "10 → 1"
 			}
 		},
-		"syncConflicts": {
-			"title": "Конфликты синхронизации",
-			"remainingCount": "Осталось: {{remainingCount}}",
-			"noConflicts": {
-				"title": "Конфликтов нет",
-				"description": "Весь локальный прогресс синхронизирован с серверами"
-			},
-			"lastCommonSession": "Последняя общая сессия",
-			"localSession": "Локальная сессия",
-			"remoteSessionWithId": "Сессия на сервере {{sessionId}}",
-			"noCommonSession": "Нет общей истории чтения",
-			"noRemoteSessions": "Нет сессий на сервере",
-			"divergentProgress": {
-				"title": "Прогресс расходится",
-				"description": "Последняя общая сессия была изменена на сервере после вашей последней синхронизации"
-			},
-			"noCommonReadingHistory": {
-				"title": "Нет общей истории чтения",
-				"description": "У этой книги не было синхронизированной истории, когда вы начали читать офлайн"
-			},
-			"acceptSource": {
-				"local": "Оставить локальный",
-				"remote": "Оставить серверный",
-				"both": "Оставить оба"
-			},
-			"pullError": "Не удалось получить прогресс с сервера"
-		},
 		"widgets": {
 			"readingNow": {
 				"nothingInProgress": "Ничего не читается"
+			}
+		}
+	},
+	"epubReader": {
+		"reading": "Чтение",
+		"appearance": "Внешний вид",
+		"themeAndOptions": "Тема и параметры",
+		"locationManager": "Навигация",
+		"contents": "Содержание",
+		"bookmarks": "Закладки",
+		"annotations": "Заметки",
+		"noBookmarks": "Закладок нет",
+		"bookmark": "Закладка",
+		"noAnnotations": "Заметок нет",
+		"annotation": {
+			"addNote": "Добавить заметку",
+			"edit": "Изменить заметку",
+			"note": "Заметка",
+			"optionalNote": "Добавьте заметку (необязательно)…",
+			"selectionActions": "Действия с выделением",
+			"highlight": "Выделить",
+			"disabledInIncognito": "В режиме инкогнито заметки отключены",
+			"saveFailed": "Не удалось сохранить заметку",
+			"updateFailed": "Не удалось обновить заметку",
+			"deleteFailed": "Не удалось удалить заметку"
+		},
+		"search": {
+			"placeholder": "Введите запрос и нажмите Enter для поиска",
+			"failed": "Поиск не удался. Попробуйте ещё раз.",
+			"noResults": "Ничего не найдено.",
+			"section": "Раздел {{position}}",
+			"loadingMore": "Загрузка…",
+			"loadMore": "Загрузить ещё"
+		},
+		"controls": {
+			"columns": "Колонки",
+			"auto": "Авто",
+			"columnCount_one": "{{count}} колонка",
+			"columnCount_other": "{{count}} колонки",
+			"pageMargins": "Поля страницы",
+			"readingDirection": "Направление чтения",
+			"leftToRight": "Слева направо",
+			"rightToLeft": "Справа налево",
+			"readingMode": "Режим чтения",
+			"paged": "Постранично",
+			"continuous": "Непрерывно",
+			"previousPage": "Предыдущая страница",
+			"nextPage": "Следующая страница",
+			"toggleControls": "Показать или скрыть панель"
+		},
+		"errors": {
+			"openFailed": "Не удалось открыть EPUB через Readium.",
+			"navigateFailed": "Не удалось перейти к позиции"
+		},
+		"failedToLoad": "Не удалось загрузить книгу"
+	},
+	"imageReader": {
+		"header": {
+			"goToMediaOverview": "Перейти к обзору книги"
+		},
+		"settingsDialog": {
+			"scopes": {
+				"book": "Книга",
+				"global": "Глобально"
+			}
+		},
+		"timerMenu": {
+			"start": "Запустить таймер",
+			"stop": "Остановить таймер",
+			"reset": "Сбросить таймер"
+		},
+		"footer": {
+			"readingTime": "Время чтения: {{time}}",
+			"pageOf": "{{current}} из {{total}}"
+		},
+		"goToPage": {
+			"label": "Перейти",
+			"submit": "Перейти"
+		},
+		"nextInSeries": {
+			"title": "Далее:",
+			"read": "Read"
+		},
+		"settings": {
+			"readerSettings": {
+				"sections": {
+					"mode": "Режим",
+					"imageOptions": "Параметры изображения",
+					"preferences": "Предпочтения",
+					"controls": "Управление"
+				},
+				"preferences": {
+					"separateSecondPage": "Отделять вторую страницу",
+					"panZoomWithoutCtrl": "Перемещение и масштаб без Ctrl / Cmd",
+					"tapSidesToNavigate": "Касание по краям для навигации",
+					"readingTimer": "Таймер чтения"
+				}
+			},
+			"doublePageBehavior": {
+				"label": "Разворот",
+				"options": {
+					"auto": "Авто",
+					"always": "Всегда",
+					"off": "Выкл."
+				}
+			},
+			"imageScaling": {
+				"label": "Масштабирование изображения",
+				"options": {
+					"auto": "Авто",
+					"height": "По высоте",
+					"width": "По ширине",
+					"original": "Оригинал"
+				}
+			},
+			"readingDirection": {
+				"label": "Направление чтения",
+				"options": {
+					"leftToRight": "Слева направо",
+					"rightToLeft": "Справа налево"
+				}
+			},
+			"readingMode": {
+				"label": "Режим",
+				"options": {
+					"verticalScroll": "Вертикальная прокрутка",
+					"horizontalScroll": "Горизонтальная прокрутка",
+					"paged": "Постранично"
+				}
 			}
 		}
 	},
@@ -3756,122 +4108,6 @@
 				"deleted": "Серия удалена",
 				"failed": "Не удалось удалить серию"
 			}
-		}
-	},
-	"bookManagementScene": {
-		"heading": "Управление",
-		"subtitle": "Изменение этой книги",
-		"developmentAlert": "Управление книгами находится в разработке, функциональность пока ограничена",
-		"analysis": {
-			"heading": "Анализ",
-			"description": "Повторно проанализировать книгу, чтобы обновить метаданные из файла",
-			"button": "Анализировать книгу",
-			"buttonTitle": "Анализировать эту книгу",
-			"inProgress": "Анализ уже выполняется"
-		},
-		"writeback": {
-			"heading": "Записать метаданные в файл",
-			"description": "Встроить метаданные из NoirPanther в сам файл EPUB (OPF), чтобы они путешествовали вместе с файлом. Архив переписывается атомарно",
-			"button": "Записать метаданные в файл",
-			"toasts": {
-				"written": "Метаданные записаны в файл",
-				"nothingToWrite": "Нечего записывать — у книги нет сохранённых метаданных",
-				"failed": "Не удалось записать метаданные в файл"
-			}
-		},
-		"thumbnail": {
-			"heading": "Миниатюра",
-			"description": "Сменить обложку этой книги"
-		},
-		"metadataSearch": {
-			"heading": "Поиск метаданных",
-			"description": "Найдите эту книгу во внешнем источнике и выберите совпадение для применения",
-			"openButton": "Искать метаданные",
-			"searchButton": "Найти",
-			"noProviders": "Для этого типа библиотеки не настроено ни одного включённого источника метаданных. Сначала настройте его в параметрах сервера.",
-			"noResults": "По этому запросу совпадений не найдено",
-			"partialResults": "Часть результатов не удалось загрузить из источника, вероятно из-за ограничения частоты запросов. Повторите поиск, возможно найдётся больше.",
-			"searchFailed": "Не удалось выполнить поиск в источниках метаданных",
-			"form": {
-				"title": {
-					"label": "Название"
-				},
-				"author": {
-					"label": "Автор"
-				},
-				"isbn": {
-					"label": "ISBN"
-				},
-				"year": {
-					"label": "Год"
-				},
-				"number": {
-					"label": "Номер выпуска"
-				},
-				"comicVineVolumeId": {
-					"label": "ID тома ComicVine",
-					"placeholder": "например, 129260"
-				},
-				"provider": {
-					"label": "Источник",
-					"allOption": "Все включённые источники"
-				}
-			}
-		}
-	},
-	"epubReader": {
-		"failedToLoad": "Не удалось загрузить книгу",
-		"reading": "Чтение",
-		"appearance": "Внешний вид",
-		"themeAndOptions": "Тема и параметры",
-		"locationManager": "Навигация",
-		"contents": "Содержание",
-		"bookmarks": "Закладки",
-		"annotations": "Заметки",
-		"noBookmarks": "Закладок нет",
-		"bookmark": "Закладка",
-		"noAnnotations": "Заметок нет",
-		"annotation": {
-			"addNote": "Добавить заметку",
-			"edit": "Изменить заметку",
-			"note": "Заметка",
-			"optionalNote": "Добавьте заметку (необязательно)…",
-			"selectionActions": "Действия с выделением",
-			"highlight": "Выделить",
-			"disabledInIncognito": "В режиме инкогнито заметки отключены",
-			"saveFailed": "Не удалось сохранить заметку",
-			"updateFailed": "Не удалось обновить заметку",
-			"deleteFailed": "Не удалось удалить заметку"
-		},
-		"search": {
-			"placeholder": "Введите запрос и нажмите Enter для поиска",
-			"failed": "Поиск не удался. Попробуйте ещё раз.",
-			"noResults": "Ничего не найдено.",
-			"section": "Раздел {{position}}",
-			"loadingMore": "Загрузка…",
-			"loadMore": "Загрузить ещё"
-		},
-		"controls": {
-			"columns": "Колонки",
-			"auto": "Авто",
-			"columnCount_one": "{{count}} колонка",
-			"columnCount_other": "{{count}} колонки",
-			"pageMargins": "Поля страницы",
-			"readingDirection": "Направление чтения",
-			"leftToRight": "Слева направо",
-			"rightToLeft": "Справа налево",
-			"readingMode": "Режим чтения",
-			"paged": "Постранично",
-			"continuous": "Непрерывно",
-			"previousPage": "Предыдущая страница",
-			"nextPage": "Следующая страница",
-			"toggleControls": "Показать или скрыть панель",
-			"columnCount_few": "{{count}} колонки",
-			"columnCount_many": "{{count}} колонок"
-		},
-		"errors": {
-			"openFailed": "Не удалось открыть EPUB через Readium.",
-			"navigateFailed": "Не удалось перейти к позиции"
 		}
 	},
 	"AppLayout": {
@@ -4505,8 +4741,6 @@
 				"createdBy": "Создатель",
 				"created": "Создан",
 				"members_one": "{{count}} участник",
-				"members_few": "{{count}} участника",
-				"members_many": "{{count}} участников",
 				"members_other": "{{count}} участника"
 			},
 			"UserBookClubsScene": {
@@ -4963,48 +5197,6 @@
 					"ChangeVisibilityConfirmation": {
 						"title": "Изменить видимость"
 					}
-				}
-			}
-		}
-	},
-	"thumbnailSelector": {
-		"title": "Выбор эскиза",
-		"descriptions": {
-			"chooseBookPage": "Выберите страницу этой книги для нового эскиза",
-			"chooseSeriesBook": "Выберите книгу из серии"
-		},
-		"actions": {
-			"confirmSelection": "Подтвердить выбор"
-		},
-		"errors": {
-			"uploadFailed": "Не удалось загрузить изображение",
-			"updateFailed": "Не удалось обновить эскиз"
-		}
-	},
-	"imageReader": {
-		"settings": {
-			"imageScaling": {
-				"label": "Масштабирование изображения",
-				"options": {
-					"auto": "Авто",
-					"height": "По высоте",
-					"width": "По ширине",
-					"original": "Оригинал"
-				}
-			},
-			"readingDirection": {
-				"label": "Направление чтения",
-				"options": {
-					"leftToRight": "Слева направо",
-					"rightToLeft": "Справа налево"
-				}
-			},
-			"readingMode": {
-				"label": "Режим",
-				"options": {
-					"verticalScroll": "Вертикальная прокрутка",
-					"horizontalScroll": "Горизонтальная прокрутка",
-					"paged": "Постранично"
 				}
 			}
 		}

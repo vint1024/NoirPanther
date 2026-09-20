@@ -1,6 +1,7 @@
 import { Sheet } from '@stump/components'
 import { Preformatted } from '@stump/components'
 import { useLocaleContext } from '@stump/i18n'
+import { usePrevious } from 'react-use'
 
 import { User } from './UserTable'
 
@@ -10,8 +11,12 @@ type Props = {
 }
 
 // TODO: do more than just json dump
+
 export default function InspectUserSlideOver({ user, onClose }: Props) {
+	const previousUser = usePrevious(user)
+
 	const { t } = useLocaleContext()
+	const displayedUser = user || previousUser
 
 	return (
 		<Sheet
@@ -20,10 +25,9 @@ export default function InspectUserSlideOver({ user, onClose }: Props) {
 			title={t('scenes.settings.server.users.user-table.InspectUserSlideOver.title')}
 			description={t('scenes.settings.server.users.user-table.InspectUserSlideOver.description')}
 		>
-			<Preformatted
-				title={t('scenes.settings.server.users.user-table.InspectUserSlideOver.rawJson')}
-				content={user}
-			/>
+			<div className="px-4 gap-y-8 flex flex-col">
+				<Preformatted title="JSON" content={displayedUser} />
+			</div>
 		</Sheet>
 	)
 }

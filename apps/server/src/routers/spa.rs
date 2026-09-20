@@ -129,9 +129,25 @@ async fn serve_with_no_cache(
 	path: &str,
 ) -> APIResult<Response> {
 	let mut response = serve_dist_file(ctx, headers, path).await?;
-	response
-		.headers_mut()
-		.insert(header::CACHE_CONTROL, HeaderValue::from_static("no-cache"));
+	response.headers_mut().insert(
+		header::CACHE_CONTROL,
+		HeaderValue::from_static("no-cache, no-store, must-revalidate"),
+	);
+
+	Ok(response)
+}
+
+async fn serve_with_no_store(
+	ctx: AppState,
+	headers: HeaderMap,
+	path: &str,
+) -> APIResult<Response> {
+	// Manifest and bootstrap must bypass caches.
+	let mut response = serve_dist_file(ctx, headers, path).await?;
+	response.headers_mut().insert(
+		header::CACHE_CONTROL,
+		HeaderValue::from_static("no-cache, no-store, must-revalidate"),
+	);
 
 	Ok(response)
 }

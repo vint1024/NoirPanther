@@ -20,11 +20,9 @@ use sea_orm::{prelude::*, QueryOrder, QuerySelect, QueryTrait};
 use serde::{Deserialize, Serialize};
 use stump_core::{
 	config::StumpConfig,
-	filesystem::{
-		image::{GenericImageProcessor, ImageProcessor},
-		media::get_page_async,
-		ContentType,
-	},
+	fs_utils::ContentType,
+	image::{GenericImageProcessor, ImageProcessor},
+	media::processor::get_page,
 	opds::{
 		v1_2::{
 			entry::{IntoOPDSEntry, OPDSEntryBuilder, OpdsEntry},
@@ -284,13 +282,10 @@ async fn keep_reading(
 		.all(ctx.conn.as_ref())
 		.await?;
 
-	let entries = books
-		.into_iter()
-		.map(|m| {
-			OPDSEntryBuilder::<OPDSPublicationEntity>::new(m, req.api_key())
-				.into_opds_entry()
-		})
-		.collect::<Vec<OpdsEntry>>();
+	let entries = futures_util::future::join_all(books.into_iter().map(|m| {
+		OPDSEntryBuilder::<OPDSPublicationEntity>::new(m, req.api_key()).into_opds_entry()
+	}))
+	.await;
 
 	let feed = OpdsFeed::new(
 		"keepReading".to_string(),
@@ -328,12 +323,10 @@ async fn get_libraries(
 		.order_by_asc(library::Column::Name)
 		.all(ctx.conn.as_ref())
 		.await?;
-	let entries = libraries
-		.into_iter()
-		.map(|l| {
-			OPDSEntryBuilder::<library::Model>::new(l, req.api_key()).into_opds_entry()
-		})
-		.collect::<Vec<OpdsEntry>>();
+	let entries = futures_util::future::join_all(libraries.into_iter().map(|l| {
+		OPDSEntryBuilder::<library::Model>::new(l, req.api_key()).into_opds_entry()
+	}))
+	.await;
 
 	let feed = OpdsFeed::new(
 		"allLibraries".to_string(),
@@ -391,12 +384,10 @@ async fn get_library_by_id(
 		.count(ctx.conn.as_ref())
 		.await?;
 
-	let entries = series
-		.into_iter()
-		.map(|s| {
-			OPDSEntryBuilder::<series::Model>::new(s, req.api_key()).into_opds_entry()
-		})
-		.collect::<Vec<OpdsEntry>>();
+	let entries = futures_util::future::join_all(series.into_iter().map(|s| {
+		OPDSEntryBuilder::<series::Model>::new(s, req.api_key()).into_opds_entry()
+	}))
+	.await;
 
 	let feed = OPDSFeedBuilder::new(req.api_key()).paginated(OPDSFeedBuilderParams {
 		id,
@@ -454,12 +445,10 @@ async fn get_series(
 		.count(ctx.conn.as_ref())
 		.await?;
 
-	let entries = series
-		.into_iter()
-		.map(|s| {
-			OPDSEntryBuilder::<series::Model>::new(s, req.api_key()).into_opds_entry()
-		})
-		.collect::<Vec<OpdsEntry>>();
+	let entries = futures_util::future::join_all(series.into_iter().map(|s| {
+		OPDSEntryBuilder::<series::Model>::new(s, req.api_key()).into_opds_entry()
+	}))
+	.await;
 
 	let feed = OPDSFeedBuilder::new(req.api_key()).paginated(OPDSFeedBuilderParams {
 		id: "allSeries".to_string(),
@@ -492,12 +481,10 @@ async fn get_latest_series(
 		.count(ctx.conn.as_ref())
 		.await?;
 
-	let entries = series
-		.into_iter()
-		.map(|s| {
-			OPDSEntryBuilder::<series::Model>::new(s, req.api_key()).into_opds_entry()
-		})
-		.collect::<Vec<OpdsEntry>>();
+	let entries = futures_util::future::join_all(series.into_iter().map(|s| {
+		OPDSEntryBuilder::<series::Model>::new(s, req.api_key()).into_opds_entry()
+	}))
+	.await;
 
 	let feed = OPDSFeedBuilder::new(req.api_key()).paginated(OPDSFeedBuilderParams {
 		id: "latestSeries".to_string(),
@@ -545,13 +532,10 @@ async fn get_series_by_id(
 		.count(ctx.conn.as_ref())
 		.await?;
 
-	let entries = books
-		.into_iter()
-		.map(|m| {
-			OPDSEntryBuilder::<OPDSPublicationEntity>::new(m, req.api_key())
-				.into_opds_entry()
-		})
-		.collect();
+	let entries = futures_util::future::join_all(books.into_iter().map(|m| {
+		OPDSEntryBuilder::<OPDSPublicationEntity>::new(m, req.api_key()).into_opds_entry()
+	}))
+	.await;
 
 	let title = metadata
 		.and_then(|m| m.title.clone())
@@ -611,7 +595,9 @@ async fn search_feed(
 		.await?;
 	for lib in libraries {
 		entries.push(
-			OPDSEntryBuilder::<library::Model>::new(lib, req.api_key()).into_opds_entry(),
+			OPDSEntryBuilder::<library::Model>::new(lib, req.api_key())
+				.into_opds_entry()
+				.await,
 		);
 	}
 
@@ -627,7 +613,9 @@ async fn search_feed(
 		.await?;
 	for s in series {
 		entries.push(
-			OPDSEntryBuilder::<series::Model>::new(s, req.api_key()).into_opds_entry(),
+			OPDSEntryBuilder::<series::Model>::new(s, req.api_key())
+				.into_opds_entry()
+				.await,
 		);
 	}
 
@@ -647,7 +635,8 @@ async fn search_feed(
 	for book in books {
 		entries.push(
 			OPDSEntryBuilder::<OPDSPublicationEntity>::new(book, req.api_key())
-				.into_opds_entry(),
+				.into_opds_entry()
+				.await,
 		);
 	}
 
@@ -713,13 +702,10 @@ async fn get_books(
 		.count(ctx.conn.as_ref())
 		.await?;
 
-	let entries = books
-		.into_iter()
-		.map(|m| {
-			OPDSEntryBuilder::<OPDSPublicationEntity>::new(m, req.api_key())
-				.into_opds_entry()
-		})
-		.collect::<Vec<OpdsEntry>>();
+	let entries = futures_util::future::join_all(books.into_iter().map(|m| {
+		OPDSEntryBuilder::<OPDSPublicationEntity>::new(m, req.api_key()).into_opds_entry()
+	}))
+	.await;
 
 	let feed = OPDSFeedBuilder::new(req.api_key()).paginated(OPDSFeedBuilderParams {
 		id: "allBooks".to_string(),
@@ -756,13 +742,10 @@ async fn get_latest_books(
 		.count(ctx.conn.as_ref())
 		.await?;
 
-	let entries = books
-		.into_iter()
-		.map(|m| {
-			OPDSEntryBuilder::<OPDSPublicationEntity>::new(m, req.api_key())
-				.into_opds_entry()
-		})
-		.collect::<Vec<OpdsEntry>>();
+	let entries = futures_util::future::join_all(books.into_iter().map(|m| {
+		OPDSEntryBuilder::<OPDSPublicationEntity>::new(m, req.api_key()).into_opds_entry()
+	}))
+	.await;
 
 	let feed = OPDSFeedBuilder::new(req.api_key()).paginated(OPDSFeedBuilderParams {
 		id: "latestBooks".to_string(),
@@ -832,7 +815,7 @@ async fn get_book_thumbnail(
 	};
 
 	let (content_type, image_buffer) =
-		get_page_async(PathBuf::from(book.path), 1, &adjusted_config).await?;
+		get_page(PathBuf::from(book.path), 1, &adjusted_config).await?;
 
 	handle_opds_image_response(content_type, image_buffer)
 }
@@ -881,7 +864,7 @@ async fn get_book_page(
 	}
 
 	let (content_type, image_buffer) =
-		get_page_async(PathBuf::from(book.path), correct_page, &ctx.config).await?;
+		get_page(PathBuf::from(book.path), correct_page, &ctx.config).await?;
 
 	handle_opds_image_response(content_type, image_buffer)
 }

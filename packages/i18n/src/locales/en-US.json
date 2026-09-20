@@ -7,7 +7,7 @@
 	},
 	"authScene": {
 		"claimHeading": "Initialize your server",
-		"claimText": "This NoirPanther server is not initialized. Use the form below to create your account. Once created, you will have full access to all server features.",
+		"claimText": "This Stump server is not initialized. Use the form below to create your account. Once created, you will have full access to all server features.",
 		"form": {
 			"validation": {
 				"missingUsername": "Username is required",
@@ -41,6 +41,67 @@
 			"heading": "Library Configuration",
 			"subtitleCreating": "A preview of your new library will be shown below",
 			"subtitleEditing": "A preview of your library edits will be shown below"
+		}
+	},
+	"bookManagementScene": {
+		"metadataSearch": {
+			"heading": "Search metadata",
+			"description": "Search an external provider for this book and choose a match to apply",
+			"openButton": "Search Metadata",
+			"searchButton": "Search",
+			"noProviders": "No enabled metadata providers are configured for this library type. Configure one in server settings first.",
+			"noResults": "No matches were found for this search",
+			"partialResults": "Some results could not be loaded from the provider, likely due to rate limiting. Try searching again to see if more turn up.",
+			"searchFailed": "Failed to search metadata providers",
+			"form": {
+				"title": {
+					"label": "Title"
+				},
+				"author": {
+					"label": "Author"
+				},
+				"isbn": {
+					"label": "ISBN"
+				},
+				"year": {
+					"label": "Year"
+				},
+				"number": {
+					"label": "Issue number"
+				},
+				"comicVineVolumeId": {
+					"label": "ComicVine volume ID",
+					"placeholder": "e.g., 129260"
+				},
+				"provider": {
+					"label": "Provider",
+					"allOption": "All enabled providers"
+				}
+			}
+		},
+		"heading": "Manage",
+		"subtitle": "Make changes to this book",
+		"developmentAlert": "Book management is currently under development and has very limited functionality",
+		"analysis": {
+			"heading": "Analysis",
+			"description": "Re-analyze this book to update metadata from its file",
+			"button": "Analyze Media",
+			"buttonTitle": "Analyze this book",
+			"inProgress": "Analysis already in progress"
+		},
+		"writeback": {
+			"heading": "Write metadata to file",
+			"description": "Embed the metadata stored in NoirPanther into the epub file itself (OPF), so it travels with the file. The archive is rewritten atomically",
+			"button": "Write metadata to file",
+			"toasts": {
+				"written": "Metadata written into the file",
+				"nothingToWrite": "Nothing to write — the book has no stored metadata",
+				"failed": "Failed to write metadata to file"
+			}
+		},
+		"thumbnail": {
+			"heading": "Thumbnail",
+			"description": "Change the cover image for this book"
 		}
 	},
 	"bookOverviewScene": {
@@ -248,6 +309,11 @@
 				"description": "The path to the library as it exists on your server",
 				"placeholder": "/path/to/library"
 			},
+			"oneshotsDirectory": {
+				"label": "Oneshots directory",
+				"description": "The name of the directory where oneshots are stored, relative to the library path. If empty, oneshots will not be processed",
+				"placeholder": "_oneshots"
+			},
 			"description": {
 				"label": "Description",
 				"description": "A short description of your library",
@@ -256,6 +322,20 @@
 			"tags": {
 				"label": "Tags",
 				"description": "Used to categorize your library or enforce access rules"
+			},
+			"libraryType": {
+				"label": "Library content",
+				"description": "The type of content present in this library",
+				"options": {
+					"COMIC": "Comics",
+					"MANGA": "Manga",
+					"BOOK": "Books",
+					"LIGHT_NOVEL": "Light Novels",
+					"MANHWA": "Manhwa",
+					"WEB_NOVEL": "Web Novels",
+					"WEBTOON": "Webtoons",
+					"MIXED": "Mixed"
+				}
 			},
 			"defaultLibraryView": {
 				"label": "Default library view",
@@ -395,7 +475,7 @@
 			"convertOptions": {
 				"section": {
 					"heading": "File conversion",
-					"description": "NoirPanther is capable of converting certain file formats to more compatible ones"
+					"description": "Stump is capable of converting certain file formats to more compatible ones"
 				},
 				"rarToZip": {
 					"label": "Convert RAR to ZIP",
@@ -443,7 +523,7 @@
 				},
 				"options": {
 					"label": "Library pattern",
-					"description": "The setting which determines how NoirPanther will organize your library",
+					"description": "The setting which determines how Stump will organize your library",
 					"collectionPriority": {
 						"label": "Collection priority",
 						"description": "Each folder at the top-most level of the library root is a single series"
@@ -459,20 +539,6 @@
 				"description": "Optional extra folders this library spans, in addition to the main path",
 				"addFolder": "Add folder",
 				"removeFolder": "Remove folder"
-			},
-			"libraryType": {
-				"label": "Library content",
-				"description": "The type of content present in this library",
-				"options": {
-					"COMIC": "Comics",
-					"MANGA": "Manga",
-					"BOOK": "Books",
-					"LIGHT_NOVEL": "Light Novels",
-					"MANHWA": "Manhwa",
-					"WEB_NOVEL": "Web Novels",
-					"WEBTOON": "Webtoons",
-					"MIXED": "Mixed"
-				}
 			}
 		},
 		"scan": {
@@ -502,12 +568,12 @@
 				{
 					"label": "Scanning",
 					"heading": "Scanning",
-					"description": "Settings related to how NoirPanther scans this library"
+					"description": "Settings related to how Stump scans this library"
 				},
 				{
 					"label": "Thumbnails",
 					"heading": "Thumbnails",
-					"description": "The options for if and how NoirPanther generates thumbnails for this library"
+					"description": "The options for if and how Stump generates thumbnails for this library"
 				},
 				{
 					"label": "Review",
@@ -527,6 +593,7 @@
 					"quality": "Quality",
 					"name": "Name",
 					"path": "Path",
+					"oneshotsDirectory": "Oneshots directory",
 					"description": "Description",
 					"tags": "Tags",
 					"pattern": "Pattern",
@@ -589,6 +656,7 @@
 		"tabs": {
 			"books": "Books",
 			"series": "Series",
+			"oneshots": "Oneshots",
 			"files": "Files"
 		}
 	},
@@ -633,7 +701,7 @@
 		},
 		"options/scanning": {
 			"title": "Scanning",
-			"description": "Settings related to how NoirPanther scans this library",
+			"description": "Settings related to how Stump scans this library",
 			"sections": {
 				"configureScan": {
 					"heading": "Configure scan",
@@ -822,6 +890,10 @@
 	},
 	"errorScene": {
 		"heading": "lol, oops",
+		"criticalHeading": "A critical error occurred",
+		"emptyMessage": "The error message was empty.",
+		"copiedDetails": "Copied error details to your clipboard",
+		"imageAlt": "Construction illustration",
 		"message": "An error occurred:",
 		"buttons": {
 			"report": "Report Bug",
@@ -830,11 +902,7 @@
 			"goHomeTitle": "Go back to the homepage",
 			"reportTitle": "Report this error as a potential bug on GitHub",
 			"copyTitle": "Copy the error details to your clipboard"
-		},
-		"criticalHeading": "A critical error occurred",
-		"emptyMessage": "The error message was empty.",
-		"copiedDetails": "Copied error details to your clipboard",
-		"imageAlt": "Construction illustration"
+		}
 	},
 	"homeScene": {
 		"onDeck": {
@@ -863,6 +931,39 @@
 			"emptyState": {
 				"heading": "Nothing to show",
 				"message": "Any recent books you add will show up here"
+			}
+		},
+		"allSectionsHidden": {
+			"label": "There is nothing to show",
+			"description": "You hid everything, I hope you like empty space",
+			"customizeHome": "Customize your home page"
+		}
+	},
+	"mediaFilterForm": {
+		"ageRatingFilter": {
+			"label": "Age Rating",
+			"anyAge": {
+				"label": "Any age",
+				"description": "No age rating filter will be applied"
+			},
+			"custom": {
+				"label": "Aged N and below",
+				"description": {
+					"media": "Only media with an age rating of N or lower will be shown, where N is the number you enter below",
+					"series": "Only series with an age rating of N or lower will be shown, where N is the number you enter below"
+				}
+			}
+		},
+		"extensionSelect": {
+			"label": "Extension",
+			"any": "Any"
+		},
+		"readStatusSelect": {
+			"label": "Read Status",
+			"options": {
+				"completed": "Completed",
+				"reading": "Reading",
+				"unread": "Unread"
 			}
 		}
 	},
@@ -1382,7 +1483,7 @@
 					"description": "Change the filters for this viewing session",
 					"rawData": {
 						"heading": "Raw filter data",
-						"description": "This is how NoirPanther will process the filters"
+						"description": "This is how Stump will process the filters"
 					},
 					"buttons": {
 						"save": "Save",
@@ -1485,7 +1586,7 @@
 					"avatarPicker": {
 						"label": "Avatar",
 						"heading": "Upload avatar",
-						"subtitle": "You can upload any image to use as your avatar for social features in NoirPanther",
+						"subtitle": "You can upload any image to use as your avatar for social features in Stump",
 						"dropzone": "Drop an image or click to select",
 						"changeImage": "Change Image",
 						"removeImage": "Remove Image",
@@ -1503,16 +1604,11 @@
 						"confirm": "Save Changes"
 					}
 				},
-				"locale": {
-					"localeSelector": {
-						"label": "Language"
-					},
-					"heading": "Language and locale",
-					"subtitle": [
-						"NoirPanther supports multiple languages and locales, set your preferences below. Please consider helping improve the quality of",
-						"NoirPanther's translations",
-						"if you're able to!"
-					]
+				"language": {
+					"label": "Language",
+					"contributeIfAble": "Please consider contributing to Stump's translations if you're able to!",
+					"contribute": "Contribute",
+					"noThanks": "No thanks"
 				}
 			}
 		},
@@ -1523,7 +1619,7 @@
 			"sections": {
 				"themeAndAppearance": {
 					"label": "Theme and appearance",
-					"description": "The basic look and feel options for NoirPanther"
+					"description": "The basic look and feel options for Stump"
 				},
 				"interface": {
 					"title": "Interface",
@@ -1567,6 +1663,16 @@
 					"label": "Font",
 					"description": "Customize the font used in the application"
 				},
+				"interfaceRoundness": {
+					"label": "Interface roundness",
+					"description": "How rounded the corners are for UI elements",
+					"options": {
+						"none": "None",
+						"normal": "Normal",
+						"rounded": "Rounded",
+						"pill": "Pill"
+					}
+				},
 				"thumbnailPreview": {
 					"label": "Preview",
 					"description": "This is how thumbnails will look with the current settings"
@@ -1602,7 +1708,7 @@
 				},
 				"layoutAndArrangement": {
 					"label": "Layout and arrangement",
-					"description": "Customize how NoirPanther displays information and organizes content"
+					"description": "Customize how Stump displays information and organizes content"
 				},
 				"primaryNavigation": {
 					"label": "Primary navigation",
@@ -1660,15 +1766,31 @@
 				},
 				"maxWidthPreference": {
 					"label": "Adjusted width",
-					"description": "NoirPanther applies a max-width to the viewport. This setting allows you to adjust or remove this limit",
+					"description": "Stump applies a max-width to the viewport. This setting allows you to adjust or remove this limit",
 					"tooltip": "This setting is not currently supported when the primary navigation is set to sidebar",
 					"options": {
 						"noLimit": "No limit"
 					}
 				},
+				"displayAndSpacing": {
+					"label": "Display and spacing",
+					"description": "Preferences related to the presentation of content and information"
+				},
 				"additionalPreferences": {
 					"label": "Additional preferences",
-					"description": "Customize the appearance and behavior of NoirPanther with these additional settings"
+					"description": "Customize the appearance and behavior of Stump with these additional settings"
+				},
+				"contentBrowsing": {
+					"label": "Content browsing",
+					"description": "Preferences that affect browsing and navigating content lists"
+				},
+				"motionAndAnimation": {
+					"label": "Motion and animation",
+					"description": "Visual presentation and movement preferences"
+				},
+				"activityAndStatus": {
+					"label": "Activity and status",
+					"description": "Indicators, overlays, or functionality related to background activity"
 				},
 				"hideScrollbarToggle": {
 					"label": "Hide scrollbar",
@@ -1706,6 +1828,17 @@
 					"label": "Reading session grace period",
 					"description": "If no activity is detected within this time frame, in seconds, the next update will start a new session"
 				},
+				"homeArrangement": {
+					"title": "Home page",
+					"description": "Adjust the sections on your home page",
+					"label": "Home sections",
+					"hint": "Drag and rearrange sections or hide them entirely",
+					"reorder": "Reorder {{section}}",
+					"reset": "Reset",
+					"saveFailed": "Failed to save your changes",
+					"unsupported": "Invalid configuration",
+					"unsupportedDescription": "Please reset to defaults and try again"
+				},
 				"showThumbnailsInHeader": {
 					"label": "Show thumbnails in headers",
 					"description": "If you prefer to see thumbnails more often, this setting will show them in more places",
@@ -1713,39 +1846,13 @@
 						"enabled": "This setting will show thumbnails in more places",
 						"disabled": "This setting will not show thumbnails in more places"
 					}
-				},
-				"interfaceRoundness": {
-					"label": "Interface roundness",
-					"description": "How rounded the corners are for UI elements",
-					"options": {
-						"none": "None",
-						"normal": "Normal",
-						"rounded": "Rounded",
-						"pill": "Pill"
-					}
-				},
-				"displayAndSpacing": {
-					"label": "Display and spacing",
-					"description": "Preferences related to the presentation of content and information"
-				},
-				"contentBrowsing": {
-					"label": "Content browsing",
-					"description": "Preferences that affect browsing and navigating content lists"
-				},
-				"motionAndAnimation": {
-					"label": "Motion and animation",
-					"description": "Visual presentation and movement preferences"
-				},
-				"activityAndStatus": {
-					"label": "Activity and status",
-					"description": "Indicators, overlays, or functionality related to background activity"
 				}
 			}
 		},
 		"app/apiKeys": {
 			"helmet": "API keys",
 			"title": "API keys",
-			"description": "Manage your generated NoirPanther API keys",
+			"description": "Manage your generated Stump API keys",
 			"shared": {
 				"fields": {
 					"name": "Name",
@@ -1802,15 +1909,21 @@
 		"app/reader": {
 			"helmet": "Reader settings",
 			"title": "Reader settings",
-			"description": "Default options for the NoirPanther readers. These are bound to your current device only",
+			"description": "Default preferences for reading. Some of these are local-only to your current device",
 			"sections": {
 				"universal": {
+					"label": "Universal",
+					"description": "Settings which apply to all types of books",
 					"sections": {
 						"readingDirection": {
 							"label": "Reading direction",
 							"description": "The direction in which the reader will progress through pages"
 						}
 					}
+				},
+				"formats": {
+					"label": "Formats",
+					"description": "Configure reader default settings independently"
 				},
 				"imageBasedBooks": {
 					"label": "Image-based books",
@@ -1858,11 +1971,11 @@
 		"app/desktop": {
 			"helmet": "Desktop settings",
 			"title": "Desktop settings",
-			"description": "Settings related to the NoirPanther desktop application",
+			"description": "Settings related to the Stump desktop application",
 			"sections": {
 				"configuredServers": {
-					"label": "Configured servers",
-					"description": "The list of NoirPanther servers you can connect to",
+					"label": "Servers",
+					"description": "The list of Stump servers you can connect to",
 					"getStarted": "Add a server to get started",
 					"unreachableServer": {
 						"tooltip": "Server unreachable"
@@ -1884,7 +1997,7 @@
 							},
 							"uri": {
 								"label": "URI",
-								"description": "The URL of the NoirPanther server",
+								"description": "The URL of the Stump server",
 								"placeholder": "https://stump.example.com"
 							}
 						}
@@ -1892,7 +2005,7 @@
 					"addServer": {
 						"trigger": "Add server",
 						"title": "Add a new server",
-						"description": "Add a new NoirPanther server to the desktop application",
+						"description": "Add a new Stump server to the desktop application",
 						"confirm": "Add server"
 					},
 					"editServer": {
@@ -1951,16 +2064,19 @@
 				},
 				"optionalFeatures": {
 					"label": "Optional features",
-					"description": "Manage the optional features unique to the desktop application",
 					"bundledServer": {
 						"label": "Bundled server",
-						"description": "Run the bundled server in the background while the desktop application is running (requires restart)"
+						"description": "Run the bundled server in the background while the desktop application is running"
 					},
 					"discordPresence": {
 						"label": "Discord Presence",
-						"description": "Display your NoirPanther activity in Discord using Discord Rich Presence",
+						"description": "Display your Stump activity in Discord using Discord Rich Presence",
 						"reconnect": "Reconnect to Discord",
 						"updateError": "Failed to update!"
+					},
+					"restartRequired": {
+						"title": "Restart required",
+						"description": "Changes were made that require a restart of the app to take effect"
 					}
 				}
 			}
@@ -1968,54 +2084,58 @@
 		"server/general": {
 			"helmet": "Server settings",
 			"title": "Server settings",
-			"description": "General settings related to your NoirPanther server instance",
+			"description": "General settings related to your Stump server instance",
 			"sections": {
 				"updateAvailable": {
-					"message": "A newer NoirPanther release is available: {{version}}. Pull the new image to update.",
+					"message": "Your server is not up to date. Please update to the latest version!",
 					"releaseNotes": "Release notes"
 				},
 				"serverInfo": {
 					"title": "Server information",
-					"description": "Basic details about your NoirPanther server instance — a fork of Stump with additional features. The version starts with the Stump release it is built from; the rN after it is the NoirPanther revision on top of that release.",
-					"build": {
-						"label": "Build",
-						"description": "Details about the version and build",
-						"version": {
-							"semver": "Version",
-							"commitHash": "Exact commit",
-							"date": "Build date"
-						}
-					},
+					"description": "Basic details about your Stump server instance",
+					"version": "Version",
+					"exactCommit": "Exact commit",
+					"build": "Build",
 					"nonStableChannel": {
-						"title": "You are running a non-stable build of NoirPanther",
+						"title": "You are running a non-stable build of Stump",
 						"description": [
 							"It looks like you are running the",
 							"build channel"
 						]
 					},
+					"debugInfo": {
+						"label": "Debug information",
+						"description": "Copy and paste when reporting issues on GitHub",
+						"copyDebugInfoFailed": "Failed to copy debug information"
+					},
 					"semanticVersion": "Semantic version",
 					"buildChannel": "Build channel",
-					"exactCommit": "Exact commit",
 					"buildDate": "Build date"
+				},
+				"changelog": {
+					"label": "Changelog",
+					"description": "See what has changed in the latest versions of Stump"
+				},
+				"serverConfig": {
+					"label": "Server configuration",
+					"description": "A subset of configuration options available for management here",
+					"publicUrl": {
+						"label": "Public URL",
+						"description": "The URL that your server is accessible from outside your network",
+						"updateFailed": "Failed to update the URL"
+					}
 				},
 				"helpfulLinks": {
 					"title": "Helpful links",
-					"description": "Links to resources that may be helpful for managing your NoirPanther server instance",
+					"description": "Links to resources that may be helpful for managing your Stump server instance",
 					"links": {
 						"documentation": "Documentation",
 						"changelog": "Changelog"
 					}
 				},
-				"serverPublicUrl": {
-					"label": "Public URL",
-					"description": "The URL that your server is accessible from outside your network, if applicable. This will enable invite links and other features",
-					"updateSuccess": "Public URL updated successfully",
-					"updateError": "Failed to update public URL",
-					"unknownError": "An unknown error occurred"
-				},
 				"customEmojis": {
-					"title": "Custom emojis",
-					"description": "Upload and manage custom image emojis for your server",
+					"title": "Emojis",
+					"description": "See and manage custom image emojis for your server",
 					"dropzone": "Drop an image or click to select",
 					"input": {
 						"label": "Emoji name",
@@ -2028,21 +2148,23 @@
 					"noCustomEmojis": "No custom emojis have been added yet",
 					"invalidName": "Please enter a valid name for your emoji",
 					"uploadError": "Failed to upload emoji",
-					"uploadSuccess": "Emoji uploaded",
-					"renameSuccess": "Emoji renamed",
 					"renameError": "Failed to rename emoji",
-					"deleteSuccess": "Emoji deleted",
 					"deleteError": "Failed to delete emoji",
 					"provideName": "Please provide an emoji name",
 					"renamePlaceholder": "emoji_name",
 					"previewAlt": "emoji preview"
+				},
+				"serverPublicUrl": {
+					"updateSuccess": "Public URL updated successfully",
+					"updateError": "Failed to update public URL",
+					"unknownError": "An unknown error occurred"
 				}
 			}
 		},
 		"server/logs": {
 			"helmet": "Logs",
 			"title": "Logs",
-			"description": "The logs generated by your NoirPanther server instance",
+			"description": "The logs generated by your Stump server instance",
 			"sections": {
 				"persistedLogs": {
 					"title": "Persisted logs",
@@ -2065,21 +2187,21 @@
 				},
 				"liveLogs": {
 					"title": "Live logs feed",
-					"description": "Streamed directly from your NoirPanther server instance in real-time"
+					"description": "Streamed directly from your Stump server instance in real-time"
 				}
 			}
 		},
 		"server/jobs": {
 			"helmet": "Jobs",
 			"title": "Jobs",
-			"description": "Background jobs that run on your NoirPanther server instance",
+			"description": "Background jobs that run on your Stump server instance",
 			"sections": {
 				"scheduling": {
 					"title": "Scheduled jobs",
 					"description": "Some jobs can be configured to automatically run on a schedule",
 					"restartRequiredTitle": "Restart required",
 					"restartRequired": "Changes to this configuration will take effect after a server restart",
-					"newScheduledJob": "New scheduled job",
+					"createScheduledJob": "Create scheduled job",
 					"deleteScheduledJob": {
 						"title": "Delete scheduled job",
 						"description": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
@@ -2151,7 +2273,7 @@
 				},
 				"history": {
 					"title": "History",
-					"description": "A record of jobs that have been run on your NoirPanther server instance",
+					"description": "A record of jobs that have been run on your Stump server instance",
 					"table": {
 						"columns": {
 							"name": "Type",
@@ -2164,6 +2286,11 @@
 						"emptyHeading": "There are no jobs to display",
 						"emptySubtitle": "You can't have a job if you don't have a job",
 						"deleteAllMessage": "Job history and statistics may be deleted from the database at any time. This action cannot be undone"
+					},
+					"inspector": {
+						"title": "Job details",
+						"description": "The raw output of this job and any associated logs",
+						"associatedLogs": "Associated logs"
 					},
 					"deleteJobHistory": {
 						"title": "Delete job history",
@@ -2179,6 +2306,12 @@
 			"helmet": "User management",
 			"title": "Users",
 			"description": "Manage the users on this server",
+			"userStats": {
+				"users": "Users",
+				"booksCompleted": "Books completed",
+				"booksInProgress": "Books in progress",
+				"topReader": "Top reader"
+			},
 			"createUser": {
 				"helmet": "Create user",
 				"title": "Create user",
@@ -2382,12 +2515,12 @@
 		"server/email": {
 			"helmet": "Email settings",
 			"title": "Email",
-			"description": "Settings related to configuring an SMTP emailer for your NoirPanther server instance",
+			"description": "Settings related to configuring an SMTP emailer for your Stump server instance",
 			"sections": {
 				"emailers": {
 					"title": "SMTP emailers",
-					"description": "The clients you have configured for sending emails from your NoirPanther server instance",
-					"singleInstanceDisclaimer": "While NoirPanther supports multiple SMTP configurations in the backend, only one can be configured on the UI. This will be improved in the future",
+					"description": "The clients you have configured for sending emails from your Stump server instance",
+					"singleInstanceDisclaimer": "While Stump supports multiple SMTP configurations in the backend, only one can be configured on the UI. This will be improved in the future",
 					"list": {
 						"emptyHeading": "No SMTP emailers configured",
 						"primaryEmailer": "Primary emailer",
@@ -2410,7 +2543,7 @@
 				},
 				"devices": {
 					"title": "Email devices",
-					"description": "The device aliases you have configured for receiving emails from your NoirPanther server instance",
+					"description": "The device aliases you have configured for receiving emails from your Stump server instance",
 					"addDevice": "Add device alias",
 					"addOrUpdateDevice": {
 						"title": {
@@ -2520,7 +2653,7 @@
 			"createEmailer": {
 				"helmet": "Create emailer",
 				"title": "Create emailer",
-				"description": "Create a new SMTP emailer for your NoirPanther server instance"
+				"description": "Create a new SMTP emailer for your Stump server instance"
 			},
 			"updateEmailer": {
 				"helmet": "Update emailer",
@@ -2532,6 +2665,8 @@
 			"helmet": "Metadata integrations",
 			"title": "Metadata integrations",
 			"addProvider": "Add provider",
+			"createProviderError": "Failed to create provider",
+			"updateProviderError": "Failed to update provider",
 			"noProviders": "No providers configured yet. Add one to get started",
 			"providers": {
 				"title": "Providers",
@@ -2544,9 +2679,9 @@
 					"validationError": "The auto-validation failed for this token",
 					"validationRequestError": "The validation request failed",
 					"validationRequestErrorUnknown": "An unknown error occurred during validation",
-					"noBearerPrefixRequired": "Remove the 'Bearer ' prefix from the API token",
 					"providerStatusError": "The provider responded with status {{status}}",
-					"providerError": "The provider responded with an error: {{message}}"
+					"providerError": "The provider responded with an error: {{message}}",
+					"noBearerPrefixRequired": "Remove the 'Bearer ' prefix from the API token"
 				},
 				"apiTokenExpiresAt": {
 					"label": "API token expiration",
@@ -2587,9 +2722,7 @@
 			"deleteDialog": {
 				"title": "Delete provider",
 				"description": "Are you sure you want to delete {{providerName}}? This action cannot be undone."
-			},
-			"createProviderError": "Failed to create provider",
-			"updateProviderError": "Failed to update provider"
+			}
 		},
 		"server/tags": {
 			"helmet": "Tag management",
@@ -2720,10 +2853,10 @@
 	"serverSOS": {
 		"heading": "Server Unavailable",
 		"desktop": {
-			"message": "A network error occurred that suggests your NoirPanther server is currently unavailable. Please ensure that it is running and accessible from this device.\nIf your server URL has changed, you can update it using the form below"
+			"message": "A network error occurred that suggests your Stump server is currently unavailable. Please ensure that it is running and accessible from this device.\nIf your server URL has changed, you can update it using the form below"
 		},
 		"web": {
-			"message": "A network error occurred that suggests your NoirPanther server is currently unavailable. Please ensure that it is running and accessible from this device"
+			"message": "A network error occurred that suggests your Stump server is currently unavailable. Please ensure that it is running and accessible from this device"
 		},
 		"reconnected": "Reconnected to server! Redirecting...",
 		"reconnectionFailed": "Something went wrong!"
@@ -2757,6 +2890,9 @@
 			"emptyState": "A preview of your image will appear here",
 			"prompt": "Drop image here or click to select",
 			"remove": "Remove image",
+			"fileTooLarge": "File too large",
+			"onlyOneFile": "Only one file is allowed",
+			"noFile": "No file was provided",
 			"confirmSelection": "Confirm selection",
 			"errors": {
 				"fileTooLarge": "File too large (20MB max)",
@@ -2764,10 +2900,21 @@
 				"onlyOneFile": "Only 1 file allowed",
 				"noFiles": "No files provided",
 				"uploadFailed": "Failed to upload image"
-			},
-			"fileTooLarge": "File too large",
-			"onlyOneFile": "Only one file is allowed",
-			"noFile": "No file was provided"
+			}
+		}
+	},
+	"thumbnailSelector": {
+		"title": "Select a thumbnail",
+		"descriptions": {
+			"chooseBookPage": "Choose a page from this book to use as the new thumbnail",
+			"chooseSeriesBook": "Select a book from the series"
+		},
+		"actions": {
+			"confirmSelection": "Confirm selection"
+		},
+		"errors": {
+			"uploadFailed": "Failed to upload image",
+			"updateFailed": "Failed to update thumbnail"
 		}
 	},
 	"common": {
@@ -2776,6 +2923,7 @@
 		"cancel": "Cancel",
 		"clear": "Clear",
 		"confirm": "Confirm",
+		"copy": "Copy",
 		"created": "Created",
 		"delete": "Delete",
 		"deleteConfirmation": {
@@ -2818,21 +2966,30 @@
 		"remove": "Remove",
 		"goBack": "Go back",
 		"goToServers": "Go to servers",
+		"notConfigured": "Not configured",
 		"notReady": "This feature is not ready",
 		"notUsedYet": "Not used yet",
 		"never": "Never",
+		"open": "Open",
+		"none": "None",
 		"scan": "Scan",
 		"somethingWentWrong": "Something went wrong",
 		"back": "Back",
 		"continue": "Continue",
 		"book": "Book",
+		"book_one": "Book",
+		"book_other": "Books",
+		"xBooks_one": "{{count}} Book",
+		"xBooks_other": "{{count}} Books",
+		"seeMore": "See more",
 		"series": "Series",
 		"fileUpload": {
 			"someRejected": "Some files were rejected. Please check the file types and try again",
 			"tooManyFiles": "You have selected too many files",
 			"noValidFiles": "No valid files were selected"
 		},
-		"unknownError": "An unknown error occurred"
+		"unknownError": "An unknown error occurred",
+		"view": "View"
 	},
 	"userPermissions": {
 		"ACCESS_API_KEYS": {
@@ -2998,14 +3155,9 @@
 	},
 	"mobileApp": {
 		"addOrEditServer": {
-			"addServer": {
-				"title": "Add Server",
-				"subtitle": "Configure a new server to access your content"
-			},
-			"editServer": {
-				"title": "Edit Server",
-				"subtitle": "Edit Server"
-			},
+			"createServer": "Create Server",
+			"updateServer": "Update Server",
+			"basicInfo": "Basic Info",
 			"kind": "Kind",
 			"customHeaders": {
 				"label": "Custom Headers",
@@ -3013,12 +3165,8 @@
 				"invalidHeader": "Invalid header"
 			},
 			"auth": {
-				"label": "Auth",
-				"token": {
-					"label": "Token",
-					"placeholder": "Raw Token"
-				},
-				"basic": "Basic",
+				"section": "Authentication",
+				"method": "Method",
 				"login": {
 					"label": "Login",
 					"description": "You will be prompted to login when accessing content as needed"
@@ -3026,17 +3174,77 @@
 				"none": {
 					"label": "None",
 					"description": "No authentication is required for this server or auth is provided through the URL"
-				}
+				},
+				"token": {
+					"label": "Token",
+					"placeholder": "Raw Token"
+				},
+				"basic": "Basic"
 			},
 			"serverNamePlaceholder": "My Server",
 			"catalogUrl": "Catalog URL",
+			"primaryUrl": "Primary URL",
 			"failedToConnect": "Failed to connect to server",
 			"didConnect": "Connected",
 			"checkConnection": "Check Connection",
+			"optionalSettings": "Optional Settings",
 			"setAsDefaultServer": "Set as Default Server",
 			"validation": {
 				"nameAlreadyExists": "Name already exists",
 				"cannotSetAuthorizationHeader": "Cannot set Authorization header"
+			},
+			"networking": "Networking",
+			"advancedOptions": "Advanced Options"
+		},
+		"serverSettingsSheet": {
+			"configuration": {
+				"label": "Configuration",
+				"networkSettings": "Network Settings"
+			}
+		},
+		"serverNetworkSettings": {
+			"activeProfile": {
+				"label": "Active Profile",
+				"localIsActive": "Local profile is active",
+				"primaryIsActive": "Primary profile is active",
+				"autoSwitchToLocalDidNotWork": "The app was unable to switch to the active profile. Please check your network connection"
+			},
+			"localProfile": "Local Profile",
+			"primaryUrl": "Primary URL",
+			"autoSwitchToLocal": {
+				"label": "Auto-switch to local profile",
+				"description": "Switch to the local profile when able"
+			},
+			"localUrl": "Local URL",
+			"saveUrlChanges": "Save URL Changes",
+			"swapUrls": {
+				"label": "Swap URLs",
+				"swap": "Swap",
+				"confirmationText": "Are you sure you want to swap the remote and local URLs? This will take effect immediately",
+				"noLocalUrlSet": {
+					"title": "No local URL set",
+					"description": "You need to set a local URL before you can swap it to the remote URL"
+				}
+			},
+			"wifiNetwork": {
+				"label": "Wifi Network",
+				"noAssociatedNetwork": "No Associated Wifi Network",
+				"notConnectedToWifi": "You are not connected to wifi. Please connect to a local network to finish setting up the local profile",
+				"connectedTip": "If the current network is not listed, you might need to give Stump permission to access your location",
+				"addNetwork": "Add \"{{ssid}}\"",
+				"permissionNotGranted": {
+					"label": "Permissions Not Granted",
+					"description": "You need to grant location permission to access the active wifi network"
+				},
+				"permissionFailedToBeGranted": {
+					"title": "Location Permission Failed",
+					"description": "The app failed to get permissions to access your location. Please check your device settings and try again"
+				},
+				"requestPermission": "Request Location Permission",
+				"removeWifi": {
+					"label": "Remove",
+					"confirmationText": "Are you sure you want to remove the '{{ssid}}' network from the local profile?"
+				}
 			}
 		},
 		"bookActions": {
@@ -3085,10 +3293,15 @@
 			"links": "Links",
 			"year": "Year",
 			"identifier": "Identifier",
-			"identifiers": "Identifiers"
+			"identifiers": "Identifiers",
+			"issue": "Issue"
 		},
 		"common": {
 			"book": "Book",
+			"book_one": "Book",
+			"book_other": "Books",
+			"xBooks_one": "{{count}} Book",
+			"xBooks_other": "{{count}} Books",
 			"cancel": "Cancel",
 			"chapter": "Chapter",
 			"clear": "Clear",
@@ -3100,12 +3313,14 @@
 			"delete": "Delete",
 			"dismiss": "Dismiss",
 			"download": "Download",
+			"downloaded": "Downloaded",
 			"downloads": "Downloads",
 			"done": "Done",
 			"edit": "Edit",
 			"enabled": "Enabled",
 			"enable": "Enable",
 			"error": "Error",
+			"exit": "Exit",
 			"favorite": "Favorite",
 			"finished": "Finished",
 			"grid": "Grid",
@@ -3114,10 +3329,12 @@
 			"name": "Name",
 			"none": "None",
 			"notAvailable": "Not Available",
+			"notConfigured": "Not configured",
 			"options": "Options",
 			"page": "Page",
 			"pages": "Pages",
 			"pageXOfY": "Page {{current}} of {{total}}",
+			"pageX": "Page {{current}}",
 			"password": "Password",
 			"progress": "Progress",
 			"publication": "Publication",
@@ -3127,10 +3344,12 @@
 			"readthrough": "Readthrough",
 			"readMore": "Read More",
 			"refresh": "Refresh",
+			"reset": "Reset",
 			"save": "Save",
 			"select": "Select",
 			"settings": "Settings",
 			"servers": "Servers",
+			"test": "Test",
 			"thisBook": "this book",
 			"thisServer": "this server",
 			"unknown": "Unknown",
@@ -3139,9 +3358,7 @@
 			"username": "Username",
 			"value": "Value",
 			"version": "Version",
-			"downloaded": "Downloaded",
-			"pageX": "Page {{current}}",
-			"reset": "Reset",
+			"view": "View",
 			"accessOpdsV2": "Access OPDS v2.0",
 			"accessOpdsV1": "Access OPDS v1.2"
 		},
@@ -3169,7 +3386,7 @@
 			"unknownSeriesName": "series"
 		},
 		"emptyState": {
-			"noStumpServers": "No NoirPanther servers added",
+			"noStumpServers": "No Stump servers added",
 			"noOPDSServers": "No OPDS servers added",
 			"noServers": "No Servers Configured",
 			"cta": "Get started by adding a server to access your book collections",
@@ -3263,6 +3480,33 @@
 			},
 			"syncFailed": "Failed to sync offline progress"
 		},
+		"syncConflicts": {
+			"title": "Sync Conflicts",
+			"remainingCount": "{{remainingCount}} Remaining",
+			"noConflicts": {
+				"title": "No Sync Conflicts",
+				"description": "All your local progress is in sync their servers"
+			},
+			"lastCommonSession": "Last common session",
+			"localSession": "Local Session",
+			"remoteSessionWithId": "Remote Session {{sessionId}}",
+			"noCommonSession": "No common reading history",
+			"noRemoteSessions": "No remote sessions",
+			"divergentProgress": {
+				"title": "Divergent Progress",
+				"description": "The last common session was modified on the server after your last sync"
+			},
+			"noCommonReadingHistory": {
+				"title": "No Common Reading History",
+				"description": "This book had no synced history when you started reading offline"
+			},
+			"acceptSource": {
+				"local": "Accept Local",
+				"remote": "Accept Remote",
+				"both": "Accept Both"
+			},
+			"pullError": "Failed to pull remote progress"
+		},
 		"search": {
 			"label": "Search This Server",
 			"description": "Find specific content on this server",
@@ -3276,6 +3520,36 @@
 					"options": {
 						"light": "Light",
 						"dark": "Dark"
+					}
+				},
+				"appPrimaryColor": {
+					"label": "Accent",
+					"options": {
+						"chromaScale": "Chroma Scale",
+						"hues": {
+							"red": "Red",
+							"orange": "Orange",
+							"amber": "Amber",
+							"yellow": "Yellow",
+							"lime": "Lime",
+							"green": "Green",
+							"emerald": "Emerald",
+							"teal": "Teal",
+							"cyan": "Cyan",
+							"sky": "Sky",
+							"blue": "Blue",
+							"indigo": "Indigo",
+							"violet": "Violet",
+							"purple": "Purple",
+							"fuchsia": "Fuchsia",
+							"pink": "Pink",
+							"rose": "Rose",
+							"slate": "Slate",
+							"gray": "Gray",
+							"zinc": "Zinc",
+							"neutral": "Neutral",
+							"stone": "Stone"
+						}
 					}
 				},
 				"appLanguage": "Language",
@@ -3314,8 +3588,8 @@
 				}
 			},
 			"stump": {
-				"label": "NoirPanther",
-				"description": "NoirPanther features are optional and can be turned off if you do not need them",
+				"label": "Stump",
+				"description": "Stump features are optional and can be turned off if you do not need them",
 				"bookClubsEnabled": "Book Club Features"
 			},
 			"autoSyncLocalData": "Auto-Sync Local Data",
@@ -3332,7 +3606,8 @@
 				"label": "Management",
 				"dataUsage": {
 					"label": "Data Usage",
-					"nonStumpData": "Non-NoirPanther data",
+					"noServersAdded": "No Servers Added",
+					"nonStumpData": "Non-Stump Data",
 					"serversTotal": "Servers Total",
 					"totalFiles": "Total Files",
 					"totalSize": "Total Size",
@@ -3389,7 +3664,8 @@
 				"debugAnalytics": {
 					"label": "Debug Analytics",
 					"description": "Send additional debug-related events to help troubleshoot issues"
-				}
+				},
+				"maskUrls": "Mask URLs"
 			},
 			"contactInfo": {
 				"label": "Contact",
@@ -3641,36 +3917,138 @@
 				"DESC": "10 → 1"
 			}
 		},
-		"syncConflicts": {
-			"title": "Sync Conflicts",
-			"remainingCount": "{{remainingCount}} Remaining",
-			"noConflicts": {
-				"title": "No Sync Conflicts",
-				"description": "All your local progress is in sync their servers"
-			},
-			"lastCommonSession": "Last common session",
-			"localSession": "Local Session",
-			"remoteSessionWithId": "Remote Session {{sessionId}}",
-			"noCommonSession": "No common reading history",
-			"noRemoteSessions": "No remote sessions",
-			"divergentProgress": {
-				"title": "Divergent Progress",
-				"description": "The last common session was modified on the server after your last sync"
-			},
-			"noCommonReadingHistory": {
-				"title": "No Common Reading History",
-				"description": "This book had no synced history when you started reading offline"
-			},
-			"acceptSource": {
-				"local": "Accept Local",
-				"remote": "Accept Remote",
-				"both": "Accept Both"
-			},
-			"pullError": "Failed to pull remote progress"
-		},
 		"widgets": {
 			"readingNow": {
 				"nothingInProgress": "Nothing in Progress"
+			}
+		}
+	},
+	"epubReader": {
+		"reading": "Reading",
+		"appearance": "Appearance",
+		"themeAndOptions": "Theme and options",
+		"locationManager": "Location manager",
+		"contents": "Contents",
+		"bookmarks": "Bookmarks",
+		"annotations": "Annotations",
+		"noBookmarks": "No bookmarks",
+		"bookmark": "Bookmark",
+		"noAnnotations": "No annotations",
+		"annotation": {
+			"addNote": "Add note",
+			"edit": "Edit annotation",
+			"note": "Note",
+			"optionalNote": "Add an optional note…",
+			"selectionActions": "Selection actions",
+			"highlight": "Highlight",
+			"disabledInIncognito": "Annotations are disabled in incognito mode",
+			"saveFailed": "Failed to save annotation",
+			"updateFailed": "Failed to update annotation",
+			"deleteFailed": "Failed to delete annotation"
+		},
+		"search": {
+			"placeholder": "Enter a query and press enter to search",
+			"failed": "Search failed. Please try again.",
+			"noResults": "No results found.",
+			"section": "Section {{position}}",
+			"loadingMore": "Loading more…",
+			"loadMore": "Load more results"
+		},
+		"controls": {
+			"columns": "Columns",
+			"auto": "Auto",
+			"columnCount_one": "{{count}} column",
+			"columnCount_other": "{{count}} columns",
+			"pageMargins": "Page margins",
+			"readingDirection": "Reading direction",
+			"leftToRight": "Left to right",
+			"rightToLeft": "Right to left",
+			"readingMode": "Reading mode",
+			"paged": "Paged",
+			"continuous": "Continuous",
+			"previousPage": "Previous page",
+			"nextPage": "Next page",
+			"toggleControls": "Toggle reader controls"
+		},
+		"errors": {
+			"openFailed": "Failed to open EPUB with Readium.",
+			"navigateFailed": "Failed to navigate to location"
+		},
+		"failedToLoad": "Failed to load the book"
+	},
+	"imageReader": {
+		"header": {
+			"goToMediaOverview": "Go to media overview"
+		},
+		"settingsDialog": {
+			"scopes": {
+				"book": "Book",
+				"global": "Global"
+			}
+		},
+		"timerMenu": {
+			"start": "Start Timer",
+			"stop": "Stop Timer",
+			"reset": "Reset Timer"
+		},
+		"footer": {
+			"readingTime": "Reading time: {{time}}",
+			"pageOf": "{{current}} of {{total}}"
+		},
+		"goToPage": {
+			"label": "Go to page",
+			"submit": "Go"
+		},
+		"nextInSeries": {
+			"title": "Next Up:",
+			"read": "Read"
+		},
+		"settings": {
+			"readerSettings": {
+				"sections": {
+					"mode": "Mode",
+					"imageOptions": "Image Options",
+					"preferences": "Preferences",
+					"controls": "Controls"
+				},
+				"preferences": {
+					"separateSecondPage": "Separate second page",
+					"panZoomWithoutCtrl": "Pan and zoom without Ctrl / Cmd",
+					"tapSidesToNavigate": "Tap sides to navigate",
+					"readingTimer": "Reading timer"
+				}
+			},
+			"doublePageBehavior": {
+				"label": "Double Paged",
+				"options": {
+					"auto": "Auto",
+					"always": "Always",
+					"off": "Off"
+				}
+			},
+			"imageScaling": {
+				"label": "Image scaling",
+				"options": {
+					"auto": "Auto",
+					"height": "Height",
+					"width": "Width",
+					"original": "Original"
+				}
+			},
+			"readingDirection": {
+				"label": "Reading direction",
+				"options": {
+					"leftToRight": "Left to right",
+					"rightToLeft": "Right to left"
+				}
+			},
+			"readingMode": {
+				"label": "Flow",
+				"options": {
+					"verticalScroll": "Vertical scroll",
+					"horizontalScroll": "Horizontal scroll",
+					"paged": "Paged"
+				}
 			}
 		}
 	},
@@ -3726,120 +4104,6 @@
 				"deleted": "Series deleted",
 				"failed": "Failed to delete series"
 			}
-		}
-	},
-	"bookManagementScene": {
-		"heading": "Manage",
-		"subtitle": "Make changes to this book",
-		"developmentAlert": "Book management is currently under development and has very limited functionality",
-		"analysis": {
-			"heading": "Analysis",
-			"description": "Re-analyze this book to update metadata from its file",
-			"button": "Analyze Media",
-			"buttonTitle": "Analyze this book",
-			"inProgress": "Analysis already in progress"
-		},
-		"writeback": {
-			"heading": "Write metadata to file",
-			"description": "Embed the metadata stored in NoirPanther into the epub file itself (OPF), so it travels with the file. The archive is rewritten atomically",
-			"button": "Write metadata to file",
-			"toasts": {
-				"written": "Metadata written into the file",
-				"nothingToWrite": "Nothing to write — the book has no stored metadata",
-				"failed": "Failed to write metadata to file"
-			}
-		},
-		"thumbnail": {
-			"heading": "Thumbnail",
-			"description": "Change the cover image for this book"
-		},
-		"metadataSearch": {
-			"heading": "Search metadata",
-			"description": "Search an external provider for this book and choose a match to apply",
-			"openButton": "Search Metadata",
-			"searchButton": "Search",
-			"noProviders": "No enabled metadata providers are configured for this library type. Configure one in server settings first.",
-			"noResults": "No matches were found for this search",
-			"partialResults": "Some results could not be loaded from the provider, likely due to rate limiting. Try searching again to see if more turn up.",
-			"searchFailed": "Failed to search metadata providers",
-			"form": {
-				"title": {
-					"label": "Title"
-				},
-				"author": {
-					"label": "Author"
-				},
-				"isbn": {
-					"label": "ISBN"
-				},
-				"year": {
-					"label": "Year"
-				},
-				"number": {
-					"label": "Issue number"
-				},
-				"comicVineVolumeId": {
-					"label": "ComicVine volume ID",
-					"placeholder": "e.g., 129260"
-				},
-				"provider": {
-					"label": "Provider",
-					"allOption": "All enabled providers"
-				}
-			}
-		}
-	},
-	"epubReader": {
-		"failedToLoad": "Failed to load the book",
-		"reading": "Reading",
-		"appearance": "Appearance",
-		"themeAndOptions": "Theme and options",
-		"locationManager": "Location manager",
-		"contents": "Contents",
-		"bookmarks": "Bookmarks",
-		"annotations": "Annotations",
-		"noBookmarks": "No bookmarks",
-		"bookmark": "Bookmark",
-		"noAnnotations": "No annotations",
-		"annotation": {
-			"addNote": "Add note",
-			"edit": "Edit annotation",
-			"note": "Note",
-			"optionalNote": "Add an optional note…",
-			"selectionActions": "Selection actions",
-			"highlight": "Highlight",
-			"disabledInIncognito": "Annotations are disabled in incognito mode",
-			"saveFailed": "Failed to save annotation",
-			"updateFailed": "Failed to update annotation",
-			"deleteFailed": "Failed to delete annotation"
-		},
-		"search": {
-			"placeholder": "Enter a query and press enter to search",
-			"failed": "Search failed. Please try again.",
-			"noResults": "No results found.",
-			"section": "Section {{position}}",
-			"loadingMore": "Loading more…",
-			"loadMore": "Load more results"
-		},
-		"controls": {
-			"columns": "Columns",
-			"auto": "Auto",
-			"columnCount_one": "{{count}} column",
-			"columnCount_other": "{{count}} columns",
-			"pageMargins": "Page margins",
-			"readingDirection": "Reading direction",
-			"leftToRight": "Left to right",
-			"rightToLeft": "Right to left",
-			"readingMode": "Reading mode",
-			"paged": "Paged",
-			"continuous": "Continuous",
-			"previousPage": "Previous page",
-			"nextPage": "Next page",
-			"toggleControls": "Toggle reader controls"
-		},
-		"errors": {
-			"openFailed": "Failed to open EPUB with Readium.",
-			"navigateFailed": "Failed to navigate to location"
 		}
 	},
 	"AppLayout": {
@@ -4929,48 +5193,6 @@
 					"ChangeVisibilityConfirmation": {
 						"title": "Change visibility"
 					}
-				}
-			}
-		}
-	},
-	"thumbnailSelector": {
-		"title": "Select a thumbnail",
-		"descriptions": {
-			"chooseBookPage": "Choose a page from this book to use as the new thumbnail",
-			"chooseSeriesBook": "Select a book from the series"
-		},
-		"actions": {
-			"confirmSelection": "Confirm selection"
-		},
-		"errors": {
-			"uploadFailed": "Failed to upload image",
-			"updateFailed": "Failed to update thumbnail"
-		}
-	},
-	"imageReader": {
-		"settings": {
-			"imageScaling": {
-				"label": "Image scaling",
-				"options": {
-					"auto": "Auto",
-					"height": "Height",
-					"width": "Width",
-					"original": "Original"
-				}
-			},
-			"readingDirection": {
-				"label": "Reading direction",
-				"options": {
-					"leftToRight": "Left to right",
-					"rightToLeft": "Right to left"
-				}
-			},
-			"readingMode": {
-				"label": "Flow",
-				"options": {
-					"verticalScroll": "Vertical scroll",
-					"horizontalScroll": "Horizontal scroll",
-					"paged": "Paged"
 				}
 			}
 		}

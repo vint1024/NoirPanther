@@ -50,9 +50,9 @@ export default function BasicSettingsScene() {
 	})
 
 	const [pickerTarget, setPickerTarget] = useState<'path' | `extraPaths.${number}` | null>(null)
-	const [path, name, description, tags, extraPaths, libraryType] = useWatch({
+	const [path, name, description, tags, extraPaths, libraryType, oneshotsDirectory] = useWatch({
 		control: form.control,
-		name: ['path', 'name', 'description', 'tags', 'extraPaths', 'libraryType'],
+		name: ['path', 'name', 'description', 'tags', 'extraPaths', 'libraryType', 'oneshotsDirectory'],
 	})
 
 	const hasChanges = useMemo(() => {
@@ -61,6 +61,7 @@ export default function BasicSettingsScene() {
 		const currentExtraPaths = (extraPaths ?? []).filter(Boolean).map(normalizePath)
 		const libraryExtraPaths = library?.extraPaths ?? []
 		const differentLibraryType = library?.config?.libraryType !== libraryType
+		const existingOneshotsDirectory = library?.config?.oneshotsDirectory || null
 
 		return (
 			library?.path !== normalizePath(path) ||
@@ -70,9 +71,10 @@ export default function BasicSettingsScene() {
 			currentExtraPaths.some((p) => !libraryExtraPaths.includes(p)) ||
 			[...currentTagSet].some((tag) => !libraryTagSet.has(tag)) ||
 			[...libraryTagSet].some((tag) => !currentTagSet.has(tag)) ||
-			differentLibraryType
+			differentLibraryType ||
+			existingOneshotsDirectory !== oneshotsDirectory
 		)
-	}, [library, path, name, description, tags, extraPaths, libraryType])
+	}, [library, path, name, description, tags, extraPaths, libraryType, oneshotsDirectory])
 
 	const handleSubmit = useCallback(
 		(values: CreateOrUpdateLibrarySchema) => {
@@ -86,6 +88,7 @@ export default function BasicSettingsScene() {
 				config: {
 					thumbnailConfig: intoThumbnailConfig(values.thumbnailConfig),
 					libraryType: values.libraryType,
+					oneshotsDirectory: values.oneshotsDirectory,
 				},
 				description: values.description,
 				extraPaths: newExtraPaths,

@@ -5,7 +5,6 @@ import {
 	AlertDescription,
 	Button,
 	CheckBox,
-	cx,
 	Form,
 	Heading,
 	Input,
@@ -18,8 +17,7 @@ import { motion, Variants } from 'framer-motion'
 import { ArrowRight, ShieldAlert } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { FieldValues, useForm } from 'react-hook-form'
-import { useNavigate } from 'react-router'
-import { useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
@@ -76,7 +74,7 @@ export default function LoginOrClaimScene() {
 				queryKey: [sdk.auth.keys.me],
 				exact: false,
 			})
-			if (redirect.includes('/swagger') || redirect.includes('/api')) {
+			if (redirect.includes('/api')) {
 				// eslint-disable-next-line react-compiler/react-compiler
 				window.location.href = redirect
 			} else {
@@ -232,10 +230,10 @@ export default function LoginOrClaimScene() {
 	}
 
 	return (
-		<div data-tauri-drag-region className="flex h-screen w-screen items-center bg-background">
+		<div className="flex h-full w-full items-center bg-background">
 			<motion.div
 				// @ts-expect-error: It's fine
-				className="w-screen shrink-0"
+				className="px-6 sm:px-0 w-screen shrink-0"
 				animate={showServers ? 'appearOut' : 'appearIn'}
 				variants={variants}
 			>
@@ -257,14 +255,7 @@ export default function LoginOrClaimScene() {
 					{renderHeader()}
 					{renderError()}
 
-					<Form
-						form={form}
-						onSubmit={handleSubmit}
-						className={cx(
-							{ 'sm:max-w-md md:max-w-lg w-full': !isClaimed },
-							{ 'min-w-[20rem]': isClaimed },
-						)}
-					>
+					<Form form={form} onSubmit={handleSubmit} className="sm:min-w-80 sm:w-[unset] w-full">
 						{!oidcConfig.disableLocalAuth && (
 							<>
 								<Input

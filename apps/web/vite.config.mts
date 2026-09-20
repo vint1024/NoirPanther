@@ -18,25 +18,48 @@ export default defineConfig({
 		assetsDir: './assets',
 		manifest: true,
 		outDir: '../dist',
-		// `dist` sits outside the vite root (`src`), so vite would not clear it on its own:
-		// every build left its hashed chunks behind and they all ended up in the image
 		emptyOutDir: true,
 		rollupOptions: {
 			output: {
-				// Keep the framework core (react, router, i18next + our i18n package,
-				// date-fns incl. locales) in ONE chunk. Left to the default heuristics
-				// rolldown split date-fns' `en-US` locale into its own chunk that imported
-				// a CJS-interop helper from the react chunk, while the react chunk
-				// (via packages/i18n) imported the locale — a circular chunk graph that
-				// left the helper undefined at evaluation time and broke app start-up
-				// (blank splash). See .build-logs/chunk_cycles.py for the detector.
-				advancedChunks: {
-					groups: [
-						{
-							name: 'framework',
-							test: /node_modules[\\/](react|react-dom|scheduler|use-sync-external-store|react-i18next|i18next|date-fns|react-router|@remix-run)[\\/]|packages[\\/]i18n[\\/]/,
-						},
-					],
+				manualChunks(id) {
+					const path = id.replaceAll('\\', '/')
+					// Our i18n package is a workspace source, not a dependency — but it pulls in
+					// i18next and date-fns locales, so it belongs with them (see vendor-react below)
+					if (/packages[\\/]i18n[\\/]/.test(path)) {
+						return 'vendor-react'
+					}
+					if (!path.includes('/node_modules/')) {
+						return
+					}
+
+					if (path.includes('/node_modules/lucide-react/')) {
+						return 'vendor-lucide'
+					}
+					if (path.includes('/node_modules/@tanstack/')) {
+						return 'vendor-tanstack'
+					}
+					if (path.includes('/node_modules/lodash/')) {
+						return 'vendor-lodash'
+					}
+					if (path.includes('/node_modules/framer-motion/')) {
+						return 'vendor-framer'
+					}
+					if (path.includes('/node_modules/overlayscrollbars/')) {
+						return 'vendor-overlayscrollbars'
+					}
+					// NoirPanther: react, the router, i18next (+ our i18n package) and date-fns
+					// must land in ONE chunk. Split apart, rolldown put date-fns' en-US locale
+					// in its own chunk that imported a CJS-interop helper from the react chunk
+					// while the react chunk imported the locale — a circular chunk graph that
+					// left the helper undefined and broke app start-up (blank splash).
+					// Detector: .build-logs/chunk_cycles.py
+					if (
+						/\/node_modules\/(react|react-dom|scheduler|use-sync-external-store|react-i18next|i18next|date-fns|react-router|@remix-run)\//.test(
+							path,
+						)
+					) {
+						return 'vendor-react'
+					}
 				},
 			},
 		},

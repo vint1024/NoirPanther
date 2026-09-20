@@ -8,7 +8,7 @@ import { Suspense } from 'react'
 import BadgeList from '@/components/BadgeList'
 import ReadMore from '@/components/ReadMore'
 import TagList from '@/components/tags/TagList'
-import paths from '@/paths'
+import { usePaths } from '@/paths'
 
 import BookLibrarySeriesLinks from './BookLibrarySeriesLinks'
 
@@ -20,6 +20,7 @@ type Props = {
 
 export default function BookOverviewSceneHeader({ media, book, completedAt }: Props) {
 	const { t } = useLocaleContext()
+	const paths = usePaths()
 	const metadata = media.metadata
 	const tags = media.tags as Tag[] | undefined
 	const pages = media.pages ?? 0

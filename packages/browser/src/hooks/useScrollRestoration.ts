@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef } from 'react'
-import { useLocation, useNavigationType } from 'react-router-dom'
+import { useLocation, useNavigationType } from 'react-router'
 
 const STORAGE_KEY = 'noirpanther:scroll-positions:v2'
 const MAX_ENTRIES = 100

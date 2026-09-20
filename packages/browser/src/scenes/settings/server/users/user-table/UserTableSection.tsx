@@ -24,8 +24,8 @@ export default function UserTableSection() {
 				</div>
 				{checkPermission(UserPermission.ManageUsers) && (
 					<div className="gap-2 flex items-end">
-						<ButtonOrLink href="create" variant="secondary" size="sm">
-							{t('scenes.settings.server.users.user-table.UserTableSection.createUser')}
+						<ButtonOrLink href="create" variant="secondary">
+							Create user
 						</ButtonOrLink>
 					</div>
 				)}

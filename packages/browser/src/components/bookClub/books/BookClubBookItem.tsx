@@ -8,7 +8,7 @@ import { useMemo } from 'react'
 import { match } from 'ts-pattern'
 
 import { EntityImage } from '@/components/entity'
-import paths from '@/paths'
+import { usePaths } from '@/paths'
 
 import { useBookClubContext } from '../context'
 
@@ -40,6 +40,7 @@ type Props = {
 }
 export default function BookClubBookItem({ data }: Props) {
 	const { t } = useLocaleContext()
+	const paths = usePaths()
 	const book = useFragment(fragment, data)
 
 	const { bookClub } = useBookClubContext()

@@ -30,7 +30,7 @@ use crate::{
 		series_finished_count::{FinishedCountLoaderKey, SeriesFinishedCountLoader},
 	},
 	object::{series_metadata::SeriesMetadata, stats::SeriesStats},
-	utils::{db_statement, thumbnail_version, versioned_url},
+	utils::db_statement,
 };
 
 use super::{library::Library, media::Media, tag::Tag};
@@ -118,6 +118,23 @@ impl Series {
 			.ok_or("Library not found")?;
 
 		Ok(Library::from(model))
+	}
+
+	async fn oneshot_book(&self, ctx: &Context<'_>) -> Result<Option<Media>> {
+		if !self.model.is_oneshot {
+			return Ok(None);
+		}
+
+		let conn = ctx.data::<CoreContext>()?.conn.as_ref();
+
+		let model = media::ModelWithMetadata::find()
+			.filter(media::Column::SeriesId.eq(self.model.id.clone()))
+			.filter(media::Column::IsOneshot.eq(true))
+			.into_model::<media::ModelWithMetadata>()
+			.one(conn)
+			.await?;
+
+		Ok(model.map(Media::from))
 	}
 
 	// TODO(perf): We probably could put this behind a dataloader if used frequently
@@ -331,7 +348,7 @@ impl Series {
 	/// qualified URL to the image.
 	async fn thumbnail(&self, ctx: &Context<'_>) -> Result<ImageRef> {
 		let service = ctx.data::<ServiceContext>()?;
-		let core = ctx.data::<CoreContext>()?;
+		let last_modified = self.model.updated_at;
 
 		let dimensions = self
 			.model
@@ -340,22 +357,15 @@ impl Series {
 			.and_then(|meta| meta.dimensions.as_ref())
 			.map(|dim| (dim.width, dim.height));
 
-		let version = thumbnail_version(
-			&core.config.get_thumbnails_dir(),
-			&self.model.id,
-			self.model.updated_at.or(Some(self.model.created_at)),
-		)
-		.await;
-
 		Ok(ImageRef {
-			url: versioned_url(
-				service.format_url(format!("/api/v2/series/{}/thumbnail", self.model.id)),
-				version,
+			url: service.cache_friendly_url(
+				format!("/api/v2/series/{}/thumbnail", self.model.id),
+				&last_modified,
 			),
 			height: dimensions.as_ref().map(|dim| dim.1),
 			width: dimensions.as_ref().map(|dim| dim.0),
 			metadata: self.model.thumbnail_meta.clone(),
-			..Default::default()
+			last_modified,
 		})
 	}
 

@@ -3,17 +3,20 @@ import {
 	Alert,
 	AlertDescription,
 	AlertTitle,
+	Button,
 	cn,
-	Heading,
-	Label,
 	Link,
+	NewCard,
 	Text,
 	TEXT_VARIANTS,
 } from '@stump/components'
+import { extractErrorMessage } from '@stump/graphql'
 import { useLocaleContext } from '@stump/i18n'
 import { intlFormat } from 'date-fns'
-import { Info } from 'lucide-react'
-import { useMemo } from 'react'
+import toUpper from 'lodash/toUpper'
+import { Copy, CopyCheck, Info } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { toast } from 'sonner'
 
 const REPO_URL = 'https://github.com/vint1024/NoirPanther'
 const IS_DEV = import.meta.env.DEV
@@ -23,7 +26,7 @@ export default function ServerInfoSection() {
 
 	const { t } = useLocaleContext()
 
-	// NoirPanther releases are versioned `<Stump semver>-r<N>` (e.g. 0.1.7-r2): built from
+	// NoirPanther releases are versioned `<Stump semver>-r<N>` (e.g. 0.1.9-r1): built from
 	// that Stump release, `rN` being the fork revision on top of it. Releases are tagged
 	// `v<semver>`; builds outside the scheme (local/dev) just link to the repository.
 	const semver = version?.semver
@@ -46,14 +49,120 @@ export default function ServerInfoSection() {
 	)
 	const buildChannel = `NoirPanther (${rawChannel})`
 
+	const [didCopyDebugInfo, setDidCopyDebugInfo] = useState(false)
+
+	async function onCopyDebugInfo() {
+		const debugInfo = {
+			server: {
+				releaseChannel: buildChannel,
+				serverVersion: version?.semver ?? 'Unknown',
+				commit: version?.rev ?? 'Unknown',
+			},
+			client: {
+				device: navigator.userAgent,
+				os: navigator.platform,
+				browser: navigator.userAgent,
+			},
+		}
+
+		const debugInfoString = `#### Server Details:
+  - Release Channel: ${debugInfo.server.releaseChannel}
+  - Server Version: ${debugInfo.server.serverVersion}
+  - Commit: ${debugInfo.server.commit}
+
+#### Client Details:
+  - Device: ${debugInfo.client.device}
+  - OS: ${debugInfo.client.os}
+  - Browser: ${debugInfo.client.browser}`
+
+		try {
+			await navigator.clipboard.writeText(debugInfoString)
+			setDidCopyDebugInfo(true)
+		} catch (error) {
+			toast.error(
+				t('settingsScene.server/general.sections.serverInfo.debugInfo.copyDebugInfoFailed'),
+				{
+					description: extractErrorMessage(error, t('common.unknownError')),
+				},
+			)
+			return
+		}
+	}
+
+	useEffect(() => {
+		if (!didCopyDebugInfo) return
+		const timeout = setTimeout(() => setDidCopyDebugInfo(false), 2000)
+		return () => clearTimeout(timeout)
+	}, [didCopyDebugInfo])
+
+	const CopyIcon = didCopyDebugInfo ? CopyCheck : Copy
+
+	// TODO: a changelog query in a dialog would be nice to have
 	return (
 		<div className="gap-4 flex flex-col">
-			<div>
-				<Heading size="sm">{t('settingsScene.server/general.sections.serverInfo.title')}</Heading>
-				<Text size="sm" variant="muted" className="mt-1">
-					{t('settingsScene.server/general.sections.serverInfo.description')}
-				</Text>
-			</div>
+			<NewCard
+				label={t('settingsScene.server/general.sections.serverInfo.title')}
+				description={t('settingsScene.server/general.sections.serverInfo.description')}
+			>
+				<NewCard.Row label={t('settingsScene.server/general.sections.serverInfo.version')}>
+					<Link
+						href={versionUrl}
+						target="__blank"
+						rel="noopener noreferrer"
+						className={cn(
+							'space-x-2 text-sm flex items-center hover:underline',
+							TEXT_VARIANTS.muted,
+						)}
+						underline={false}
+					>
+						<span>v{semver}</span>
+					</Link>
+				</NewCard.Row>
+
+				<NewCard.Row label={t('settingsScene.server/general.sections.serverInfo.build')}>
+					<Text size="sm" variant="muted">
+						{buildChannel
+							? toUpper(buildChannel.charAt(0)) + buildChannel.slice(1)
+							: t('common.unknown')}
+					</Text>
+				</NewCard.Row>
+
+				<NewCard.Row label={t('settingsScene.server/general.sections.serverInfo.exactCommit')}>
+					<Link
+						href={commitUrl}
+						target="__blank"
+						rel="noopener noreferrer"
+						className={cn(
+							'space-x-2 text-sm flex items-center hover:underline',
+							TEXT_VARIANTS.muted,
+						)}
+						underline={false}
+					>
+						<span>{version?.rev}</span>
+						{version?.compileTime && (
+							<span>
+								(
+								{intlFormat(new Date(version.compileTime), {
+									month: 'long',
+									day: 'numeric',
+									year: 'numeric',
+								})}
+								)
+							</span>
+						)}
+					</Link>
+				</NewCard.Row>
+
+				<NewCard.Row
+					label={t('settingsScene.server/general.sections.serverInfo.debugInfo.label')}
+					description={t('settingsScene.server/general.sections.serverInfo.debugInfo.description')}
+				>
+					<Button variant="outline" size="sm" onClick={onCopyDebugInfo} className="gap-x-2">
+						<CopyIcon className="size-3" />
+						{t('common.copy')}
+					</Button>
+				</NewCard.Row>
+			</NewCard>
 
 			{rawChannel !== 'stable' && (
 				<Alert variant="info">
@@ -63,71 +172,13 @@ export default function ServerInfoSection() {
 					</AlertTitle>
 					<AlertDescription className="flex">
 						{t('settingsScene.server/general.sections.serverInfo.nonStableChannel.description.0')}{' '}
-						<span className="font-semibold">{buildChannel}</span>{' '}
+						<span className="font-semibold">
+							{toUpper(rawChannel.charAt(0)) + rawChannel.slice(1)}
+						</span>{' '}
 						{t('settingsScene.server/general.sections.serverInfo.nonStableChannel.description.1')}
 					</AlertDescription>
 				</Alert>
 			)}
-
-			<div className="gap-12 md:gap-8 flex flex-row flex-wrap">
-				{version && (
-					<div>
-						<Label>{t('settingsScene.server/general.sections.serverInfo.semanticVersion')}</Label>
-						<Link
-							href={versionUrl}
-							target="__blank"
-							rel="noopener noreferrer"
-							className={cn(
-								'space-x-2 text-sm flex items-center hover:underline',
-								TEXT_VARIANTS.muted,
-							)}
-							underline={false}
-						>
-							<span>v{semver}</span>
-						</Link>
-					</div>
-				)}
-
-				<div>
-					<Label>{t('settingsScene.server/general.sections.serverInfo.buildChannel')}</Label>
-					<Text size="sm" variant="muted">
-						{buildChannel}
-					</Text>
-				</div>
-
-				{version && (
-					<div>
-						<Label>{t('settingsScene.server/general.sections.serverInfo.exactCommit')}</Label>
-						<Link
-							href={commitUrl}
-							target="__blank"
-							rel="noopener noreferrer"
-							className={cn(
-								'space-x-2 text-sm flex items-center hover:underline',
-								TEXT_VARIANTS.muted,
-							)}
-							underline={false}
-						>
-							<span>{version.rev}</span>
-						</Link>
-					</div>
-				)}
-
-				{version && (
-					<div>
-						<Label>{t('settingsScene.server/general.sections.serverInfo.buildDate')}</Label>
-						<Text size="sm" variant="muted">
-							{intlFormat(new Date(version.compileTime), {
-								month: 'long',
-								day: 'numeric',
-								year: 'numeric',
-								hour: 'numeric',
-								minute: '2-digit',
-							})}
-						</Text>
-					</div>
-				)}
-			</div>
 		</div>
 	)
 }

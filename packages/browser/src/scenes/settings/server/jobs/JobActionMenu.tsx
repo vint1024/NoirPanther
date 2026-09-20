@@ -8,9 +8,9 @@ import { useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 
-import paths from '@/paths'
+import { usePaths } from '@/paths'
 
-import { JobDataInspectorFragment } from './JobDataInspector'
+import { prefetchJobLogs } from './JobDataInspector'
 import { PersistedJob } from './JobTable'
 
 const cancelMutation = graphql(`
@@ -35,11 +35,12 @@ const deleteLogsMutation = graphql(`
 
 type Props = {
 	job: PersistedJob
-	onInspectData: (data: JobDataInspectorFragment | null) => void
+	onInspect: () => void
 }
 
-export default function JobActionMenu({ job, onInspectData }: Props) {
+export default function JobActionMenu({ job, onInspect }: Props) {
 	const { t } = useLocaleContext()
+	const paths = usePaths()
 	const navigate = useNavigate()
 	const client = useQueryClient()
 
@@ -106,7 +107,6 @@ export default function JobActionMenu({ job, onInspectData }: Props) {
 	)
 
 	const jobId = job.id
-	const jobData = job.outputData
 	const hasLogs = job.logCount > 0
 
 	const items = useMemo(
@@ -120,15 +120,11 @@ export default function JobActionMenu({ job, onInspectData }: Props) {
 						},
 					]
 				: []),
-			...(jobData
-				? [
-						{
-							label: t('scenes.settings.server.jobs.JobActionMenu.viewData'),
-							leftIcon: <Database className="mr-2 h-4 w-4" />,
-							onClick: () => onInspectData(jobData),
-						},
-					]
-				: []),
+			{
+				label: 'Inspect',
+				leftIcon: <Database className="mr-2 h-4 w-4" />,
+				onClick: () => onInspect(),
+			},
 			...(hasLogs
 				? [
 						{
@@ -154,8 +150,14 @@ export default function JobActionMenu({ job, onInspectData }: Props) {
 					]
 				: []),
 		],
-		[isCancelable, isDeletable, hasLogs, jobId, jobData, navigate, onInspectData, handleAction, t],
+		[isCancelable, isDeletable, hasLogs, jobId, navigate, onInspect, handleAction, paths],
 	)
+
+	const onTriggerPressed = () => {
+		if (hasLogs) {
+			prefetchJobLogs(sdk, client, jobId)
+		}
+	}
 
 	return (
 		<DropdownMenu
@@ -165,7 +167,7 @@ export default function JobActionMenu({ job, onInspectData }: Props) {
 				},
 			]}
 			trigger={
-				<Button size="icon" variant="ghost" className="shrink-0">
+				<Button size="icon" variant="ghost" className="shrink-0" onClick={onTriggerPressed}>
 					<MoreVertical className="h-4 w-4" />
 				</Button>
 			}

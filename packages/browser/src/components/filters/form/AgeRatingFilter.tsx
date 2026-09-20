@@ -39,10 +39,14 @@ export default function AgeRatingFilter({ variant = 'media' }: Props) {
 		min: 0,
 		valueAsNumber: true,
 	})
+	const customDescription =
+		variant === 'series'
+			? t('mediaFilterForm.ageRatingFilter.custom.description.series')
+			: t('mediaFilterForm.ageRatingFilter.custom.description.media')
 
 	return (
 		<div>
-			<Label>{t('components.filters.form.AgeRatingFilter.label')}</Label>
+			<Label>{t('mediaFilterForm.ageRatingFilter.label')}</Label>
 			<RadioGroup
 				value={selection !== null ? 'custom' : 'any-age'}
 				onValueChange={handleSelection}
@@ -50,16 +54,16 @@ export default function AgeRatingFilter({ variant = 'media' }: Props) {
 			>
 				<RadioGroup.CardItem
 					isActive={selection === null}
-					label={t('components.filters.form.AgeRatingFilter.anyAgeLabel')}
-					description={t('components.filters.form.AgeRatingFilter.anyAgeDescription')}
+					label={t('mediaFilterForm.ageRatingFilter.anyAge.label')}
+					description={t('mediaFilterForm.ageRatingFilter.anyAge.description')}
 					value="any-age"
 					innerContainerClassName="flex-col sm:items-start sm:justify-start gap-1.5"
 				/>
 
 				<RadioGroup.CardItem
 					isActive={selection !== null}
-					label={t('components.filters.form.AgeRatingFilter.customLabel')}
-					description={t('components.filters.form.AgeRatingFilter.customDescription', { variant })}
+					label={t('mediaFilterForm.ageRatingFilter.custom.label')}
+					description={customDescription}
 					value="custom"
 					innerContainerClassName="flex-col sm:items-start sm:justify-start gap-1.5"
 				>

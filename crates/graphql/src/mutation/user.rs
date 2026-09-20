@@ -4,7 +4,8 @@ use crate::{
 	guard::{OptionalFeature, OptionalFeatureGuard, PermissionGuard, ServerOwnerGuard},
 	input::user::{
 		AgeRestrictionInput, ContentAccessRuleInput, CreateUserInput,
-		NavigationArrangementInput, UpdateUserInput, UpdateUserPreferencesInput,
+		HomeArrangementInput, NavigationArrangementInput, UpdateUserInput,
+		UpdateUserPreferencesInput,
 	},
 	object::{
 		user::{ContentAccessRule, User},
@@ -21,7 +22,9 @@ use models::{
 		user_login_activity, user_preferences,
 	},
 	shared::{
-		arrangement::Arrangement, enums::UserPermission, permission_set::PermissionSet,
+		arrangement::{Arrangement, HomeArrangement},
+		enums::UserPermission,
+		permission_set::PermissionSet,
 	},
 };
 use sea_orm::{
@@ -30,7 +33,7 @@ use sea_orm::{
 };
 use std::{io::Read, path::Path};
 use stump_core::{
-	config::StumpConfig, filesystem::image::generate_image_metadata_from_bytes,
+	config::StumpConfig, image::thumbnail::generate_image_metadata_from_bytes,
 };
 use tower_sessions::Session;
 
@@ -82,7 +85,7 @@ impl UserMutation {
 			.content_type
 			.clone()
 			.as_deref()
-			.map(stump_core::filesystem::ContentType::from)
+			.and_then(|s| s.parse::<stump_core::fs_utils::ContentType>().ok())
 			.ok_or("Could not verify content type of uploaded file")?;
 
 		if !content_type.is_image() {
@@ -113,7 +116,7 @@ impl UserMutation {
 			.read_to_end(&mut image_bytes)
 			.map_err(|e| format!("Failed to read upload: {e}"))?;
 
-		let avatars_dir = core.config.get_avatars_dir();
+		let avatars_dir = core.config.avatars_directory();
 		if let Ok(mut entries) = tokio::fs::read_dir(&avatars_dir).await {
 			let prefix = format!("{}.", target_id);
 			while let Ok(Some(entry)) = entries.next_entry().await {
@@ -419,17 +422,31 @@ impl UserMutation {
 		let config = core_ctx.config.as_ref();
 		let conn = core_ctx.conn.as_ref();
 
-		if user.id != id.to_string() && !user.is_server_owner {
+		let is_self = user.id == id.to_string();
+		let can_manage_users =
+			user.is_server_owner || user.has_permission(UserPermission::ManageUsers);
+
+		if !is_self && !can_manage_users {
 			return Err(FORBIDDEN_ACTION.into());
+		}
+
+		// TODO(permissions): server owner goes away
+		// nobody can update the server owner
+		if !is_self && !user.is_server_owner {
+			let target = user::Entity::find_by_id(id.to_string())
+				.one(conn)
+				.await?
+				.ok_or("User not found")?;
+			if target.is_server_owner {
+				return Err(FORBIDDEN_ACTION.into());
+			}
 		}
 
 		let updated_user =
 			update_user(user, id.to_string(), conn, config, &input).await?;
 		tracing::debug!(?updated_user, "Updated user");
 
-		if user.id != id.to_string() {
-			// When a server owner updates another user, we need to delete all sessions for that user
-			// because the user's permissions may have changed. This is a bit lazy but it works.
+		if !is_self {
 			remove_all_session_for_user(id.to_string(), conn).await?;
 		}
 
@@ -522,6 +539,29 @@ impl UserMutation {
 		Ok(User::from(updated_user))
 	}
 
+	/// Replace the authenticated user's home sections
+	async fn update_home_arrangement(
+		&self,
+		ctx: &Context<'_>,
+		input: HomeArrangementInput,
+	) -> Result<HomeArrangement> {
+		let conn = ctx.data::<CoreContext>()?.conn.as_ref();
+		let AuthContext { user, .. } = ctx.data::<AuthContext>()?;
+		let arrangement = HomeArrangement::new(input.sections);
+
+		let preferences = user_preferences::Entity::find()
+			.filter(user_preferences::Column::UserId.eq(&user.id))
+			.one(conn)
+			.await?
+			.ok_or("User preferences not found")?;
+
+		let mut active_model = preferences.into_active_model();
+		active_model.home_arrangement = Set(Some(arrangement.clone().into()));
+		active_model.update(conn).await?;
+
+		Ok(arrangement)
+	}
+
 	async fn update_navigation_arrangement_lock(
 		&self,
 		ctx: &Context<'_>,
@@ -536,15 +576,12 @@ impl UserMutation {
 			.await?
 			.ok_or("User preferences not found")?;
 
-		let updated_arrangement = match preferences.navigation_arrangement {
-			Some(ref arrangement) => Arrangement {
-				locked,
-				..arrangement.clone()
-			},
-			None => Arrangement {
-				locked,
-				..Arrangement::default_navigation()
-			},
+		let updated_arrangement = Arrangement {
+			locked,
+			..preferences
+				.navigation_arrangement
+				.clone()
+				.unwrap_or_else(Arrangement::default_navigation)
 		};
 
 		let mut active_model = preferences.into_active_model();
@@ -672,33 +709,24 @@ async fn update_user(
 		_ => {},
 	}
 
+	let is_self_update = by_user.id == for_user_id;
+
 	let is_different_username = input.username != by_user.username;
-	if is_different_username && !by_user.has_permission(UserPermission::ChangeUsername) {
+	if is_self_update
+		&& is_different_username
+		&& !by_user.has_permission(UserPermission::ChangeUsername)
+	{
 		return Err("You do not have permission to change the username".into());
 	}
-
-	// NoirPanther: `permissions`, `age_restriction` and `max_sessions_allowed` are privileged.
-	// Upstream applied them for ANY caller, so `updateViewer` (or `updateUser` on yourself)
-	// let a regular user grant themselves MANAGE_USERS & co., lift their own age
-	// restriction or raise their session limit. Only the server owner may change them — the
-	// same rule that already governs editing another user. For everyone else they are
-	// ignored rather than rejected: the profile form legitimately echoes the current values
-	// back together with a new username/password.
-	let may_edit_privileged_fields = by_user.is_server_owner;
 
 	let mut update_user = user::ActiveModel {
 		id: Set(for_user_id.clone()),
 		username: Set(input.username.clone()),
-		max_sessions_allowed: if may_edit_privileged_fields {
-			Set(input.max_sessions_allowed)
-		} else {
-			NotSet
-		},
 		..Default::default()
 	};
 
 	if let Some(password) = input.password.clone() {
-		if !by_user.has_permission(UserPermission::ChangePassword) {
+		if is_self_update && !by_user.has_permission(UserPermission::ChangePassword) {
 			return Err("You do not have permission to change the password".into());
 		}
 		let hashed_password = bcrypt::hash(password, config.password_hash_cost)?;
@@ -707,13 +735,21 @@ async fn update_user(
 
 	let txn = conn.begin().await?;
 
-	let is_updating_server_owner = by_user.is_server_owner && by_user.id == for_user_id;
-	if may_edit_privileged_fields && !is_updating_server_owner {
+	// TODO(permissions): server owner goes away
+	// only a server owner or a user with ManageUsers may set another user's
+	// permissions, age restriction, and session cap.
+	let can_manage_privileged_fields = (by_user.is_server_owner
+		|| by_user.has_permission(UserPermission::ManageUsers))
+		&& !is_self_update;
+	if can_manage_privileged_fields {
+		update_user.max_sessions_allowed = Set(input.max_sessions_allowed);
 		update_user_age_restriction(&for_user_id, &input.age_restriction, &txn).await?;
-
 		let permissions = PermissionSet::new(input.permissions.clone());
 		update_user.permissions = Set(permissions.resolve_into_string());
-	} else if !may_edit_privileged_fields {
+	} else {
+		// NoirPanther: upstream silently ignores privileged fields a caller may not set.
+		// Keep a signal in the log — this is exactly the shape of a privilege-escalation
+		// attempt (see FORK_BACKLOG A30, fixed upstream in 0.1.8+).
 		let requested =
 			PermissionSet::new(input.permissions.clone()).resolve_into_string();
 		let current =
