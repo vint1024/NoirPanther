@@ -1,9 +1,9 @@
 import { PREFETCH_STALE_TIME, useSDK, useSuspenseGraphQL } from '@stump/client'
 import { Drawer, Text, ToolTip } from '@stump/components'
 import { graphql, UserPermission } from '@stump/graphql'
-import { useLocaleContext } from '@stump/i18n'
+import { intlDate, useLocaleContext } from '@stump/i18n'
 import { useQueryClient } from '@tanstack/react-query'
-import { formatDistanceToNow, intlFormat } from 'date-fns'
+import { formatDistanceToNow } from 'date-fns'
 import { useCallback, useMemo, useState } from 'react'
 
 import GenericEmptyState from '@/components/GenericEmptyState'
@@ -95,7 +95,7 @@ export default function EmailerSendHistory({ emailerId, lastUsedAt }: Props) {
 		<>
 			<div className="flex">
 				<ToolTip
-					content={intlFormat(lastUsedAt, {
+					content={intlDate(lastUsedAt, {
 						month: 'long',
 						day: 'numeric',
 						year: 'numeric',

@@ -1,7 +1,7 @@
 import { useSDK, useSuspenseGraphQL } from '@stump/client'
 import { Badge, Button, Card, Dropdown, Text } from '@stump/components'
 import { graphql, ScanHistoryTableQuery } from '@stump/graphql'
-import { useLocaleContext } from '@stump/i18n'
+import { intlDate, useLocaleContext } from '@stump/i18n'
 import {
 	createColumnHelper,
 	flexRender,
@@ -9,7 +9,7 @@ import {
 	getPaginationRowModel,
 	useReactTable,
 } from '@tanstack/react-table'
-import { intlFormat, isValid, parseISO } from 'date-fns'
+import { isValid, parseISO } from 'date-fns'
 import { Database, Ellipsis, Slash } from 'lucide-react'
 import { useMemo, useState } from 'react'
 
@@ -81,7 +81,7 @@ export default function ScanHistoryTable() {
 						typeof getValue() === 'string' ? parseISO(getValue()) : new Date(getValue())
 					if (!isValid(parsed)) return null
 
-					const formatted = intlFormat(parsed, {
+					const formatted = intlDate(parsed, {
 						month: 'long',
 						day: 'numeric',
 						year: 'numeric',

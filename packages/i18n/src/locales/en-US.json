@@ -3156,6 +3156,10 @@
 		"METADATA_FETCH_RECORD_MANAGE": {
 			"label": "Manage metadata matches",
 			"description": "Allows the user to search external providers for a book and accept or reject candidate matches"
+		},
+		"OFFLINE_READ": {
+			"label": "Offline reading",
+			"description": "Lets the user take books offline as an encrypted copy their device can open, without handing them the file itself"
 		}
 	},
 	"mobileApp": {

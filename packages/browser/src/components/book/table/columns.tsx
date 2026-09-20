@@ -1,9 +1,10 @@
 import { formatBytes } from '@stump/client'
 import { Badge, Link, Text } from '@stump/components'
 import { FragmentType, Media, MediaMetadataModelOrdering, MediaModelOrdering } from '@stump/graphql'
+import { intlDate } from '@stump/i18n'
 import { ColumnSort } from '@stump/sdk'
 import { CellContext, ColumnDef, createColumnHelper } from '@tanstack/react-table'
-import { format, intlFormat } from 'date-fns'
+import { format } from 'date-fns'
 
 import { usePaths } from '@/paths'
 import { isEbookExtension } from '@/utils/readingProgress'
@@ -172,7 +173,7 @@ const publishedColumn = columnHelper.accessor(
 
 const addedColumn = columnHelper.accessor(
 	({ createdAt }) =>
-		intlFormat(new Date(createdAt), {
+		intlDate(new Date(createdAt), {
 			year: 'numeric',
 			month: 'numeric',
 			day: 'numeric',

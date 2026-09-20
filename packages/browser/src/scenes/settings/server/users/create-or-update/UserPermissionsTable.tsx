@@ -239,6 +239,10 @@ const groups = [
 		groupKey: 'fileManagement',
 		permissions: [
 			UserPermission.DownloadFile,
+			// The fork's own permission: read offline WITHOUT being handed the file. It was in
+			// the association map but in no group, so the table never drew a row for it and an
+			// owner could not grant it from the web at all.
+			UserPermission.OfflineRead,
 			UserPermission.FileExplorer,
 			UserPermission.UploadFile,
 		],

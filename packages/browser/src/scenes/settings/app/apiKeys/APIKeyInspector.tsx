@@ -1,6 +1,6 @@
 import { Alert, AlertDescription, AlertTitle, Badge, NewCard, Sheet, Text } from '@stump/components'
-import { useLocaleContext } from '@stump/i18n'
-import { intlFormat, isValid, parseISO } from 'date-fns'
+import { intlDate, useLocaleContext } from '@stump/i18n'
+import { isValid, parseISO } from 'date-fns'
 import { ShieldAlert } from 'lucide-react'
 
 import { useAppContext } from '@/context'
@@ -23,7 +23,7 @@ export default function APIKeyInspector({ apiKey, onClose }: Props) {
 		if (!dateStr) return null
 		const date = typeof dateStr === 'string' ? parseISO(dateStr) : new Date(dateStr)
 		if (!isValid(date)) return null
-		return intlFormat(date, {
+		return intlDate(date, {
 			month: 'long',
 			day: 'numeric',
 			year: 'numeric',

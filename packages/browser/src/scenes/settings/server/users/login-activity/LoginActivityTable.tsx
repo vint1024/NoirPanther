@@ -1,7 +1,7 @@
 import { useSDK, useSuspenseGraphQL } from '@stump/client'
 import { Badge, Card, Text } from '@stump/components'
 import { graphql, LoginActivityTableQuery } from '@stump/graphql'
-import { useLocaleContext } from '@stump/i18n'
+import { intlDate, useLocaleContext } from '@stump/i18n'
 import { Api } from '@stump/sdk'
 import { QueryClient } from '@tanstack/react-query'
 import {
@@ -10,7 +10,6 @@ import {
 	getPaginationRowModel,
 	PaginationState,
 } from '@tanstack/react-table'
-import { intlFormat } from 'date-fns'
 import { Fingerprint, Slash } from 'lucide-react'
 import { useMemo, useState } from 'react'
 
@@ -78,7 +77,7 @@ export default function LoginActivityTable() {
 				}),
 				columnHelper.accessor('timestamp', {
 					cell: ({ row: { original: activity } }) => {
-						const formatted = intlFormat(new Date(activity.timestamp), {
+						const formatted = intlDate(new Date(activity.timestamp), {
 							month: 'long',
 							day: 'numeric',
 							year: 'numeric',

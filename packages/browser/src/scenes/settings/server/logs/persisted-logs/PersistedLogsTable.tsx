@@ -1,10 +1,10 @@
 import { useGraphQL } from '@stump/client'
 import { Card, Heading, Text, ToolTip } from '@stump/components'
 import { graphql, LogModelOrdering, OrderDirection, PersistedLogsQuery } from '@stump/graphql'
-import { useLocaleContext } from '@stump/i18n'
+import { intlDate, useLocaleContext } from '@stump/i18n'
 import { keepPreviousData } from '@tanstack/react-query'
 import { createColumnHelper, SortingState } from '@tanstack/react-table'
-import { intlFormat, isBefore } from 'date-fns'
+import { isBefore } from 'date-fns'
 import { CircleSlash2 } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router'
@@ -146,7 +146,7 @@ export const columns = [
 			},
 		}) => (
 			<Text size="sm" variant="muted">
-				{intlFormat(new Date(timestamp), {
+				{intlDate(new Date(timestamp), {
 					year: 'numeric',
 					month: '2-digit',
 					day: '2-digit',

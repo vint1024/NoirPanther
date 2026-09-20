@@ -1,9 +1,10 @@
 import { Link, Text } from '@stump/components'
 import { Media } from '@stump/graphql'
+import { intlDate } from '@stump/i18n'
 import { ColumnSort } from '@stump/sdk'
 import { ColumnDef, createColumnHelper } from '@tanstack/react-table'
 import { CellContext } from '@tanstack/react-table'
-import { format, intlFormat, isValid } from 'date-fns'
+import { format, isValid } from 'date-fns'
 
 import { usePaths } from '@/paths'
 
@@ -109,7 +110,7 @@ const addedColumn = columnHelper.accessor(
 	({ createdAt }) => {
 		const date = new Date(createdAt)
 		if (!isValid(date)) return ''
-		return intlFormat(date, {
+		return intlDate(date, {
 			year: 'numeric',
 			month: 'numeric',
 			day: 'numeric',

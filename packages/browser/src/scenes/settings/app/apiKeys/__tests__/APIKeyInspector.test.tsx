@@ -25,6 +25,8 @@ const useAppContextRet = {
 
 vi.mock('@stump/i18n', () => ({
 	useLocaleContext: vi.fn(),
+	// dates render through the i18n package now, so the locale follows the UI language
+	intlDate: (date: Date | number | string) => new Date(date).toISOString(),
 }))
 const translate = vi.fn().mockImplementation((key: string) => key)
 

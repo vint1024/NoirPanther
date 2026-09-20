@@ -7,6 +7,7 @@ export {
 	formatHumanDurationSeparate,
 	formatNarrowDuration,
 	initDateFnsLocale,
+	intlDate,
 } from './dateFnsLocale'
 export { default as LocaleProvider } from './LocaleProvider'
 export type { AllowedLocale }

@@ -1,11 +1,10 @@
 import { useGraphQL, useSDK } from '@stump/client'
 import { Badge, Card, Text, ToolTip } from '@stump/components'
 import { graphql, UserTableQuery } from '@stump/graphql'
-import { useLocaleContext } from '@stump/i18n'
+import { intlDate, useLocaleContext } from '@stump/i18n'
 import { Api } from '@stump/sdk'
 import { QueryClient } from '@tanstack/react-query'
 import { ColumnDef, createColumnHelper, PaginationState } from '@tanstack/react-table'
-import { intlFormat } from 'date-fns'
 import { HelpCircle } from 'lucide-react'
 import { useMemo, useState } from 'react'
 
@@ -133,7 +132,7 @@ export default function UserTable() {
 						},
 					}) => (
 						<Text size="sm" variant="muted">
-							{intlFormat(new Date(createdAt), { month: 'long', day: 'numeric', year: 'numeric' })}
+							{intlDate(new Date(createdAt), { month: 'long', day: 'numeric', year: 'numeric' })}
 						</Text>
 					),
 					header: t('scenes.settings.server.users.UserTable.createdAt'),
@@ -146,7 +145,7 @@ export default function UserTable() {
 					}) => (
 						<Text size="sm" variant="muted">
 							{lastLogin
-								? intlFormat(new Date(lastLogin), {
+								? intlDate(new Date(lastLogin), {
 										month: 'long',
 										day: 'numeric',
 										year: 'numeric',

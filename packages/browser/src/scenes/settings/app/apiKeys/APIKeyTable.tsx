@@ -1,14 +1,14 @@
 import { useSDK, useSuspenseGraphQL } from '@stump/client'
 import { Badge, Card, cn, Text } from '@stump/components'
 import { ApiKeyTableQuery, graphql } from '@stump/graphql'
-import { useLocaleContext } from '@stump/i18n'
+import { intlDate, useLocaleContext } from '@stump/i18n'
 import {
 	createColumnHelper,
 	flexRender,
 	getCoreRowModel,
 	useReactTable,
 } from '@tanstack/react-table'
-import { formatDistanceToNow, intlFormat, isValid, parseISO } from 'date-fns'
+import { formatDistanceToNow, isValid, parseISO } from 'date-fns'
 import { KeyRound, Slash } from 'lucide-react'
 import { useMemo, useState } from 'react'
 
@@ -110,7 +110,7 @@ export default function APIKeyTable() {
 							size="sm"
 							title={
 								valid
-									? intlFormat(parsed, {
+									? intlDate(parsed, {
 											month: 'long',
 											day: 'numeric',
 											year: 'numeric',
@@ -140,7 +140,7 @@ export default function APIKeyTable() {
 							size="sm"
 							title={
 								valid
-									? intlFormat(parsed, {
+									? intlDate(parsed, {
 											month: 'long',
 											day: 'numeric',
 											year: 'numeric',
@@ -151,7 +151,7 @@ export default function APIKeyTable() {
 							}
 						>
 							{valid
-								? intlFormat(parsed, { month: 'long', day: 'numeric', year: 'numeric' })
+								? intlDate(parsed, { month: 'long', day: 'numeric', year: 'numeric' })
 								: 'Never'}
 						</Text>
 					)

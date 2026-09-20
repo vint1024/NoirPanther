@@ -1,8 +1,7 @@
 import { useGraphQL } from '@stump/client'
 import { Alert, AlertDescription, ButtonOrLink, cn, Label, Sheet, Text } from '@stump/components'
 import { graphql, UserPermission } from '@stump/graphql'
-import { useLocaleContext } from '@stump/i18n'
-import { intlFormat } from 'date-fns'
+import { intlDate, useLocaleContext } from '@stump/i18n'
 import { useMemo } from 'react'
 
 import { useAppContext } from '@/context'
@@ -78,7 +77,7 @@ export default function ScanRecordInspector({ record, onClose }: Props) {
 	const displayedData = useCurrentOrPrevious(record)
 
 	const scannedAtFormatted = displayedData?.timestamp
-		? intlFormat(new Date(displayedData.timestamp), {
+		? intlDate(new Date(displayedData.timestamp), {
 				month: 'long',
 				day: 'numeric',
 				year: 'numeric',

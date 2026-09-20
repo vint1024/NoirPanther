@@ -1,8 +1,7 @@
 import { formatBytesSeparate, parseGraphQLDateTime, useGraphQL } from '@stump/client'
 import { Badge, Link, NewCard, STAT_COLORS } from '@stump/components'
 import { graphql } from '@stump/graphql'
-import { formatHumanDurationSeparate, useLocaleContext } from '@stump/i18n'
-import { intlFormat } from 'date-fns'
+import { formatHumanDurationSeparate, intlDate, useLocaleContext } from '@stump/i18n'
 import { BookCheck, BookOpen, Clock, ExternalLink, HardDrive } from 'lucide-react'
 
 import BadgeList from '@/components/BadgeList'
@@ -170,7 +169,7 @@ export function SeriesOverviewSheet({ isOpen, onClose }: Props) {
 					label={t('common.lastUpdated')}
 					value={
 						lastUpdatedAt
-							? intlFormat(lastUpdatedAt, {
+							? intlDate(lastUpdatedAt, {
 									month: 'long',
 									day: 'numeric',
 									year: 'numeric',
@@ -182,7 +181,7 @@ export function SeriesOverviewSheet({ isOpen, onClose }: Props) {
 					label={t('common.created')}
 					value={
 						createdAtDate
-							? intlFormat(createdAtDate, { month: 'long', day: 'numeric', year: 'numeric' })
+							? intlDate(createdAtDate, { month: 'long', day: 'numeric', year: 'numeric' })
 							: t('common.unknown')
 					}
 				/>

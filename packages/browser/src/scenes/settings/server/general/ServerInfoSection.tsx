@@ -11,8 +11,7 @@ import {
 	TEXT_VARIANTS,
 } from '@stump/components'
 import { extractErrorMessage } from '@stump/graphql'
-import { useLocaleContext } from '@stump/i18n'
-import { intlFormat } from 'date-fns'
+import { intlDate, useLocaleContext } from '@stump/i18n'
 import toUpper from 'lodash/toUpper'
 import { Copy, CopyCheck, Info } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
@@ -142,7 +141,7 @@ export default function ServerInfoSection() {
 						{version?.compileTime && (
 							<span>
 								(
-								{intlFormat(new Date(version.compileTime), {
+								{intlDate(new Date(version.compileTime), {
 									month: 'long',
 									day: 'numeric',
 									year: 'numeric',

@@ -1,6 +1,6 @@
 import { cn, IconButton, Text, ToolTip } from '@stump/components'
 import { EmailerSendHistoryQuery } from '@stump/graphql'
-import { useLocaleContext } from '@stump/i18n'
+import { intlDate, useLocaleContext } from '@stump/i18n'
 import {
 	createColumnHelper,
 	ExpandedState,
@@ -8,7 +8,6 @@ import {
 	SortDirection,
 	useReactTable,
 } from '@tanstack/react-table'
-import { intlFormat } from 'date-fns'
 import { ChevronDown, Copy } from 'lucide-react'
 import { Fragment, useMemo, useState } from 'react'
 
@@ -33,7 +32,7 @@ export default function EmailerSendHistoryTable({ records }: Props) {
 			columnHelper.accessor('sentAt', {
 				cell: ({ getValue }) => (
 					<Text size="sm">
-						{intlFormat(new Date(getValue()), {
+						{intlDate(new Date(getValue()), {
 							month: 'long',
 							day: 'numeric',
 							year: 'numeric',

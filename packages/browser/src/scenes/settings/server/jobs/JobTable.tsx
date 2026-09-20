@@ -1,11 +1,10 @@
 import { useJobStore, useSDK, useSuspenseGraphQL } from '@stump/client'
 import { Badge, Card, Heading, Text } from '@stump/components'
 import { graphql, JobStatus, JobTableQuery, UserPermission } from '@stump/graphql'
-import { formatElapsedDuration, useLocaleContext } from '@stump/i18n'
+import { formatElapsedDuration, intlDate, useLocaleContext } from '@stump/i18n'
 import { Api } from '@stump/sdk'
 import { QueryClient, useQueryClient } from '@tanstack/react-query'
 import { ColumnDef, createColumnHelper, PaginationState } from '@tanstack/react-table'
-import { intlFormat } from 'date-fns'
 import { CircleSlash2 } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 
@@ -173,7 +172,7 @@ export default function JobTable() {
 						if (job.createdAt) {
 							return (
 								<Text size="sm" variant="muted" className="line-clamp-1">
-									{intlFormat(new Date(job.createdAt), {
+									{intlDate(new Date(job.createdAt), {
 										year: 'numeric',
 										month: '2-digit',
 										day: '2-digit',

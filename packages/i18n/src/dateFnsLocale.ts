@@ -1,5 +1,5 @@
 import type { Locale } from 'date-fns'
-import { formatDuration, setDefaultOptions } from 'date-fns'
+import { formatDuration, intlFormat, setDefaultOptions } from 'date-fns'
 import { enUS } from 'date-fns/locale/en-US'
 
 import type { AllowedLocale } from './config'
@@ -42,6 +42,27 @@ const dateFnsLocaleLoaders: Record<AllowedLocale, () => Promise<Locale>> = {
 }
 
 const localeCache = new Map<AllowedLocale, Locale>()
+
+/**
+ * The locale the UI is currently set to, kept in sync by {@link initDateFnsLocale}.
+ *
+ * `setDefaultOptions` covers date-fns' own formatters, but `intlFormat` goes through
+ * `Intl.DateTimeFormat` and takes its locale from an explicit argument — without one the browser
+ * uses the OPERATING SYSTEM's language. That is why a Russian UI on an English macOS printed
+ * "June 14, 2026" next to translated labels. {@link intlDate} passes this value, so dates follow
+ * the app's language wherever they are rendered — including table column definitions, which sit
+ * outside React components and cannot use a hook.
+ */
+let currentLocale: AllowedLocale = 'en-US'
+
+/** Format a date in the language the UI is set to. Use this instead of `intlFormat` directly. */
+export function intlDate(
+	date: Date | number | string,
+	options?: Parameters<typeof intlFormat>[1],
+): string {
+	const value = typeof date === 'string' ? new Date(date) : date
+	return intlFormat(value, options ?? {}, { locale: currentLocale })
+}
 
 function isAllowedLocale(locale: string): locale is AllowedLocale {
 	return locale in dateFnsLocaleLoaders
@@ -135,6 +156,7 @@ export async function initDateFnsLocale(
 
 	if (!signal?.aborted) {
 		setDefaultOptions({ locale: dateFnsLocale })
+		currentLocale = targetLocale
 	}
 
 	return targetLocale

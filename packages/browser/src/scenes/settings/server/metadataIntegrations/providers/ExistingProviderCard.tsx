@@ -1,7 +1,6 @@
 import { Badge, Card, Text, ToolTip } from '@stump/components'
 import { FragmentType, graphql, useFragment, UserPermission } from '@stump/graphql'
-import { useLocaleContext } from '@stump/i18n'
-import { intlFormat } from 'date-fns'
+import { intlDate, useLocaleContext } from '@stump/i18n'
 import { BadgeAlert, BadgeCheck, BadgeX } from 'lucide-react'
 
 import { useAppContext } from '@/context'
@@ -78,7 +77,7 @@ export function ExistingProviderCard({ data }: Props) {
 
 			<div className="gap-1 flex items-center justify-between">
 				<Text size="xs" variant="muted">
-					Added {intlFormat(new Date(provider.createdAt))}
+					Added {intlDate(new Date(provider.createdAt))}
 				</Text>
 
 				<Badge size="xs">

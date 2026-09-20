@@ -1,6 +1,5 @@
 import { Avatar, Card, cn, Heading, Text } from '@stump/components'
-import { useLocaleContext } from '@stump/i18n'
-import { intlFormat } from 'date-fns'
+import { intlDate, useLocaleContext } from '@stump/i18n'
 
 import { useBookClubContext } from '@/components/bookClub'
 import { usePreferences } from '@/hooks'
@@ -61,7 +60,7 @@ export default function BookClubHeader() {
 					<Text size="sm">
 						{t('scenes.bookClub.BookClubHeader.members', { count: membersCount })} •{' '}
 						{t('scenes.bookClub.BookClubHeader.created')}{' '}
-						<b>{intlFormat(new Date(createdAt), { month: 'long', year: 'numeric' })}</b>
+						<b>{intlDate(new Date(createdAt), { month: 'long', year: 'numeric' })}</b>
 					</Text>
 				</div>
 			</div>

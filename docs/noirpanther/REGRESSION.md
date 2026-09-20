@@ -73,23 +73,23 @@ Everything else the fork adds has a test; the map of which test guards which fea
 
 Smoke = ★. Everything else is for a version bump.
 
-| #   | What                                         | Looking for                                                                             |
-| --- | -------------------------------------------- | --------------------------------------------------------------------------------------- |
-| ★1  | Open `/auth`                                 | Neon wordmark, panther, "Запомнить меня", Russian labels                                |
-| ★2  | Log in as `cat`                              | Lands on home, covers load, no console errors                                           |
-| ★3  | Home                                         | "Продолжить чтение" carousel, recently added series and books                           |
-| 4   | Themes → each of the six, incl. a light one  | Whole page switches, sidebar included; no dark-on-dark text                             |
-| ★5  | Open an EPUB (Pride and Prejudice)           | Two-column spread with text; page turn works; **no CSP errors in the console**          |
-| 6   | EPUB: table of contents, bookmark, font size | Applies without reload                                                                  |
-| ★7  | Open a comic (Pepper & Carrot)               | Pages render, slider moves                                                              |
-| 8   | Open a manga (Hokusai)                       | Starts right-to-left by itself                                                          |
-| 9   | Book page                                    | Description is formatted text, **not** raw HTML tags and not a grey code block          |
-| 10  | Series → settings                            | "Объединение" and "Удалить серию" are there and work                                    |
-| 11  | Create library                               | "Дополнительные папки" **and** "Папка одиночных книг" both present                      |
-| 12  | Settings → Server → General                  | Version reads `0.1.x-rN`, build channel `NoirPanther (stable)`, NoirPanther links first |
-| 13  | Settings → Users                             | Create a user, set a content rule, log in as them: the ruled-out book is gone           |
-| 14  | Search: `толстой`, `ВОЙНА`                   | Finds books by author and regardless of case                                            |
-| 15  | Jobs, Logs, Metadata screens                 | Russian throughout, no raw `settingsScene.…` keys                                       |
+| #   | What                                         | Looking for                                                                                                                                                                          |
+| --- | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| ★1  | Open `/auth`                                 | Neon wordmark, panther, "Запомнить меня", Russian labels                                                                                                                             |
+| ★2  | Log in as `cat`                              | Lands on home, covers load, no console errors                                                                                                                                        |
+| ★3  | Home                                         | "Продолжить чтение" carousel, recently added series and books                                                                                                                        |
+| 4   | Themes → each of the six, incl. a light one  | Whole page switches, sidebar included; no dark-on-dark text                                                                                                                          |
+| ★5  | Open an EPUB (Pride and Prejudice)           | Two-column spread with text; page turn works; **no CSP errors in the console**                                                                                                       |
+| 6   | EPUB: table of contents, bookmark, font size | Applies without reload                                                                                                                                                               |
+| ★7  | Open a comic (Pepper & Carrot)               | Pages render, slider moves                                                                                                                                                           |
+| 8   | Open a manga (Hokusai)                       | Starts right-to-left by itself                                                                                                                                                       |
+| 9   | Book page                                    | Description is formatted text, **not** raw HTML tags and not a grey code block                                                                                                       |
+| 10  | Series → settings                            | "Объединение" and "Удалить серию" are there and work                                                                                                                                 |
+| 11  | Create library                               | "Дополнительные папки" **and** "Папка одиночных книг" both present                                                                                                                   |
+| 12  | Settings → Server → General                  | Version reads `0.1.x-rN`, build channel `NoirPanther (stable)`, NoirPanther links first                                                                                              |
+| 13  | Settings → Users                             | Create a user, set a content rule, log in as them: the ruled-out book is gone                                                                                                        |
+| 14  | Search: `толстой`, `ДЕТСТВО`                 | Finds by author (the stand has three Tolstoy books) and regardless of case. 🔴 Pick terms that exist in THIS library — the stand has no «Война и мир», so a miss there means nothing |
+| 15  | Jobs, Logs, Metadata screens                 | Russian throughout, no raw `settingsScene.…` keys                                                                                                                                    |
 
 **Layout check on the screens upstream rewrote**: server stats, jobs table, metadata table, the
 translation notice, library settings. Russian strings are longer than English — look for text

@@ -23,25 +23,29 @@ GitHub mails you about the failure and stays silent about the successful re-run.
 
 ---
 
-## 1. Local `:10912`
+## 1. Local `:10912` — always the image built from the working tree
+
+🔴 The stand exists to test OUR code, so it runs `stump:vint-dev`, built locally by
+`deploy-local.sh`. Never point it at a GHCR tag: that is not what we are about to ship, and an
+older published image cannot even start against a database our newer migrations have touched
+("Migration … is missing, this migration has been applied but its file is missing").
 
 The stack lives in `~/projects/stump/.local/noirpanther-local`. **The compose service is `stump`**
 (the _container_ is `noir-cattest` — that name does not work with `docker compose`).
 
 ```bash
-cd ~/projects/stump/.local/noirpanther-local
-cp docker-compose.yml docker-compose.yml.bak-$(date +%Y%m%d_%H%M)
-sed -i '' 's|image: .*noirpanther:.*|image: ghcr.io/vint1024/noirpanther:0.1.9-rN|' docker-compose.yml
-sed -i '' 's|image: stump:vint-dev|image: ghcr.io/vint1024/noirpanther:0.1.9-rN|' docker-compose.yml
-docker compose pull stump && docker compose up -d stump
-sleep 12 && curl -s -m 10 -X POST http://localhost:10912/api/v2/version
+cd ~/projects/stump/stump_original
+# only when Rust changed — raise the Docker VM to 8 GB first, see memory docker-build-vm-memory
+PLATFORMS=linux/arm64 TAGS=stump:vint-base FORMAT=plain bash docker/build.sh \
+  > .build-logs/base-build.log 2>&1 &     # watch the log, never pipe it to `tail`
+
+bash .build-logs/deploy-local.sh          # fresh web + thin layer + dump + recreate, ~1 min
+curl -s -m 10 -X POST http://localhost:10912/api/v2/version
 ```
 
-To put the stand back on the working tree afterwards: restore the backup compose (image
-`stump:vint-dev`) and run `bash ~/projects/stump/stump_original/.build-logs/deploy-local.sh`.
-
 Then run the smoke of section 4 against `http://localhost:10912` with `cat` / `cattest12345`.
-**Do not move on until it is green.**
+**Do not move on until it is green** — what ships to production is this same commit, built by the
+release workflow.
 
 ## 2. Home servers `:10802` (live) and `:10803` (archive)
 
