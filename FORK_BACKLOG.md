@@ -102,9 +102,12 @@ v0.1.5 merge the failure mode is "took theirs" → our addition reverted.
   holders administer other users and protect the server owner). Our A31 (content rules hide
   BOOKS) is fork-only and stays, guarded by `visibility_filters_are_applied`.
 - **A20 handed over too**: upstream's `cache_friendly_url` replaced our `?v=` thumbnail URLs.
-- **New in the fork:** `StumpConfig::load` strips settings a build no longer knows (0.1.9 dropped
-  `profile`, and the strict loader refused to start on every existing `Stump.toml`). Extend
-  `REMOVED_SETTINGS` whenever upstream removes a field.
+- **Config upgrades:** 0.1.9 made the loader strict and dropped `profile` (0.1.7 used it for
+  `is_debug()`, which is now the compile-time `cfg!(debug_assertions)` — no runtime meaning left),
+  so every pre-0.1.8 `Stump.toml` stopped the server from starting. The file is **the** thing to
+  fix — Stump rewrites it on each start, so deleting the obsolete key is a one-time edit. We do
+  not skip unknown settings (that would swallow typos too); the fork only makes the failure
+  actionable: the error names the offending setting instead of just the file.
 - **Web fixes after the merge:** localization re-applied to the rewritten server stats / jobs table
   / metadata table; the translations alert no longer positions its buttons over the text; book
   descriptions are de-indented before Markdown (indented HTML was rendered as a code block).

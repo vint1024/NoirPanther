@@ -487,7 +487,8 @@ mod tests {
 		write_metadata_to_epub(&path_str, &writeback, false).expect("writeback ok");
 
 		// The file must still be a valid epub Stump can process
-		let metadata = EpubProcessor.process_metadata(Path::new(&path_str))
+		let metadata = EpubProcessor
+			.process_metadata(Path::new(&path_str))
 			.expect("still processable")
 			.expect("has metadata");
 		assert_eq!(metadata.title.as_deref(), Some("Новое название"));
@@ -505,7 +506,10 @@ mod tests {
 		let path = temp_copy_of_fixture("untouched");
 		let path_str = path.to_string_lossy().to_string();
 
-		let before = EpubProcessor.process_metadata(Path::new(&path_str)).unwrap().unwrap();
+		let before = EpubProcessor
+			.process_metadata(Path::new(&path_str))
+			.unwrap()
+			.unwrap();
 		// Only change the title — language etc. must survive
 		let writeback = OpfWriteback {
 			title: Some("Only Title Changed".to_string()),
@@ -513,13 +517,17 @@ mod tests {
 		};
 		write_metadata_to_epub(&path_str, &writeback, false).expect("writeback ok");
 
-		let after = EpubProcessor.process_metadata(Path::new(&path_str)).unwrap().unwrap();
+		let after = EpubProcessor
+			.process_metadata(Path::new(&path_str))
+			.unwrap()
+			.unwrap();
 		assert_eq!(after.title.as_deref(), Some("Only Title Changed"));
 		assert_eq!(after.language, before.language);
 		assert_eq!(after.writers, before.writers);
 
 		// The book must still open and serve pages (cover)
-		crate::media::processor::epub::get_cover(Path::new(&path_str)).expect("cover still readable");
+		crate::media::processor::epub::get_cover(Path::new(&path_str))
+			.expect("cover still readable");
 
 		fs::remove_file(&path).ok();
 	}

@@ -176,27 +176,25 @@ pub struct StumpConfig {
 	pub trust_proxy_headers: bool,
 }
 
-/// Settings removed by upstream that older `Stump.toml` files still carry. Keeping them out
-/// of the loader is what lets an existing install start after an upgrade (see `load`).
-const REMOVED_SETTINGS: &[&str] = &["profile"];
-
-/// Returns the TOML with removed settings commented out, plus the keys that were dropped.
-fn strip_unknown_settings(raw: &str) -> (String, Vec<String>) {
-	let mut dropped = Vec::new();
-	let sanitized = raw
-		.lines()
-		.map(|line| {
-			let key = line.split('=').next().unwrap_or_default().trim();
-			if REMOVED_SETTINGS.contains(&key) {
-				dropped.push(key.to_string());
-				String::new()
-			} else {
-				line.to_string()
-			}
-		})
-		.collect::<Vec<_>>()
-		.join("\n");
-	(sanitized, dropped)
+/// Schematic reports an unknown or invalid setting in the error's source chain; the top-level
+/// message only names the file. Upgrades are where this bites (Stump 0.1.8 removed `profile`,
+/// which every older config carries), so spell out the offending setting and what to do.
+fn explain_config_error(
+	path: &Path,
+	error: &(dyn std::error::Error + 'static),
+) -> String {
+	let mut details = vec![error.to_string()];
+	let mut source = error.source();
+	while let Some(inner) = source {
+		details.push(inner.to_string());
+		source = inner.source();
+	}
+	format!(
+		"{} — fix {}: remove or correct the setting it names (settings dropped by a newer \
+		 Stump release must be deleted from the file; the server rewrites it on the next start)",
+		details.join(": "),
+		path.display()
+	)
 }
 
 impl StumpConfig {
@@ -214,32 +212,14 @@ impl StumpConfig {
 			.map_err(|e| CoreError::InitializationError(e.to_string()))?;
 
 		if toml_path.exists() {
-			// NoirPanther: the loader is strict about unknown keys, so a Stump.toml written by
-			// an older version stops the server from starting at all (0.1.9 dropped `profile`,
-			// which every pre-0.1.8 config has). Strip keys this build no longer knows, warn,
-			// and carry on — an upgrade must never leave the server unable to boot.
-			let raw = std::fs::read_to_string(&toml_path)
-				.map_err(|e| CoreError::InitializationError(e.to_string()))?;
-			let (sanitized, dropped) = strip_unknown_settings(&raw);
-			if dropped.is_empty() {
-				loader
-					.file(toml_path)
-					.map_err(|e| CoreError::InitializationError(e.to_string()))?;
-			} else {
-				tracing::warn!(
-					keys = ?dropped,
-					path = ?toml_path,
-					"Ignoring settings this version no longer supports"
-				);
-				loader
-					.code(sanitized, "Stump.toml")
-					.map_err(|e| CoreError::InitializationError(e.to_string()))?;
-			}
+			loader.file(toml_path.clone()).map_err(|e| {
+				CoreError::InitializationError(explain_config_error(&toml_path, &e))
+			})?;
 		}
 
-		let result = loader
-			.load()
-			.map_err(|e| CoreError::InitializationError(e.to_string()))?;
+		let result = loader.load().map_err(|e| {
+			CoreError::InitializationError(explain_config_error(&toml_path, &e))
+		})?;
 
 		let config = result.config;
 
@@ -433,26 +413,5 @@ allowed_origins = ["http://localhost:3000"]
 				});
 			},
 		);
-	}
-}
-
-#[cfg(test)]
-mod noirpanther_config_tests {
-	use super::*;
-
-	#[test]
-	fn strips_removed_settings() {
-		let (sanitized, dropped) =
-			strip_unknown_settings("profile = \"release\"\nport = 10801\n");
-		assert_eq!(dropped, vec!["profile".to_string()]);
-		assert!(!sanitized.contains("profile"));
-		assert!(sanitized.contains("port = 10801"));
-	}
-
-	#[test]
-	fn keeps_a_config_without_removed_settings() {
-		let (sanitized, dropped) = strip_unknown_settings("port = 10801\n");
-		assert!(dropped.is_empty());
-		assert_eq!(sanitized.trim(), "port = 10801");
 	}
 }
