@@ -13,7 +13,8 @@ use crate::common::{
 /// A9: `POST /media/{id}/offline` hands a device an encrypted copy of a book. It is a third door
 /// into the library — next to the listing and to streaming — and it has its own permission,
 /// `OfflineRead`, precisely so it can be granted without handing out the plaintext file. These
-/// tests pin the gates, not the crypto (which has its own tests in core).
+/// tests pin the gates only. The E3 crypto itself (ECDH to the device key, AES-256-GCM over the
+/// book) has no test at all yet — worth one.
 async fn setup_book(app: &TestApp) -> models::entity::media::Model {
 	let library = fake_data::Library {
 		id: Some("offline_lib".to_string()),
