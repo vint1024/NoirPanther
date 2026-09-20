@@ -1,16 +1,42 @@
 <p align="center">
-  <img src=".github/assets/noirpanther-banner.svg" alt="NoirPanther" width="640" />
+  <img alt="NoirPanther logo — a panther's head, the emblem of this Stump fork" src="./.github/images/noirpanther-logo.png" style="width: 20%" />
+  <br />
+  <a href="https://github.com/vint1024/NoirPanther/releases">
+    <img src="https://img.shields.io/github/v/release/vint1024/NoirPanther?label=Release&color=8B5CF6" alt="Latest release">
+  </a>
+  <a href="https://github.com/vint1024/NoirPanther/pkgs/container/noirpanther">
+    <img src="https://img.shields.io/badge/ghcr.io-noirpanther-0aa8d2?logo=docker&logoColor=fff" alt="Container image">
+  </a>
+  <a href="./LICENSE">
+    <img src="https://img.shields.io/static/v1?label=License&message=MIT&color=CF9977" alt="License">
+  </a>
 </p>
 
-# NoirPanther server
+<p align="center">
 
-> **NoirPanther server is a fork of [Stump](https://github.com/stumpapp/stump)** — a self-hosted server for comics, manga and digital books.
->
-> - Repository: <https://github.com/vint1024/NoirPanther> (development mirror: <https://git.vint1024.net/vint1024/stump.git>)
-> - Upstream (original): <https://github.com/stumpapp/stump>
-> - Current release: **`0.1.9-r2`** = everything in Stump **0.1.9** + [what this fork adds](#what-this-fork-adds). See [Versioning](#versioning).
->
-> **All modifications in this fork were developed with heavy assistance from AI tooling.**
+**NoirPanther server** is a self-hosted comics, manga and e-book server — a friendly fork of
+[Stump](https://github.com/stumpapp/stump) with a different look, full Russian localization and a
+handful of features on top. Everything Stump does, it does.
+
+</p>
+
+<p align="center">
+<img alt="The NoirPanther web app showing a comics library" src="./.github/images/noirpanther-web.png" style="width: 90%" />
+</p>
+
+<details>
+  <summary><b>Table of Contents</b></summary>
+  <p>
+
+- [Install with Docker Compose](#install-with-docker-compose)
+- [What this fork adds](#what-this-fork-adds)
+- [Inherited from Stump](#inherited-from-stump)
+- [Versioning and updates](#versioning-and-updates)
+- [Clients](#clients)
+- [Disclaimer](#disclaimer)
+- [License](#license)
+- [Attribution](#attribution)
+</details>
 
 ## Install with Docker Compose
 
@@ -122,205 +148,66 @@ docker compose pull && docker compose up -d
 - Any Stump client works with the server (OPDS, KOReader, Kobo and the Stump apps included); the
   NoirPanther app adds the fork-only features on top and keeps a compatibility mode for vanilla Stump servers.
 
-## Versioning
-
-The version is deliberately kept **the same as the Stump release the build is made from**, with
-a fork revision after it: **`<Stump version>-r<N>`**.
-
-- `0.1.9-r1` — built from Stump `0.1.9`: **everything Stump 0.1.9 has** (one-shot libraries,
-  home-page section preferences, the layered configuration system, the reorganised core crate,
-  bundle chunking, and Stump 0.1.8's authorization fixes — plus, from 0.1.7, PostgreSQL support,
-  the Readium-based web EPUB reader with streaming, whole-book search and annotations, Comic Vine
-  and manual metadata search, reading-session conflict resolution and avatars) **plus everything
-  listed under [What this fork adds](#what-this-fork-adds)**.
-- `-r2`, `-r3`, … — our own fixes and features on top of the same Stump release.
-- When Stump publishes a new version and it is merged here, the numbering restarts: Stump `0.1.9` became `0.1.9-r1`, then `-r2` for the fix on top of it.
-
-Each release is a git tag `v<version>` (e.g. `v0.1.9-r1`), a [GitHub release](https://github.com/vint1024/NoirPanther/releases)
-with notes, and a Docker image with the same tag. The server checks that releases page itself:
-when a newer one exists, **Settings → Server → General** shows a notice with a link to the release
-notes. (The check asks the GitHub API from the server; nothing about your server is sent.)
-
 ## What this fork adds
 
-### Brand / UI
+- **A different look** — panther branding and six themes (_Vibranium_ by default, plus light
+  variants); the Stump themes are still there
+- **Full Russian localization** of the web app, alongside the upstream languages
+- **Installable as a home-screen app (PWA)** — proper manifest and icons, a "remember me" login,
+  search on the home screen, and lists that return to where you left them
+- **Multiple folders per library**, so one library can span several paths
+- **Reversible series merging** — fold scattered folders into one series and undo it later
+- **Content access rules** — hide books and series from a user by tag, genre or publisher
+- **Read-only users can read EPUBs** — streamed page by page, no download permission needed, with
+  an encrypted offline mode for the mobile app
+- **Metadata written back into EPUB files** (opt-in), with an editor in the web app
+- **Better metadata out of files** — clean titles from multi-title EPUBs, real series from EPUB 3
+  collections, comic languages, and manga that opens right-to-left by itself
+- **Book clubs** — enabled and built to work with large clubs
+- **PostgreSQL-ready** — the upstream queries that only worked on SQLite are fixed, and there is a
+  script to move an existing SQLite database over
+- **Search that finds things** — case-insensitive in any language, and it matches authors too
 
-- **Rebranded to "NoirPanther server"** — name, panther emblem, favicons, splash and PWA manifest
-- **Six NoirPanther themes** ported from the NoirPanther mobile client — _Vibranium_ (default), _Golden Eye_, _Emerald Gaze_, _Cinematic Noir_, and the _Vibranium · Light_ / _Golden Eye · Light_ variants (the upstream Stump themes are kept too)
-- **Full Russian localization of the web UI** — complete coverage (~2,590 i18n keys, 340+ localized components)
-- Server-info screen surfaces the fork identity, our GitHub / release links and the full `<Stump version>-r<N>` version
-- **Update notice** — the server checks this repository's GitHub releases and tells the owner when a newer NoirPanther release exists (the upstream check never showed up: the web app asked a route the server doesn't have)
+## Inherited from Stump
 
-### Server &amp; features
+Everything [Stump](https://github.com/stumpapp/stump) offers is here — see its
+[README](https://github.com/stumpapp/stump#features) and [documentation](https://www.stumpapp.dev)
+for the details:
 
-- **EPUB streaming for read-only users** — manifest + per-resource endpoints so users without download permission can read EPUBs in the browser/app (our implementation seeded upstream PR #1288; since v0.1.7 the fork ships the upstream Readium reader on top of it)
-- **Offline reading with encryption (E3)** — an `/offline` endpoint that wraps the content key to a device's Secure-Enclave public key, gated by an `OfflineRead` capability (no download permission required)
-- **Multiple folders per library**
-- **Reversible series merging**
-- **Content access rules** by tag / genre / publisher (Unicode case-folded)
-- **Series visibility** — hide a series when all of its books are hidden by content rules; per-user book counts
-- **Write metadata back into EPUB files** — with an opt-in backup flag and backup cleanup
-- **Server-side EPUB cover placeholder** + WebP / GIF / SVG thumbnail support
-- **Series thumbnail regeneration** (incl. a regenerate-from-cover button)
-- **Book clubs, enabled and at scale** — switched on in production builds (upstream still hides them) with cursor-paginated members / past books / discussions, keyset discussion history, and DataLoader fixes for the member graph
-- **PostgreSQL-ready fork**: on Postgres the string-backed book-club role columns are fixed (upstream declares them INTEGER, which breaks clubs there), `ulower()` is provided as a SQL wrapper, and `scripts/db/sqlite_to_postgres.py` copies an existing SQLite database into a freshly migrated PostgreSQL one (used to move this fork's own servers off SQLite); see [Install with Docker Compose](#with-postgresql). The whole API was then audited against PostgreSQL (every client operation, OPDS 1.2/2.0, KOReader, Kobo, scans, content rules, smart lists, book clubs) and the upstream queries that only worked on SQLite were fixed: library scans (`LIKE … ESCAPE` placeholders), metadata / visit / device upserts (`ON CONFLICT` targets), reading-status filters and Kobo sync (`GROUP BY`), OPDS progression (JSON device join), re-favoriting, `series.library` sub-filters
-- **Cover lightbox**: click a book cover on its page to view it full-height (Esc, ✕ or a click outside closes it)
-- **Authorization checks** — the four holes this fork reported (privileged account fields, the library missing-files listing, previous book-club discussions, the metadata overview) were fixed upstream in Stump 0.1.8, and those fixes are what this fork now ships. Content access rules are fork-only and hide books as well as series. `scripts/noirpanther/authz_check.py` re-checks all of it against a running server
-- **Manga opens right-to-left by itself**: the `Manga` tag of `ComicInfo.xml` (`YesAndRightToLeft`) becomes a per-book reading direction (upstream only has a per-library default); the web reader and the NoirPanther app start such books RTL, the reader's own setting still overrides it
-- **Clean titles and comic languages from file metadata**: EPUBs with several `dc:title` elements (main / subtitle / full title) get the main title instead of a multi-line mash-up; EPUB 3 collections are resolved through `refines`, so only a real `series` collection becomes the series (not the "100 best novels" sets listed beside it); `LanguageISO` from `ComicInfo.xml` is read (upstream only accepts a non-standard `Language` tag)
-- **Covers that actually refresh**: thumbnail URLs carry a version (`?v=…`) that changes when a cover is regenerated or a library rescanned, so browsers and the NoirPanther app stop showing stale covers despite the one-year cache header
-- **Unicode case-insensitive search** (`ulower`) — search matches regardless of letter case in any language (incl. Cyrillic); **search also matches book authors** (writers), not just titles. Works on both SQLite (custom function) and PostgreSQL (SQL wrapper over `lower()`)
-- **Book & series metadata editor** in the web UI — permission-gated (`EditMetadata`), with autocomplete and field-level locks
-- **Sliding session expiry** — active web sessions are refreshed instead of logging the user out on a fixed TTL
-- **"Remember me"** — the login form can ask for a 30-day persistent session (`?remember=true`), on by default when the web app runs as an installed PWA; the login page also skips itself when a session already exists (an iOS home-screen web app installed from the login page opens on `/auth` every time)
-- **Installable as a home-screen web app** — the manifest is actually served (upstream let it fall through to the SPA fallback), so iOS picks up the panther icon and the "NoirPanther" name; the login page hands a signed-in user straight through, and covers don't blink after the edge-swipe back
-- **Scroll position restored on Back** — every list (home, book/series search, libraries, series) returns to where you left it when you navigate back
-- **Search on mobile / PWA** — a search box at the top of the home page and in the slide-out menu that opens the book search; a `?search=` arriving via link now also shows up in the search field
-- **Memory-bounded server** — tuned allocator (jemalloc + glibc arena/trim), bounded blocking pool and scanner concurrency for stable memory on large libraries
-- Content rules in the user-creation form; tag / genre / publisher autocomplete; single-series deletion
-- Fixes: metadata lock hidden without `EditMetadata` permission; writeback / file-watcher race; cross-origin EPUB reader credentials; N+1 queries; owner-rule handling; `OfflineRead` permission checks
+- OPDS v1.2 (incl. PSE) and v2.0
+- EPUB, PDF, CBZ/ZIP and CBR/RAR, with built-in readers for each
+- Annotations and highlights in EPUB books
+- Multi-user accounts with permissions and age restrictions
+- OIDC authentication
+- Kobo and KOReader sync
+- Smart lists, reading progress and statistics
 
-### Packaging
+## Versioning and updates
 
-- Version **`0.1.9-r2`** (see [Versioning](#versioning)), build channel **`NoirPanther (stable)`**
-- Docker images for `amd64` + `arm64` published to **`ghcr.io/vint1024/noirpanther`** by the [`NoirPanther Docker image`](.github/workflows/noirpanther_docker.yml) workflow on GitHub's native runners — pushing a `v<version>` tag builds the image and creates the GitHub release (Rust 1.97 / Node 24 toolchain; `CARGO_BUILD_JOBS` build-arg caps compile parallelism for small Docker VMs) — see [Install with Docker Compose](#install-with-docker-compose)
+Releases are numbered **`<Stump version>-r<N>`**: `0.1.9-r2` is built from Stump `0.1.9`, and `r2`
+is the second fork revision on top of it. So the first half tells you which Stump you are getting.
 
-> A from-scratch **proprietary** client — **NoirPanther** — is built against this fork's API: <https://git.vint1024.net/vint1024/noirpanther.git>
+The server checks this repository's releases and tells the owner in **Settings → Server → General**
+when a newer one exists.
 
-The fork keeps the upstream **MIT** license.
+> **Upgrading from `0.1.7` or older:** Stump 0.1.8 removed the `profile` setting and no longer
+> accepts settings it does not know, so delete the `profile = "…"` line from your `Stump.toml`
+> first. The server rewrites the file on the next start, so it is a one-time edit.
 
----
+## Clients
 
-<sub>The original upstream README follows. Its installation and Docker links describe upstream Stump — to install NoirPanther use [Install with Docker Compose](#install-with-docker-compose) above.</sub>
+The web app is built in — open the server in a browser, or install it to the home screen.
 
-<p align="center">
-  <img alt="Stump's logo. It depicts a young individual sitting on a tree stump reading a book. Inspired by the developer's childhood, where they spent a significant amount of time reading on a tree stump in their backyard" src="./.github/images/logo.png" style="width: 30%" />
-  <br />
-  <a href="https://github.com/awesome-selfhosted/awesome-selfhosted#document-management---e-books">
-    <img src="https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg" alt="Awesome Self-Hosted">
-  </a>
-  <a href="https://discord.gg/63Ybb7J3as">
-    <img src="https://img.shields.io/discord/972593831172272148?label=Discord&color=5865F2" />
-  </a>
-  <a href="https://github.com/stumpapp/stump/blob/main/LICENSE">
-    <img src="https://img.shields.io/static/v1?label=License&message=MIT&color=CF9977" />
-  </a>
-  <a href="https://hub.docker.com/r/aaronleopold/stump">
-    <img src="https://img.shields.io/docker/pulls/aaronleopold/stump?logo=docker&color=0aa8d2&logoColor=fff" alt="Docker Pulls">
-  </a>
-</p>
-
-<p align='center'>
-
-Stump is a free and open source comics, manga, and digital book server with OPDS support, created with <a href="https://www.rust-lang.org/">Rust</a>, <a href='https://github.com/tokio-rs/axum'>Axum</a>, <a href='https://www.sea-ql.org/SeaORM/'>SeaORM</a> and <a href='https://reactjs.org/'>React</a>.
-
-</p>
-
-<p align='center'>
-<img alt="Screenshot of Stump" src="./docs/public/images/landing-dark.png" style="width: 90%" />
-</p>
-
-<!-- prettier-ignore: I hate you sometimes prettier -->
-<details>
-  <summary><b>Table of Contents</b></summary>
-  <p>
-
-- [Disclaimer](#disclaimer)
-- [Features](#features)
-- [Roadmap](#roadmap)
-- [Getting Started](#getting-started)
-- [Developer Guide](#developer-guide)
-  - [Contributing](#contributing)
-- [Repository Structure](#repository-structure)
-- [Similar Projects](#similar-projects)
-- [License](#license)
-- [Attribution](#attribution)
-</details>
+Any Stump-compatible client works: OPDS readers, KOReader, Kobo, and the Stump mobile apps.
+There is also **NoirPanther**, a separate iOS / Android / macOS client built for this server, which
+adds the fork-only features (encrypted offline reading, book clubs, series merging) and keeps a
+compatibility mode for vanilla Stump servers.
 
 ## Disclaimer
 
-Stump is under active development and should be treated as **beta software** until it reaches a stable `1.0` release. I do my best to avoid breaking changes, or changes which might cause data loss, but there are no guarantees.
-
-I develop and maintain Stump in my free time. In other words, this is not my job and there is no guarantee of any timeline for features or bug fixes.
-
-## Features
-
-- [OPDS](https://opds.io/) [v1.2](https://specs.opds.io/opds-1.2) (including [OPDS PSE](https://github.com/anansi-project/opds-pse)) and [v2.0](https://specs.opds.io/opds-2.0.html) support
-- EPUB, PDF, CBZ/ZIP, and CBR/RAR support
-- Built-in readers for all supported formats
-- Annotations and highlights for EPUB books
-- OIDC authentication
-- Translations with [Weblate](https://weblate.org/en/)
-- Multi-user account management with permissions, age restrictions, and other access control features
-- Theming support with a handful of [built-in themes](https://www.stumpapp.dev/docs/apps/web/themes)
-- [Kobo](https://www.stumpapp.dev/docs/guides/integrations/kobo) and [KoReader](https://www.stumpapp.dev/docs/guides/integrations/koreader) sync integrations
-- Multiple different installation methods, including Docker and pre-built binaries
-
-And more not mentioned. The [documentation](https://www.stumpapp.dev) will provide additional details about features, installation, and usage guides.
-
-## Roadmap
-
-You can track the [project boards](https://github.com/stumpapp/stump/projects?query=is%3Aopen) to see what efforts are currently being worked on or planned.
-
-Feel free to create an issue or discussion if you have anything else you'd like to see!
-
-## Getting Started
-
-The installation guides are available in the [documentation](https://www.stumpapp.dev/docs/getting-started/installation) (or [the markdown](/docs/content/docs/getting-started/installation/index.mdx), if you prefer).
-
-## Developer Guide
-
-The developer guide is available in the [documentation](https://www.stumpapp.dev/docs/developer/contributing) (or [the markdown](/docs/content/docs/developer/contributing.mdx), if you prefer). To not have to maintain two copies of the same information, please refer to those links for the most up-to-date information.
-
-## Contributing
-
-Contributions are very **welcome**! Please review the [CONTRIBUTING.md](./.github/CONTRIBUTING.md) before getting started.
-
-I recommend taking a look at [open issues](https://github.com/stumpapp/stump/issues). You can also check out the [project boards](https://github.com/stumpapp/stump/projects?query=is%3Aopen) to see what efforts are active or planned.
-
-In general, the following areas could always use help:
-
-- Translations via [Weblate](https://hosted.weblate.org/engage/stump/), so Stump is accessible to as many people as possible
-- Writing comprehensive tests
-- Improving the UI/UX, even small changes can go a long way
-- CI pipelines, automated release processes, and other devops-related efforts
-- Addressing `TODO` or `FIXME` comments in the codebase
-
-### Repository Structure
-
-The repository is managed via yarn workspaces and cargo workspaces:
-
-```bash
-# The primary applications all grouped together
-apps/
-  desktop/   # Tauri wrapping the web UI
-  expo/      # React Native app
-  server/    # Axum server
-  web/       # UI served by the server
-# The primary internals, like file processing etc
-core/
-# Supporting Rust crates (cli, graphql, integrations, etc)
-crates/
-  migrations/  # Database migrations
-  models/      # Database models
-docs/
-# Shared TypeScript packages
-packages/
-```
-
-## Translations
-
-[![Translation status](https://hosted.weblate.org/widgets/stump/-/stump/horizontal-auto.svg)](https://hosted.weblate.org/engage/stump/)
-
-## Similar Projects
-
-There are a number of other projects that are similar to Stump, it certainly isn't the first or only digital book media server out there. If Stump isn't for you, or you want to check out similar projects in this space, here are some other projects you might be interested in:
-
-- [audiobookshelf](https://github.com/advplyr/audiobookshelf) (_Audiobooks, Podcasts_)
-- [Codex](https://github.com/ajslater/codex)
-- [Kavita](https://github.com/Kareadita/Kavita)
-- [Komga](https://github.com/gotson/komga)
-- [Storyteller](https://gitlab.com/storyteller-platform/storyteller)
+This is a personal fork, kept in step with upstream Stump and used to run the author's own servers.
+Like Stump itself, treat it as **beta software** until a stable `1.0`: no guarantees, and no
+timeline for features or fixes. Back up your database before upgrading.
 
 ## License
 
