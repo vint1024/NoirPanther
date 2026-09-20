@@ -127,14 +127,14 @@ docker compose pull && docker compose up -d
 The version is deliberately kept **the same as the Stump release the build is made from**, with
 a fork revision after it: **`<Stump version>-r<N>`**.
 
-- `0.1.9-r2` — built from Stump `0.1.9`: **everything Stump 0.1.9 has** (one-shot libraries,
+- `0.1.9-r1` — built from Stump `0.1.9`: **everything Stump 0.1.9 has** (one-shot libraries,
   home-page section preferences, the layered configuration system, the reorganised core crate,
   bundle chunking, and Stump 0.1.8's authorization fixes — plus, from 0.1.7, PostgreSQL support,
   the Readium-based web EPUB reader with streaming, whole-book search and annotations, Comic Vine
   and manual metadata search, reading-session conflict resolution and avatars) **plus everything
   listed under [What this fork adds](#what-this-fork-adds)**.
 - `-r2`, `-r3`, … — our own fixes and features on top of the same Stump release.
-- When Stump publishes a new version and it is merged here, the numbering restarts: Stump `0.1.9` became `0.1.9-r2`.
+- When Stump publishes a new version and it is merged here, the numbering restarts: Stump `0.1.9` became `0.1.9-r1`, then `-r2` for the fix on top of it.
 
 Each release is a git tag `v<version>` (e.g. `v0.1.9-r1`), a [GitHub release](https://github.com/vint1024/NoirPanther/releases)
 with notes, and a Docker image with the same tag. The server checks that releases page itself:
