@@ -8,7 +8,7 @@
 >
 > - Repository: <https://github.com/vint1024/NoirPanther> (development mirror: <https://git.vint1024.net/vint1024/stump.git>)
 > - Upstream (original): <https://github.com/stumpapp/stump>
-> - Current release: **`0.1.9-r1`** = everything in Stump **0.1.9** + [what this fork adds](#what-this-fork-adds). See [Versioning](#versioning).
+> - Current release: **`0.1.9-r2`** = everything in Stump **0.1.9** + [what this fork adds](#what-this-fork-adds). See [Versioning](#versioning).
 >
 > **All modifications in this fork were developed with heavy assistance from AI tooling.**
 
@@ -21,7 +21,7 @@ Registry — no login required:
 | --------------------------------------- | --------------------------------------------------------------- |
 | `ghcr.io/vint1024/noirpanther:latest`   | the newest release                                              |
 | `ghcr.io/vint1024/noirpanther:0.1.9`    | the newest fork revision built on Stump 0.1.9                   |
-| `ghcr.io/vint1024/noirpanther:0.1.9-r1` | exactly this release (pinned — updates only when you change it) |
+| `ghcr.io/vint1024/noirpanther:0.1.9-r2` | exactly this release (pinned — updates only when you change it) |
 
 ### With the built-in SQLite database
 
@@ -127,14 +127,14 @@ docker compose pull && docker compose up -d
 The version is deliberately kept **the same as the Stump release the build is made from**, with
 a fork revision after it: **`<Stump version>-r<N>`**.
 
-- `0.1.9-r1` — built from Stump `0.1.9`: **everything Stump 0.1.9 has** (one-shot libraries,
+- `0.1.9-r2` — built from Stump `0.1.9`: **everything Stump 0.1.9 has** (one-shot libraries,
   home-page section preferences, the layered configuration system, the reorganised core crate,
   bundle chunking, and Stump 0.1.8's authorization fixes — plus, from 0.1.7, PostgreSQL support,
   the Readium-based web EPUB reader with streaming, whole-book search and annotations, Comic Vine
   and manual metadata search, reading-session conflict resolution and avatars) **plus everything
   listed under [What this fork adds](#what-this-fork-adds)**.
 - `-r2`, `-r3`, … — our own fixes and features on top of the same Stump release.
-- When Stump publishes a new version and it is merged here, the numbering restarts: Stump `0.1.9` became `0.1.9-r1`.
+- When Stump publishes a new version and it is merged here, the numbering restarts: Stump `0.1.9` became `0.1.9-r2`.
 
 Each release is a git tag `v<version>` (e.g. `v0.1.9-r1`), a [GitHub release](https://github.com/vint1024/NoirPanther/releases)
 with notes, and a Docker image with the same tag. The server checks that releases page itself:
@@ -182,7 +182,7 @@ notes. (The check asks the GitHub API from the server; nothing about your server
 
 ### Packaging
 
-- Version **`0.1.9-r1`** (see [Versioning](#versioning)), build channel **`NoirPanther (stable)`**
+- Version **`0.1.9-r2`** (see [Versioning](#versioning)), build channel **`NoirPanther (stable)`**
 - Docker images for `amd64` + `arm64` published to **`ghcr.io/vint1024/noirpanther`** by the [`NoirPanther Docker image`](.github/workflows/noirpanther_docker.yml) workflow on GitHub's native runners — pushing a `v<version>` tag builds the image and creates the GitHub release (Rust 1.97 / Node 24 toolchain; `CARGO_BUILD_JOBS` build-arg caps compile parallelism for small Docker VMs) — see [Install with Docker Compose](#install-with-docker-compose)
 
 > A from-scratch **proprietary** client — **NoirPanther** — is built against this fork's API: <https://git.vint1024.net/vint1024/noirpanther.git>
