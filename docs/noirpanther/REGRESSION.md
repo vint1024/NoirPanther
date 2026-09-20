@@ -9,6 +9,10 @@ installed web app, and the mobile clients.
 
 ---
 
+> 🔴 Everything in this document runs against the **local stand** (`:10912`) unless a row says
+> otherwise. Production (`:10802`, `:10803`, the demo) is for reading — a version check, a book
+> count, logs, or reproducing something the owner reported — never for trying things out.
+
 ## 0. Automated first (always)
 
 ```bash
@@ -56,7 +60,7 @@ Three fork features have no automated test and will not get one cheaply. Each is
 
 | Feature                              | How to check it                                                                                                                                                                                                                                                                                                                                  |
 | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **A14** memory bounding              | Start a full rescan of a big library (`:10802`, `forceRebuild: true`) and watch `docker stats noir-panter` for ten minutes. RSS should plateau in the hundreds of MB, not climb until the container is killed. Compare with the previous release's number in `.build-logs/STATUS.md`.                                                            |
+| **A14** memory bounding              | Watch `docker stats` during a scan that is happening anyway (a release rescan, or a big library on the local stand). RSS should plateau in the hundreds of MB rather than climb until the container is killed; compare with the previous release's figure in `.build-logs/STATUS.md`. Do not start a production rescan just to measure this.     |
 | **A21** a library root that vanished | On `:10912`, rename one of a library's folders on disk, run a scan, and look at the library's books: they must be marked missing, not deleted, and not silently kept as present. Rename the folder back, scan again: they come back. The old scan harness in `core/integration-tests` predates the sea-orm rewrite, which is why this is manual. |
 | **A20** versioned thumbnail URLs     | Open a book page in the browser, note the cover URL carries `?last_modified=…`, regenerate the series thumbnail, reload: the value must change and the new cover must show without a hard refresh.                                                                                                                                               |
 
@@ -162,12 +166,12 @@ _Readers_
 
 _Offline (E3)_
 
-| #   | What                                             | Looking for                                                      |
-| --- | ------------------------------------------------ | ---------------------------------------------------------------- |
-| 13  | Download an EPUB and a CBZ, then airplane mode   | Both open; the comic pages come from the archive on the device   |
-| 14  | Read offline, then go back online                | Progress syncs, **no** false conflict prompt                     |
-| 15  | Downloads screen                                 | Sizes add up; deleting frees the file                            |
-| 16  | An account with OFFLINE_READ but no DownloadFile | Can still take a book offline (server `test` / `test` on :10802) |
+| #   | What                                             | Looking for                                                                                         |
+| --- | ------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
+| 13  | Download an EPUB and a CBZ, then airplane mode   | Both open; the comic pages come from the archive on the device                                      |
+| 14  | Read offline, then go back online                | Progress syncs, **no** false conflict prompt                                                        |
+| 15  | Downloads screen                                 | Sizes add up; deleting frees the file                                                               |
+| 16  | An account with OFFLINE_READ but no DownloadFile | Can still take a book offline. Make that account on the LOCAL stand — never test against production |
 
 _Clubs_
 

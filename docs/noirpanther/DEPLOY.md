@@ -52,7 +52,9 @@ SSH="ssh -o IdentitiesOnly=yes -o IdentityAgent=none -i $HOME/.ssh/claude_key ho
 # NOTE: run ssh spelled out, not through a shell variable — zsh splits it wrong
 ```
 
-For `D` in `noir-panter` (:10802) and `noir-panter-lgbtlibrary` (:10803), with `SVC` = the same name:
+One command does all of it — `bash .build-logs/deploy-remote.sh <version> all` (backup, pin the
+tag, pull, recreate, verify each stack). What it runs, for `D` in `noir-panter` (:10802) and
+`noir-panter-lgbtlibrary` (:10803), with `SVC` = the same name:
 
 ```bash
 # 1. back the database up first (the script keeps the 5 newest dumps)
