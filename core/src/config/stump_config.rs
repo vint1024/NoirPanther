@@ -171,6 +171,12 @@ pub struct StumpConfig {
 	#[graphql(skip)]
 	pub oidc: Option<OidcConfig>,
 
+	/// NoirPanther: send the session cookie with the `Secure` attribute, so a browser only ever
+	/// returns it over HTTPS. Off by default because a plain-HTTP server (the common home setup)
+	/// could not log anyone in with it on; turn it on when the server is reachable over HTTPS.
+	#[setting(default = false)]
+	pub secure_session_cookie: bool,
+
 	/// Whether to trust proxy headers for determining client IP and scheme (e.g., X-Forwarded-For)
 	#[setting(default = false)]
 	pub trust_proxy_headers: bool,

@@ -5,6 +5,7 @@ mod kobo;
 mod koreader;
 mod opds;
 mod reading_progress;
+mod security;
 
 use common::TestApp;
 

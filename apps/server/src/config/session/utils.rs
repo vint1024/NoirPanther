@@ -45,7 +45,7 @@ pub fn get_session_layer(ctx: Arc<Ctx>) -> SessionManagerLayer<StumpSessionStore
 		.with_expiry(Expiry::OnSessionEnd)
 		.with_path(SESSION_PATH.to_string())
 		.with_same_site(SameSite::Lax)
-		.with_secure(false)
+		.with_secure(ctx.config.secure_session_cookie)
 }
 
 /// Returns a tuple with the Set-Cookie header name and value to delete the session cookie.

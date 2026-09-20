@@ -61,13 +61,33 @@ describe('useApplyTheme', () => {
 			expect(meta).toBeFalsy()
 		})
 
-		it('should not create meta tag when theme is system and user prefers light', () => {
+		// NoirPanther: "system" is the brand default (Vibranium, a dark theme) and does NOT
+		// follow the OS — following the OS is the separately selectable "Vanilla Stump" theme.
+		it('keeps the dark meta tag for the brand default, whatever the OS prefers', () => {
 			vi.mocked(useMediaMatch).mockReturnValue(false)
 
 			renderHook(() => useApplyTheme({ appTheme: 'system', appFont: SupportedFont.Inter }))
 
 			const meta = document.querySelector('meta[name="color-scheme"]')
-			expect(meta).toBeFalsy()
+			expect(meta).toBeTruthy()
+			expect(meta?.getAttribute('content')).toBe('dark')
+			expect(document.querySelector('html')?.classList.contains('vibranium')).toBe(true)
+		})
+
+		it('follows the OS only for the vanilla Stump theme', () => {
+			vi.mocked(useMediaMatch).mockReturnValue(false)
+
+			const { rerender } = renderHook(
+				({ theme }) => useApplyTheme({ appTheme: theme, appFont: SupportedFont.Inter }),
+				{ initialProps: { theme: 'vanilla' } },
+			)
+
+			expect(document.querySelector('meta[name="color-scheme"]')).toBeFalsy()
+
+			vi.mocked(useMediaMatch).mockReturnValue(true)
+			rerender({ theme: 'vanilla' })
+
+			expect(document.querySelector('meta[name="color-scheme"]')).toBeTruthy()
 		})
 	})
 
@@ -107,14 +127,14 @@ describe('useApplyTheme', () => {
 			expect(meta).toBeFalsy()
 		})
 
-		it('should handle system theme with changing user preference', () => {
+		it('leaves the brand default alone when the OS preference changes', () => {
 			vi.mocked(useMediaMatch).mockReturnValue(false)
 
 			const { rerender } = renderHook(() =>
 				useApplyTheme({ appTheme: 'system', appFont: SupportedFont.Inter }),
 			)
 
-			expect(document.querySelector('meta[name="color-scheme"]')).toBeFalsy()
+			expect(document.querySelector('meta[name="color-scheme"]')).toBeTruthy()
 
 			vi.mocked(useMediaMatch).mockReturnValue(true)
 			rerender()

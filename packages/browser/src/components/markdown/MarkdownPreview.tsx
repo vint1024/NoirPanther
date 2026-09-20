@@ -4,6 +4,7 @@ import { useLocaleContext } from '@stump/i18n'
 import { forwardRef, PropsWithChildren, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import rehypeRaw from 'rehype-raw'
+import rehypeSanitize, { defaultSchema } from 'rehype-sanitize'
 import remarkDirective from 'remark-directive'
 import remarkDirectiveRehype from 'remark-directive-rehype'
 import remarkGfm from 'remark-gfm'
@@ -13,11 +14,78 @@ type Props = {
 	className?: string
 }
 
+/**
+ * Descriptions come from book files, which are downloaded from all over the internet, and
+ * `rehypeRaw` renders the HTML inside them. React strips event handlers and unsafe URLs, but
+ * everything else was rendered as-is: a book could embed a tracking pixel (who read what and
+ * when), an off-site form (a login prompt on a page the reader trusts), an iframe, or a style
+ * block that repaints the app. Keep the formatting tags a description legitimately uses and
+ * drop the rest.
+ */
+export const SANITIZE_SCHEMA = {
+	...defaultSchema,
+	tagNames: [
+		'p',
+		'br',
+		'hr',
+		'span',
+		'div',
+		'blockquote',
+		'pre',
+		'code',
+		'em',
+		'i',
+		'strong',
+		'b',
+		'u',
+		's',
+		'del',
+		'ins',
+		'sub',
+		'sup',
+		'small',
+		'mark',
+		'abbr',
+		'a',
+		'img',
+		'ul',
+		'ol',
+		'li',
+		'dl',
+		'dt',
+		'dd',
+		'h1',
+		'h2',
+		'h3',
+		'h4',
+		'h5',
+		'h6',
+		'table',
+		'thead',
+		'tbody',
+		'tfoot',
+		'tr',
+		'th',
+		'td',
+	],
+	attributes: {
+		...defaultSchema.attributes,
+		// Images may only come from this server (no third-party tracking pixels)
+		img: ['alt', 'title', 'width', 'height'],
+		'*': ['className', 'id', 'title', 'lang', 'dir'],
+	},
+	protocols: {
+		...defaultSchema.protocols,
+		href: ['http', 'https', 'mailto'],
+		src: [],
+	},
+}
+
 export default function MarkdownPreview({ children, className }: Props) {
 	return (
 		<ReactMarkdown
 			remarkPlugins={[remarkDirective, remarkDirectiveRehype, remarkGfm]}
-			rehypePlugins={[rehypeRaw]}
+			rehypePlugins={[rehypeRaw, [rehypeSanitize, SANITIZE_SCHEMA]]}
 			className={cn('text-foreground', className)}
 			components={{
 				h1: ({ ref: _, ...props }) => (

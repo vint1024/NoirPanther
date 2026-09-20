@@ -20,6 +20,14 @@ export default defineConfig({
 		server: {
 			deps: {
 				inline: [
+					// react-markdown and its plugin chain are ESM-only; without inlining them the
+					// markdown components render nothing under vitest
+					'react-markdown',
+					'rehype-raw',
+					'rehype-sanitize',
+					'remark-gfm',
+					'remark-directive',
+					'remark-directive-rehype',
 					'@stump/client',
 					'@stump/sdk',
 					'@stump/components',

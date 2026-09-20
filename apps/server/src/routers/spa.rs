@@ -29,6 +29,49 @@ const INDEX_HTML: &str = "/index.html";
 const ASSETS: &str = "/assets";
 const DIST: &str = "/dist";
 
+/// NoirPanther: the web app shipped without a single security header. Book descriptions are
+/// rendered as HTML (they come from files downloaded off the internet), the app could be framed
+/// by any site, and responses were open to content-type sniffing. These headers close the parts
+/// the markup sanitizer cannot: no framing, no off-site form posts, no third-party images or
+/// frames, no plugins. `unsafe-inline` stays because index.html boots with an inline script and
+/// the styles are injected at runtime — script injection is already prevented in the renderer.
+fn security_headers() -> tower::layer::util::Stack<
+	SetResponseHeaderLayer<HeaderValue>,
+	tower::layer::util::Stack<
+		SetResponseHeaderLayer<HeaderValue>,
+		tower::layer::util::Stack<
+			SetResponseHeaderLayer<HeaderValue>,
+			tower::layer::util::Identity,
+		>,
+	>,
+> {
+	const CSP: &str = "default-src 'self'; \
+		script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:; \
+		style-src 'self' 'unsafe-inline'; \
+		img-src 'self' data: blob:; \
+		font-src 'self' data:; \
+		media-src 'self' data: blob:; \
+		connect-src 'self' ws: wss:; \
+		worker-src 'self' blob:; \
+		frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; \
+		frame-ancestors 'none'";
+
+	ServiceBuilder::new()
+		.layer(SetResponseHeaderLayer::if_not_present(
+			header::CONTENT_SECURITY_POLICY,
+			HeaderValue::from_static(CSP),
+		))
+		.layer(SetResponseHeaderLayer::if_not_present(
+			header::X_CONTENT_TYPE_OPTIONS,
+			HeaderValue::from_static("nosniff"),
+		))
+		.layer(SetResponseHeaderLayer::if_not_present(
+			header::REFERRER_POLICY,
+			HeaderValue::from_static("strict-origin-when-cross-origin"),
+		))
+		.into_inner()
+}
+
 pub(crate) fn mount(app_state: AppState) -> Router<AppState> {
 	let dist_path = Path::new(&app_state.config.client_dir);
 	let static_assets = ServiceBuilder::new()
@@ -77,6 +120,8 @@ pub(crate) fn mount(app_state: AppState) -> Router<AppState> {
 		.nest_service(ASSETS, static_assets)
 		.nest_service(DIST, dist_files)
 		.fallback_service(spa_fallback)
+		// applied last so it covers every route above, including the SPA fallback
+		.layer(security_headers())
 }
 
 pub(crate) fn relative_favicon_path() -> String {
