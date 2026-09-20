@@ -1,7 +1,13 @@
+mod book_clubs;
 mod content_rules;
+mod epub_streaming;
 mod libraries;
 mod metadata_writeback;
+mod offline;
 mod reading_direction;
+mod reading_status;
 mod search;
 mod series_merge;
+mod series_visibility;
+mod sessions;
 mod web_app;

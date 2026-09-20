@@ -43,7 +43,7 @@ Status legend: ✅ present/verified · ⚠️ partially lost · ❌ lost/regress
 | A31 | 🔒 **Content rules did not hide BOOKS (merge fallout):** the v0.1.7 merge took `entity/media.rs` as "theirs" and dropped `apply_content_rules_filter` from all four `*_for_user` selects — rule-hidden books stayed visible in lists, search, by id and through REST page/thumbnail (series and libraries kept their filters). The A3 audit after the merge only checked that the symbol existed. Restored + regression test `visibility_filters_are_applied` (builds the SQL of every select and fails when the rule condition or the hidden-library filter is missing)                                | `crates/models/src/entity/media.rs`                                                                                                                                                                                                                                                          | ✅ 2026-09-19 (0.1.7-r4) — affected every build from 2026-09-11 to 0.1.7-r3                                                                                                                                             |
 | A32 | 🔒 **Unguarded queries (upstream):** `libraryMissingEntities` listed file-system paths of ANY library to every signed-in user → `MANAGE_LIBRARY` guard (it backs the clean-library screen); `previousBookClubDiscussions` skipped the club access check every sibling query has → `verify_read_access`                                                                                                                                                                                                                                                                                                  | `crates/graphql/src/query/library.rs`, `crates/graphql/src/query/book_club_discussion.rs`                                                                                                                                                                                                    | ✅ 2026-09-19 (0.1.7-r4)                                                                                                                                                                                                |
 | A33 | 🔒 **Metadata overview leaked hidden values (upstream):** `mediaMetadataOverview` (genres, writers, publishers, characters…) collected values across ALL books, so a user restricted by age / content rules / hidden libraries could list what is hidden from them. Now limited to books visible to the caller (`media_id IN (find_for_user)`)                                                                                                                                                                                                                                                          | `crates/graphql/src/object/media_metadata_overview.rs` (`get_base_query`)                                                                                                                                                                                                                    | ✅ 2026-09-19 (0.1.7-r4)                                                                                                                                                                                                |
-| A34 | 🔒 **Login throttling instead of account lockout:** upstream counts a user's failed sign-ins over 24h from ANY address and, at nine, sets `is_locked` until an admin clears it by hand — so anyone who knows a username can lock its owner out (this fork's own test account got locked that way during the audit). We count failures per (account, address) over a 15-minute window and answer 429 for that address until it passes; the account is never touched. | `apps/server/src/routers/api/v2/auth.rs` (`FAILED_LOGIN_WINDOW_SECS`, `MAX_FAILED_LOGINS_PER_ADDRESS`), `APIError::TooManyRequests`; test `tests/security/login_throttle.rs` | ✅ 2026-09-20 |
+| A34 | 🔒 **Login throttling instead of account lockout:** upstream counts a user's failed sign-ins over 24h from ANY address and, at nine, sets `is_locked` until an admin clears it by hand — so anyone who knows a username can lock its owner out (this fork's own test account got locked that way during the audit). We count failures per (account, address) over a 15-minute window and answer 429 for that address until it passes; the account is never touched.                                                                                                                                     | `apps/server/src/routers/api/v2/auth.rs` (`FAILED_LOGIN_WINDOW_SECS`, `MAX_FAILED_LOGINS_PER_ADDRESS`), `APIError::TooManyRequests`; test `tests/security/login_throttle.rs`                                                                                                                 | ✅ 2026-09-20                                                                                                                                                                                                           |
 
 ## B. Web / UI
 
@@ -115,11 +115,26 @@ v0.1.5 merge the failure mode is "took theirs" → our addition reverted.
 - **Where fork code moved (core reorg #1424):** metadata → `core/src/metadata/media.rs`, EPUB
   collections and writeback → `core/src/media/processor/`, cover placeholder → `core/src/image/`,
   writeback job → `core/src/metadata/provider/`, job registration → `core/src/job/dispatch.rs`.
-- **Test DB:** fork tables (content rules, library paths, series merges) are created in
-  `crates/tests/src/db.rs`, without which upstream's new user tests fail with "no such table".
+- **Test DB:** fork tables (content rules, library paths, series merges, login activity, book
+  clubs) are created in `crates/tests/src/db.rs`, without which tests fail with "no such table".
 - **Login throttling (A34)** replaced upstream's permanent account lockout. If a merge brings back
   `lock_account` / the 24-hour counter, `tests/security/login_throttle.rs` fails — keep ours.
-- **Tests that guard the fork:** `apps/server/tests/fork/` (features) and `apps/server/tests/security/`
-  (headers, cookie flags, throttling), plus `packages/browser/src/components/markdown/__tests__`
-  (description sanitizing). Run them after every merge; they are the cheap half of
-  `docs/noirpanther/REGRESSION.md`.
+- **Tests that guard the fork:** `apps/server/tests/fork/` (features) and
+  `apps/server/tests/security/` (headers, cookie flags, throttling, the three authorization
+  fixes), plus `packages/browser/src/components/markdown/__tests__` (description sanitizing). Run
+  them after every merge; they are the cheap half of `docs/noirpanther/REGRESSION.md`.
+
+  What each file guards: `libraries.rs` A1 · `series_merge.rs` A2 · `content_rules.rs` A3/A31 ·
+  `series_visibility.rs` A4 · `metadata_writeback.rs` A5 · `epub_streaming.rs` A6 ·
+  `offline.rs` A9 (gates only — the crypto has its own tests in core) · `book_clubs.rs` A10 ·
+  `search.rs` A11/A12 · `sessions.rs` A13 + B14 · `reading_status.rs` A22 ·
+  `reading_direction.rs` A29 · `web_app.rs` A23 + update check ·
+  `security/authorization.rs` A30/A32/A33 · `security/login_throttle.rs` A34 ·
+  `security/headers.rs` CSP and cookie flags.
+
+  **Knowingly not covered by integration tests** (weigh this when a merge touches them): A7/A8/A20
+  thumbnails and their versioned URLs (need real image processing), A14 memory bounding, A16
+  single-series deletion, A21 the scanner's handling of a vanished library root (needs a scan job),
+  A19/A17/A18 PostgreSQL-only SQL — **the whole suite runs on SQLite, so the pg-specific fixes are
+  tested only by running the server against `noir-pg`**. A26/A27/A28 metadata parsing is covered by
+  unit tests inside `core`, not here.

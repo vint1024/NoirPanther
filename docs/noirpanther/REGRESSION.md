@@ -12,7 +12,7 @@ installed web app, and the mobile clients.
 ## 0. Automated first (always)
 
 ```bash
-# server: 84 integration + 415 unit tests, incl. tests/fork (our features) and tests/security
+# server: 103 integration + 550 unit tests, incl. tests/fork (our features) and tests/security
 cargo test --workspace -- --test-threads=1
 cargo fmt --all --check && cargo clippy -p stump_server
 
@@ -44,23 +44,23 @@ python3 .build-logs/chunk_cycles.py apps/web/dist/assets    # expect "cycles 0"
 
 Smoke = ★. Everything else is for a version bump.
 
-| # | What | Looking for |
-|---|---|---|
-| ★1 | Open `/auth` | Neon wordmark, panther, "Запомнить меня", Russian labels |
-| ★2 | Log in as `cat` | Lands on home, covers load, no console errors |
-| ★3 | Home | "Продолжить чтение" carousel, recently added series and books |
-| 4 | Themes → each of the six, incl. a light one | Whole page switches, sidebar included; no dark-on-dark text |
-| ★5 | Open an EPUB (Pride and Prejudice) | Two-column spread with text; page turn works; **no CSP errors in the console** |
-| 6 | EPUB: table of contents, bookmark, font size | Applies without reload |
-| ★7 | Open a comic (Pepper & Carrot) | Pages render, slider moves |
-| 8 | Open a manga (Hokusai) | Starts right-to-left by itself |
-| 9 | Book page | Description is formatted text, **not** raw HTML tags and not a grey code block |
-| 10 | Series → settings | "Объединение" and "Удалить серию" are there and work |
-| 11 | Create library | "Дополнительные папки" **and** "Папка одиночных книг" both present |
-| 12 | Settings → Server → General | Version reads `0.1.x-rN`, build channel `NoirPanther (stable)`, NoirPanther links first |
-| 13 | Settings → Users | Create a user, set a content rule, log in as them: the ruled-out book is gone |
-| 14 | Search: `толстой`, `ВОЙНА` | Finds books by author and regardless of case |
-| 15 | Jobs, Logs, Metadata screens | Russian throughout, no raw `settingsScene.…` keys |
+| #   | What                                         | Looking for                                                                             |
+| --- | -------------------------------------------- | --------------------------------------------------------------------------------------- |
+| ★1  | Open `/auth`                                 | Neon wordmark, panther, "Запомнить меня", Russian labels                                |
+| ★2  | Log in as `cat`                              | Lands on home, covers load, no console errors                                           |
+| ★3  | Home                                         | "Продолжить чтение" carousel, recently added series and books                           |
+| 4   | Themes → each of the six, incl. a light one  | Whole page switches, sidebar included; no dark-on-dark text                             |
+| ★5  | Open an EPUB (Pride and Prejudice)           | Two-column spread with text; page turn works; **no CSP errors in the console**          |
+| 6   | EPUB: table of contents, bookmark, font size | Applies without reload                                                                  |
+| ★7  | Open a comic (Pepper & Carrot)               | Pages render, slider moves                                                              |
+| 8   | Open a manga (Hokusai)                       | Starts right-to-left by itself                                                          |
+| 9   | Book page                                    | Description is formatted text, **not** raw HTML tags and not a grey code block          |
+| 10  | Series → settings                            | "Объединение" and "Удалить серию" are there and work                                    |
+| 11  | Create library                               | "Дополнительные папки" **and** "Папка одиночных книг" both present                      |
+| 12  | Settings → Server → General                  | Version reads `0.1.x-rN`, build channel `NoirPanther (stable)`, NoirPanther links first |
+| 13  | Settings → Users                             | Create a user, set a content rule, log in as them: the ruled-out book is gone           |
+| 14  | Search: `толстой`, `ВОЙНА`                   | Finds books by author and regardless of case                                            |
+| 15  | Jobs, Logs, Metadata screens                 | Russian throughout, no raw `settingsScene.…` keys                                       |
 
 **Layout check on the screens upstream rewrote**: server stats, jobs table, metadata table, the
 translation notice, library settings. Russian strings are longer than English — look for text
@@ -68,29 +68,29 @@ sitting on top of buttons.
 
 ## 2. Installed web app (PWA)
 
-| # | What | Looking for |
-|---|---|---|
-| ★1 | `curl -sI <server>/manifest.webmanifest` | `application/manifest+json`, not HTML |
-| 2 | Safari on iOS → Share → "На экран «Домой»" | Panther icon, name "NoirPanther" (not the page title) |
-| 3 | Open from the home screen | No browser chrome; login remembers you (30-day session) |
-| 4 | Mobile width in the browser (375px) | Search box on the home screen, two-row filter bar |
-| 5 | Navigate deep, then back | Lists return to the position you left them at |
+| #   | What                                       | Looking for                                             |
+| --- | ------------------------------------------ | ------------------------------------------------------- |
+| ★1  | `curl -sI <server>/manifest.webmanifest`   | `application/manifest+json`, not HTML                   |
+| 2   | Safari on iOS → Share → "На экран «Домой»" | Panther icon, name "NoirPanther" (not the page title)   |
+| 3   | Open from the home screen                  | No browser chrome; login remembers you (30-day session) |
+| 4   | Mobile width in the browser (375px)        | Search box on the home screen, two-row filter bar       |
+| 5   | Navigate deep, then back                   | Lists return to the position you left them at           |
 
 ## 3. Mobile app (iOS / iPadOS / Android)
 
 Devices: iPhone 17 Pro (iOS 26+), iPad Pro (iPadOS 26+), Pixel 6 Pro emulator. For a release also
 iOS 27 and the Mac build from the dmg.
 
-| # | What | Looking for |
-|---|---|---|
-| ★1 | Launch, log in | Catalog loads |
-| ★2 | Open an EPUB | Text renders; edge taps turn pages; chapter title does not overlap the page counter (Android) |
-| ★3 | Open a comic | Pages render; manga opens right-to-left |
-| 4 | Book card | Description is formatted text with working links |
-| 5 | Download a book, then airplane mode | Opens offline, at the page you left it |
-| 6 | Read offline, back online | Progress syncs without a false conflict prompt |
-| 7 | Deep link `noirpanther://reader/<id>` from a cold start | Book opens, not a blank page |
-| 8 | Stump compatibility toggle on, against a vanilla server | Fork-only features hidden, catalog still works |
+| #   | What                                                    | Looking for                                                                                   |
+| --- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| ★1  | Launch, log in                                          | Catalog loads                                                                                 |
+| ★2  | Open an EPUB                                            | Text renders; edge taps turn pages; chapter title does not overlap the page counter (Android) |
+| ★3  | Open a comic                                            | Pages render; manga opens right-to-left                                                       |
+| 4   | Book card                                               | Description is formatted text with working links                                              |
+| 5   | Download a book, then airplane mode                     | Opens offline, at the page you left it                                                        |
+| 6   | Read offline, back online                               | Progress syncs without a false conflict prompt                                                |
+| 7   | Deep link `noirpanther://reader/<id>` from a cold start | Book opens, not a blank page                                                                  |
+| 8   | Stump compatibility toggle on, against a vanilla server | Fork-only features hidden, catalog still works                                                |
 
 ## 4. Servers after deploying
 

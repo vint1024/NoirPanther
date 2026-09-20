@@ -1,9 +1,10 @@
 use models::entity::{
-	age_restriction, api_key, content_access_rule, kobo_sync_session, library,
-	library_config, library_exclusion, library_path, media, media_analysis,
-	media_metadata, media_tag, reading_device, reading_session, refresh_token, series,
-	series_merge, series_metadata, server_config, session, tag, user,
-	user_login_activity, user_preferences,
+	age_restriction, api_key, book_club, book_club_book, book_club_discussion,
+	book_club_member, content_access_rule, kobo_sync_session, library, library_config,
+	library_exclusion, library_path, media, media_analysis, media_metadata, media_tag,
+	reading_device, reading_session, refresh_token, series, series_merge,
+	series_metadata, server_config, session, tag, user, user_login_activity,
+	user_preferences,
 };
 use sea_orm::{ConnectionTrait, DbBackend, DbConn, DbErr, Schema};
 pub async fn test_database() -> DbConn {
@@ -51,6 +52,11 @@ pub async fn create_database_tables(db: &DbConn) -> Result<(), DbErr> {
 		schema.create_table_from_entity(series_merge::Entity),
 		// failed sign-ins are counted per address from this table (login throttling)
 		schema.create_table_from_entity(user_login_activity::Entity),
+		// book clubs: the fork pages their rosters by cursor
+		schema.create_table_from_entity(book_club::Entity),
+		schema.create_table_from_entity(book_club_member::Entity),
+		schema.create_table_from_entity(book_club_book::Entity),
+		schema.create_table_from_entity(book_club_discussion::Entity),
 	];
 
 	for stmt in tables {
