@@ -126,19 +126,30 @@ v0.1.5 merge the failure mode is "took theirs" → our addition reverted.
 
   What each file guards: `libraries.rs` A1 · `series_merge.rs` A2 · `content_rules.rs` A3/A31 ·
   `series_visibility.rs` A4 · `metadata_writeback.rs` A5 · `epub_streaming.rs` A6 ·
-  `offline.rs` A9 (gates only — the crypto has its own tests in core) · `book_clubs.rs` A10 ·
-  `search.rs` A11/A12 · `sessions.rs` A13 + B14 · `reading_status.rs` A22 ·
-  `reading_direction.rs` A29 · `web_app.rs` A23 + update check ·
-  `security/authorization.rs` A30/A32/A33 · `security/login_throttle.rs` A34 ·
-  `security/headers.rs` CSP and cookie flags.
+  `series_deletion.rs` A16 + A8's gate · `offline.rs` A9 gates · `offline_crypto.rs` A9's wire
+  format (a device key decrypts what the server sent; another device's key cannot) ·
+  `book_clubs.rs` A10 · `search.rs` A11/A12 · `sessions.rs` A13 + B14 · `reading_status.rs` A22 ·
+  `reading_direction.rs` A29 · `web_app.rs` A23 + update check · `security/authorization.rs`
+  A30/A32/A33 · `security/login_throttle.rs` A34 · `security/headers.rs` CSP and cookie flags.
 
   In the web, `packages/browser/src/…/__tests__`: `MarkdownPreview` (description sanitizing),
   `BasicLibraryInformation` (A1's extra-folder controls — the form that was once orphaned),
   `MergeSeriesSection` (A2/B10, pinning which id each mutation takes), `QuickSearch` (B16).
 
-  **Knowingly not covered by integration tests** (weigh this when a merge touches them): A7/A8/A20
-  thumbnails and their versioned URLs (need real image processing), A14 memory bounding, A16
-  single-series deletion, A21 the scanner's handling of a vanished library root (needs a scan job),
-  A19/A17/A18 PostgreSQL-only SQL — **the whole suite runs on SQLite, so the pg-specific fixes are
-  tested only by running the server against `noir-pg`**. A26/A27/A28 metadata parsing is covered by
-  unit tests inside `core`, not here.
+  In the app, `yarn test` (vitest, pure logic only): `comicArchive` (offline page order and page
+  selection must match the server's, or every synced position shifts), `richText` (descriptions
+  render as text, `javascript:` never becomes a link), `date` (Hermes and nanosecond timestamps).
+
+  **On PostgreSQL:** the integration suite runs against a real server with
+  `TEST_DATABASE_URL=postgresql://…` — each test gets a throwaway database built by the actual
+  migrations. That is what covers A17/A18/A19 now; before, the pg-only fixes had no test at all.
+  Running it is part of the release checklist in `docs/noirpanther/REGRESSION.md`.
+
+  **Still not covered by any test, and why** — check these by hand (steps in REGRESSION.md):
+  A14 memory bounding (needs a real scan of a large library while watching RSS); A21 the scanner
+  marking entities under a vanished library root (the scan harness in `core/integration-tests`
+  predates the sea-orm rewrite and does not run); A20 versioned thumbnail URLs (needs a generated
+  thumbnail file on disk, so it is a browser check: rescan, confirm the cover changes); the app's
+  UI as a whole, which is what the simulator pass in REGRESSION.md section 3 is for. A7's cover
+  placeholder and the WebP/GIF/SVG thumbnails ARE covered — 40 unit tests in `core::image`.
+  A26/A27/A28 metadata parsing is covered by unit tests inside `core`, not here.

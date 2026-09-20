@@ -69,7 +69,11 @@ uuid.workspace = true
 zip.workspace = true
 
 [dev-dependencies]
+aes-gcm = "0.10"
 axum-test = "17.2.0"
+hkdf = "0.12"
+p256 = { version = "0.13", features = ["ecdh"] }
+sha2 = "0.10"
 maplit.workspace = true
 tokio = { workspace = true, features = ["full", "test-util"] }
 tests = { path = "../../crates/tests" }

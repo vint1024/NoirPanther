@@ -9950,6 +9950,7 @@ name = "tests"
 version = "0.1.9-r3"
 dependencies = [
  "chrono",
+ "migrations",
  "models",
  "rand 0.9.2",
  "rust_decimal",

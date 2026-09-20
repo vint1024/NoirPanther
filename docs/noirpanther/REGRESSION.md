@@ -12,9 +12,21 @@ installed web app, and the mobile clients.
 ## 0. Automated first (always)
 
 ```bash
-# server: 103 integration + 550 unit tests, incl. tests/fork (our features) and tests/security
+# server on SQLite: integration (tests/fork, tests/security) + unit
 cargo test --workspace -- --test-threads=1
 cargo fmt --all --check && cargo clippy -p stump_server
+
+# server on PostgreSQL — production's backend. Same suite, real migrations, a throwaway
+# database per test. Run it before every release and after every upstream merge: SQLite hides
+# the differences the fork's pg fixes (A17/A18/A19) exist for.
+TEST_DATABASE_URL=postgresql://stump:stump-local@localhost:15432/stump \
+  cargo test -p stump_server --test api_tests -- --test-threads=1
+# leftovers, if a run was interrupted (they are dropped automatically after 30 minutes):
+#   docker exec noir-pg psql -U stump -d stump -tAc \
+#     "select datname from pg_database where datname like 'stump_test_%'"
+
+# app: pure logic (page order, description parsing, server timestamps)
+cd ../../../noirpanther && yarn test
 
 # web: 289 tests
 yarn workspace @stump/browser test
@@ -37,6 +49,19 @@ python3 .build-logs/chunk_cycles.py apps/web/dist/assets    # expect "cycles 0"
 
 > `chunk_cycles.py` takes the **assets** directory. Pointed at `dist` it silently reports one
 > chunk and no cycles, which tells you nothing.
+
+### What no test covers — do these by hand
+
+Three fork features have no automated test and will not get one cheaply. Each is a few minutes:
+
+| Feature                              | How to check it                                                                                                                                                                                                                                                                                                                                  |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **A14** memory bounding              | Start a full rescan of a big library (`:10802`, `forceRebuild: true`) and watch `docker stats noir-panter` for ten minutes. RSS should plateau in the hundreds of MB, not climb until the container is killed. Compare with the previous release's number in `.build-logs/STATUS.md`.                                                            |
+| **A21** a library root that vanished | On `:10912`, rename one of a library's folders on disk, run a scan, and look at the library's books: they must be marked missing, not deleted, and not silently kept as present. Rename the folder back, scan again: they come back. The old scan harness in `core/integration-tests` predates the sea-orm rewrite, which is why this is manual. |
+| **A20** versioned thumbnail URLs     | Open a book page in the browser, note the cover URL carries `?last_modified=…`, regenerate the series thumbnail, reload: the value must change and the new cover must show without a hard refresh.                                                                                                                                               |
+
+Everything else the fork adds has a test; the map of which test guards which feature is in
+`FORK_BACKLOG.md`.
 
 ---
 
