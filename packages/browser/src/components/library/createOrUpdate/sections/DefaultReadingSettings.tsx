@@ -32,8 +32,18 @@ export default function DefaultReadingSettings() {
 					<Label>{t(getKey('readingDirection.label'))}</Label>
 					<NativeSelect
 						options={[
-							{ label: 'Left to right', value: 'LTR' },
-							{ label: 'Right to left', value: 'RTL' },
+							{
+								label: t(
+									'settingsScene.app/reader.sections.universal.sections.readingDirection.ltr',
+								),
+								value: 'LTR',
+							},
+							{
+								label: t(
+									'settingsScene.app/reader.sections.universal.sections.readingDirection.rtl',
+								),
+								value: 'RTL',
+							},
 						]}
 						{...form.register('defaultReadingDir')}
 					/>
@@ -47,8 +57,14 @@ export default function DefaultReadingSettings() {
 				<Label>{t(getKey('readingMode.label'))}</Label>
 				<NativeSelect
 					options={[
-						{ label: 'Vertical scroll', value: 'CONTINUOUS_VERTICAL' },
-						{ label: 'Horizontal scroll', value: 'CONTINUOUS_HORIZONTAL' },
+						{
+							label: t('imageReader.settings.readingMode.options.verticalScroll'),
+							value: 'CONTINUOUS_VERTICAL',
+						},
+						{
+							label: t('imageReader.settings.readingMode.options.horizontalScroll'),
+							value: 'CONTINUOUS_HORIZONTAL',
+						},
 						{ label: 'Paged', value: 'PAGED' },
 					]}
 					{...form.register('defaultReadingMode')}

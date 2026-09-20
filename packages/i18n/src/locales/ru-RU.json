@@ -1917,7 +1917,9 @@
 					"sections": {
 						"readingDirection": {
 							"label": "Направление чтения",
-							"description": "Направление смены страниц в процессе чтения"
+							"description": "Направление смены страниц в процессе чтения",
+							"ltr": "Слева направо",
+							"rtl": "Справа налево"
 						}
 					}
 				},
@@ -2833,7 +2835,9 @@
 			"smartlists": "Умные списки",
 			"noSmartlists": "Нет умных списков",
 			"createSmartlist": "Создать умный список",
-			"seeAll": "Показать все"
+			"seeAll": "Показать все",
+			"noSmartlistsHint": "Создайте первый умный список, чтобы начать",
+			"noBookClubsHint": "Вступите в книжный клуб или создайте свой, чтобы начать"
 		},
 		"libraryOptions": {
 			"scanLibrary": "Сканирование",
@@ -4441,10 +4445,14 @@
 				"controls": {
 					"FontSizeControl": {
 						"fontSize": "Размер шрифта",
-						"previewCap": "Предпросмотр шрифта ограничен 50px"
+						"previewCap": "Предпросмотр шрифта ограничен 50px",
+						"decrease": "Уменьшить размер шрифта",
+						"increase": "Увеличить размер шрифта"
 					},
 					"LineHeightControl": {
-						"lineHeight": "Высота строки"
+						"lineHeight": "Высота строки",
+						"decrease": "Уменьшить межстрочный интервал",
+						"increase": "Увеличить межстрочный интервал"
 					},
 					"ReadingDirection": {
 						"label": "Направление чтения",
@@ -4819,6 +4827,12 @@
 				"discussion": "Обсуждение",
 				"members": "Участники",
 				"settings": "Настройки"
+			},
+			"discussion": {
+				"noDiscussion": "Обсуждение недоступно"
+			},
+			"explore": {
+				"noClubs": "Книжные клубы не найдены"
 			}
 		},
 		"createLibrary": {
@@ -4951,6 +4965,11 @@
 			},
 			"SeriesNavigation": {
 				"files": "Файлы"
+			},
+			"CompleteSeriesConfirmation": {
+				"title": "Отметить серию прочитанной",
+				"warning": "Это действие необратимо",
+				"description": "Точно отметить прочитанными все книги этой серии?"
 			}
 		},
 		"settings": {

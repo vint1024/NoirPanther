@@ -1917,7 +1917,9 @@
 					"sections": {
 						"readingDirection": {
 							"label": "Reading direction",
-							"description": "The direction in which the reader will progress through pages"
+							"description": "The direction in which the reader will progress through pages",
+							"ltr": "Left to right",
+							"rtl": "Right to left"
 						}
 					}
 				},
@@ -2833,7 +2835,9 @@
 			"smartlists": "Smart lists",
 			"noSmartlists": "No smart lists",
 			"createSmartlist": "Create smart list",
-			"seeAll": "See all"
+			"seeAll": "See all",
+			"noSmartlistsHint": "Create your first smart list to get started",
+			"noBookClubsHint": "Join or create a book club to get started"
 		},
 		"libraryOptions": {
 			"scanLibrary": "Scan",
@@ -4437,10 +4441,14 @@
 				"controls": {
 					"FontSizeControl": {
 						"fontSize": "Font size",
-						"previewCap": "Live font preview is capped at 50px"
+						"previewCap": "Live font preview is capped at 50px",
+						"decrease": "Decrease font size",
+						"increase": "Increase font size"
 					},
 					"LineHeightControl": {
-						"lineHeight": "Line height"
+						"lineHeight": "Line height",
+						"decrease": "Decrease line height",
+						"increase": "Increase line height"
 					},
 					"ReadingDirection": {
 						"label": "Reading direction",
@@ -4815,6 +4823,12 @@
 				"discussion": "Discussion",
 				"members": "Members",
 				"settings": "Settings"
+			},
+			"discussion": {
+				"noDiscussion": "No discussion available"
+			},
+			"explore": {
+				"noClubs": "No book clubs found"
 			}
 		},
 		"createLibrary": {
@@ -4947,6 +4961,11 @@
 			},
 			"SeriesNavigation": {
 				"files": "Files"
+			},
+			"CompleteSeriesConfirmation": {
+				"title": "Mark series completed",
+				"warning": "This cannot be undone",
+				"description": "Are you sure you want to mark every book in this series completed?"
 			}
 		},
 		"settings": {

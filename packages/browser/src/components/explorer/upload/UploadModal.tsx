@@ -316,7 +316,7 @@ export default function UploadModal() {
 									unpacked here.
 								</Dialog.Description>
 								<Input
-									placeholder="Enter series name"
+									placeholder={t('fileExplorer.uploadModal.seriesName.placeholder')}
 									value={seriesDirName}
 									onChange={(e) => setSeriesDirName(e.target.value)}
 									className="mt-2"

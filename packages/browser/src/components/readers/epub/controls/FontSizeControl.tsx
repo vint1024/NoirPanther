@@ -47,7 +47,7 @@ export default function FontSizeControl() {
 			<Label>{t('components.readers.epub.controls.FontSizeControl.fontSize')}</Label>
 			<div className="gap-x-2 flex items-center">
 				<IconButton
-					aria-label="Decrease font size"
+					aria-label={t('components.readers.epub.controls.FontSizeControl.decrease')}
 					onClick={() => incrementFontSize(-1)}
 					variant="ghost"
 					size="xs"
@@ -61,7 +61,7 @@ export default function FontSizeControl() {
 					{localFontSize}px
 				</span>
 				<IconButton
-					aria-label="Increase font size"
+					aria-label={t('components.readers.epub.controls.FontSizeControl.increase')}
 					onClick={() => incrementFontSize(+1)}
 					variant="ghost"
 					size="xs"

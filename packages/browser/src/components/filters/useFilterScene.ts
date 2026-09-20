@@ -117,6 +117,14 @@ export function useSearchMediaFilter(search: string | undefined): MediaFilterInp
 					title: { contains: search },
 				},
 			},
+			{
+				// Searching for an author is what people actually type into a library's search
+				// box, and the mobile client has always looked here (`searchBooks`). The server
+				// folds case with ulower, so "толстой" finds "Лев Толстой".
+				metadata: {
+					writers: { contains: search },
+				},
+			},
 		] as MediaFilterInput[]
 	}, [search])
 }

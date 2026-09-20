@@ -50,6 +50,11 @@ const deleteHistoryMutation = graphql(`
 type Props = {
 	book: BookCardFragment
 }
+// Upstream writes these menu labels as English literals even though every one of them already
+// has a translation in the locale files (`scenes.book.BookActionMenu.menu.*`) — which left the
+// book's ••• menu in English on a Russian UI.
+const menuKey = (key: string) => `scenes.book.BookActionMenu.menu.${key}`
+
 export default function BookActionMenu({ book }: Props) {
 	const { t } = useLocaleContext()
 	const { sdk } = useSDK()
@@ -145,26 +150,26 @@ export default function BookActionMenu({ book }: Props) {
 						...(continueReadingLink
 							? [
 									{
-										label: 'Continue reading',
+										label: t(menuKey('continueReading')),
 										leftIcon: <Play className="mr-2 h-4 w-4" />,
 										onClick: () => navigate(continueReadingLink),
 									},
 								]
 							: []),
 						{
-							label: 'Read from beginning',
+							label: t(menuKey('readFromBeginning')),
 							leftIcon: <BookOpen className="mr-2 h-4 w-4" />,
 							onClick: () => navigate(getReadFromBeginningLink(false)),
 						},
 						{
-							label: 'Incognito mode',
+							label: t(menuKey('incognitoMode')),
 							leftIcon: <EyeOff className="mr-2 h-4 w-4" />,
 							onClick: () => navigate(getReadFromBeginningLink(true)),
 						},
 						...(book.extension?.match(PDF_EXTENSION)
 							? [
 									{
-										label: 'Native PDF viewer',
+										label: t(menuKey('nativePdfViewer')),
 										leftIcon: <FileText className="mr-2 h-4 w-4" />,
 										onClick: () =>
 											navigate(paths.bookReader(book.id, { isPdf: true, isStreaming: false })),
@@ -178,7 +183,7 @@ export default function BookActionMenu({ book }: Props) {
 						...(progression.isUntouched || progression.isReading
 							? [
 									{
-										label: 'Mark as read',
+										label: t(menuKey('markAsRead')),
 										leftIcon: <BookOpenCheck className="mr-2 h-4 w-4" />,
 										onClick: () => {
 											actions.completeBook({ id: book.id })
@@ -189,7 +194,7 @@ export default function BookActionMenu({ book }: Props) {
 						...(progression.isReading
 							? [
 									{
-										label: 'Clear progress',
+										label: t(menuKey('clearProgress')),
 										leftIcon: <BookMinus className="mr-2 h-4 w-4" />,
 										onClick: () => {
 											actions.deleteCurrentSession({ id: book.id })
@@ -200,7 +205,7 @@ export default function BookActionMenu({ book }: Props) {
 						...(progression.isPreviouslyCompleted
 							? [
 									{
-										label: 'Delete history',
+										label: t(menuKey('deleteHistory')),
 										leftIcon: <BookX className="mr-2 h-4 w-4" />,
 										onClick: () => {
 											setShowDeleteHistoryConfirmation(true)
@@ -216,7 +221,7 @@ export default function BookActionMenu({ book }: Props) {
 						checkPermission(UserPermission.EditThumbnails)
 							? [
 									{
-										label: 'Manage',
+										label: t(menuKey('manage')),
 										leftIcon: <Settings className="mr-2 h-4 w-4" />,
 										onClick: () => {
 											navigate(paths.bookManagement(book.id))
@@ -228,7 +233,7 @@ export default function BookActionMenu({ book }: Props) {
 						checkPermission(UserPermission.EmailArbitrarySend)
 							? [
 									{
-										label: 'Email',
+										label: t(menuKey('email')),
 										leftIcon: <Send className="mr-2 h-4 w-4" />,
 										onClick: () => setShowEmailDialog(true),
 									},
@@ -246,6 +251,7 @@ export default function BookActionMenu({ book }: Props) {
 			actions,
 			continueReadingLink,
 			getReadFromBeginningLink,
+			t,
 		],
 	)
 

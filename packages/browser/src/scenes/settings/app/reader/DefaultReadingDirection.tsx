@@ -29,8 +29,9 @@ export default function DefaultReadingDirection() {
 				<NativeSelect
 					id="reading-direction"
 					options={[
-						{ label: 'Left to right', value: ReadingDirection.Ltr },
-						{ label: 'Right to left', value: ReadingDirection.Rtl },
+						// Upstream hardcodes these two in English on an otherwise translated screen
+						{ label: t(getKey('ltr')), value: ReadingDirection.Ltr },
+						{ label: t(getKey('rtl')), value: ReadingDirection.Rtl },
 					]}
 					value={readingDirection}
 					onChange={handleChange}

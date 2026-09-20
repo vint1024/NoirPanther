@@ -41,7 +41,7 @@ export default function LineHeightControl() {
 			<Label>{t('components.readers.epub.controls.LineHeightControl.lineHeight')}</Label>
 			<div className="gap-x-2 flex items-center">
 				<IconButton
-					aria-label="Decrease line height"
+					aria-label={t('components.readers.epub.controls.LineHeightControl.decrease')}
 					onClick={() => incrementLineHeight(-0.1)}
 					variant="ghost"
 					size="xs"
@@ -52,7 +52,7 @@ export default function LineHeightControl() {
 					{localLineHeight.toFixed(1)}
 				</span>
 				<IconButton
-					aria-label="Increase line height"
+					aria-label={t('components.readers.epub.controls.LineHeightControl.increase')}
 					onClick={() => incrementLineHeight(+0.1)}
 					variant="ghost"
 					size="xs"

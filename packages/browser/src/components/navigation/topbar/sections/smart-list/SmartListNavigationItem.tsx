@@ -47,7 +47,7 @@ export default function SmartListNavigationItem({
 						<div className="text-left">
 							<Label>{t('sidebar.buttons.noSmartlists')}</Label>
 							<Text size="sm" variant="muted">
-								Create your first smart list to get started
+								{t('sidebar.buttons.noSmartlistsHint')}
 							</Text>
 						</div>
 					</div>
