@@ -16,7 +16,7 @@ installed web app, and the mobile clients.
 cargo test --workspace -- --test-threads=1
 cargo fmt --all --check && cargo clippy -p stump_server
 
-# web: 278 tests
+# web: 289 tests
 yarn workspace @stump/browser test
 cd packages/browser && npx tsc -b tsconfig.json
 npx eslint packages/browser/src packages/components/src --quiet

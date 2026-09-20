@@ -132,6 +132,10 @@ v0.1.5 merge the failure mode is "took theirs" → our addition reverted.
   `security/authorization.rs` A30/A32/A33 · `security/login_throttle.rs` A34 ·
   `security/headers.rs` CSP and cookie flags.
 
+  In the web, `packages/browser/src/…/__tests__`: `MarkdownPreview` (description sanitizing),
+  `BasicLibraryInformation` (A1's extra-folder controls — the form that was once orphaned),
+  `MergeSeriesSection` (A2/B10, pinning which id each mutation takes), `QuickSearch` (B16).
+
   **Knowingly not covered by integration tests** (weigh this when a merge touches them): A7/A8/A20
   thumbnails and their versioned URLs (need real image processing), A14 memory bounding, A16
   single-series deletion, A21 the scanner's handling of a vanished library root (needs a scan job),
