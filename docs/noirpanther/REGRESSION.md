@@ -76,21 +76,100 @@ sitting on top of buttons.
 | 4   | Mobile width in the browser (375px)        | Search box on the home screen, two-row filter bar       |
 | 5   | Navigate deep, then back                   | Lists return to the position you left them at           |
 
-## 3. Mobile app (iOS / iPadOS / Android)
+## 3. Mobile app (iOS / iPadOS / Android / Mac)
 
-Devices: iPhone 17 Pro (iOS 26+), iPad Pro (iPadOS 26+), Pixel 6 Pro emulator. For a release also
-iOS 27 and the Mac build from the dmg.
+**Devices and how to drive them** (UDIDs and the rest: memory `environment-and-test-creds`):
 
-| #   | What                                                    | Looking for                                                                                   |
-| --- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| ★1  | Launch, log in                                          | Catalog loads                                                                                 |
-| ★2  | Open an EPUB                                            | Text renders; edge taps turn pages; chapter title does not overlap the page counter (Android) |
-| ★3  | Open a comic                                            | Pages render; manga opens right-to-left                                                       |
-| 4   | Book card                                               | Description is formatted text with working links                                              |
-| 5   | Download a book, then airplane mode                     | Opens offline, at the page you left it                                                        |
-| 6   | Read offline, back online                               | Progress syncs without a false conflict prompt                                                |
-| 7   | Deep link `noirpanther://reader/<id>` from a cold start | Book opens, not a blank page                                                                  |
-| 8   | Stump compatibility toggle on, against a vanilla server | Fork-only features hidden, catalog still works                                                |
+| Device                  | UDID                                   | When                           |
+| ----------------------- | -------------------------------------- | ------------------------------ |
+| iPhone 17 Pro, iOS 26.5 | `42941A3A-5B89-499D-AFBC-38B3279E5803` | every pass                     |
+| iPad Pro 11" (M5), 26.5 | `6D605BA2-F185-4123-A6C3-83331298544E` | every pass (Liquid Glass)      |
+| iPhone 17 Pro, iOS 27.0 | `1B5796B3-CD7E-4DD3-86B6-3F15E5B99CC7` | before a release               |
+| iPad Pro 11" (M5), 27.0 | `7D01F8B5-7887-4BE9-87F3-82931B73F5EE` | before a release               |
+| Pixel 6 Pro (API 34)    | AVD `Pixel_6_Pro`                      | every pass; host is `10.0.2.2` |
+| Mac (Catalyst)          | the notarized dmg                      | before a release               |
+
+```bash
+xcrun simctl boot <udid>                       # "Invalid argument" → killall -9 com.apple.CoreSimulator.CoreSimulatorService
+xcrun simctl install <udid> <path>/NoirPanther.app
+xcrun simctl launch <udid> in.kuvshinov.noirpanther
+xcrun simctl io <udid> screenshot /tmp/x.png   # sips -Z 1000 before reading it
+xcrun simctl openurl <udid> "noirpanther://reader/<id>"   # iOS 27 asks "open in app?" — needs a tap
+xcrun simctl shutdown all                      # switch simulators off when done
+```
+
+Taps, swipes and typing go through the iOS Simulator tool (headless, it does not touch the user's
+screen). Each new device needs the user to approve it once in the panel — ask before a pass that
+uses one. The app panel is what the user watches: attach it first, then build.
+
+**Smoke (★) — after any app change:**
+
+| #   | What                 | Looking for                                                    |
+| --- | -------------------- | -------------------------------------------------------------- |
+| ★1  | Launch, log in       | Catalog loads, no red-box warning                              |
+| ★2  | Open an EPUB         | Text renders; edge taps turn pages; swipe ≠ tap                |
+| ★3  | Open a comic         | Pages render; a manga opens right-to-left                      |
+| ★4  | Back out of a reader | The book page still works; the catalog has not reloaded to top |
+
+**Full pass — before a release, and after a Stump version bump:**
+
+_Catalog and navigation_
+
+| #   | What                                    | Looking for                                                      |
+| --- | --------------------------------------- | ---------------------------------------------------------------- |
+| 1   | All four tabs                           | Titles are Russian, the tab bar hides only inside a club chat    |
+| 2   | Books list vs Series list, side by side | Same header style (both large or both small — see the open item) |
+| 3   | Book card                               | Description is formatted text with working links, not raw HTML   |
+| 4   | Cover tap                               | Lightbox opens, pinch-zooms, closes                              |
+| 5   | Search: `толстой`, `ВОЙНА`              | Finds by author and regardless of case                           |
+| 6   | Filter and sort sheet                   | Applies, and the list keeps its position afterwards              |
+
+_Readers_
+
+| #   | What                                | Looking for                                                           |
+| --- | ----------------------------------- | --------------------------------------------------------------------- |
+| 7   | EPUB: taps at the edges, middle tap | Pages turn; the middle tap toggles the chrome, a swipe never does     |
+| 8   | EPUB on Android                     | Chapter left, timer right, in line with Readium's own page counter    |
+| 9   | EPUB: bookmark, note on a selection | Both save; the note dialog is the cross-platform prompt, not iOS-only |
+| 10  | Comic: slider, zoom, direction      | Manga starts RTL; zoom does not fight the page turn                   |
+| 11  | Progress: read, leave, come back    | Resumes at the same page, in both readers                             |
+| 12  | Incognito on                        | Neither progress nor the reading timer moves                          |
+
+_Offline (E3)_
+
+| #   | What                                             | Looking for                                                      |
+| --- | ------------------------------------------------ | ---------------------------------------------------------------- |
+| 13  | Download an EPUB and a CBZ, then airplane mode   | Both open; the comic pages come from the archive on the device   |
+| 14  | Read offline, then go back online                | Progress syncs, **no** false conflict prompt                     |
+| 15  | Downloads screen                                 | Sizes add up; deleting frees the file                            |
+| 16  | An account with OFFLINE_READ but no DownloadFile | Can still take a book offline (server `test` / `test` on :10802) |
+
+_Clubs_
+
+| #   | What                                  | Looking for                                                            |
+| --- | ------------------------------------- | ---------------------------------------------------------------------- |
+| 17  | Open a discussion, scroll back a page | No message appears twice (this regressed once — `flattenMessagePages`) |
+| 18  | Send, edit, delete, react             | All four land; the composer keeps the draft if sending fails           |
+| 19  | Open a thread from a message          | Root message on top, replies below, same rules as above                |
+
+_Platform specifics_
+
+| #   | What                                       | Looking for                                                                               |
+| --- | ------------------------------------------ | ----------------------------------------------------------------------------------------- |
+| 20  | iPad: wide layout                          | Bubbles and lists pull in from the edges, nothing hugs the bezel                          |
+| 21  | Mac: the header buttons                    | Every one of them reacts to a **mouse** click (custom views do not — they must be native) |
+| 22  | Mac: window resize                         | Master/detail in Browse reflows, no clipped text                                          |
+| 23  | Android: back gesture out of a reader      | Leaves the reader, not the app                                                            |
+| 24  | Dark app theme while the OS is light       | Native chrome (tab bar, headers) stays dark                                               |
+| 25  | Deep link `noirpanther://reader/<id>` cold | Opens the book, not a blank page                                                          |
+| 26  | Stump compatibility toggle on              | Clubs tab gone, merge section gone, catalog still works                                   |
+
+**Known open items to look at while passing** (decide, then fix — do not fix blind):
+
+- Two club chat screens share ~70 % of their code; a fix can land in one and miss the other.
+- `books.tsx` and `downloads.tsx` force a large header title (including on Mac, where Browse turns
+  it off), the series list sets none. Compare rows 2 and 22 and pick one behaviour.
+- Android with the reading timer on: the footer layout has never been looked at.
 
 ## 4. Servers after deploying
 
