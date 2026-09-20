@@ -1,4 +1,5 @@
 import { Card, cn } from '@stump/components'
+import { useLocaleContext } from '@stump/i18n'
 import {
 	ColumnDef,
 	flexRender,
@@ -26,6 +27,7 @@ export default function MetadataEditorTable<Item extends RowData>({
 	items,
 	showMissing,
 }: Props<Item>) {
+	const { t } = useLocaleContext()
 	const table = useReactTable({
 		columns,
 		data: items,
@@ -180,7 +182,9 @@ export default function MetadataEditorTable<Item extends RowData>({
 					{!rows.length && (
 						<tr className="flex w-full">
 							<td colSpan={columns.length} className="flex-1">
-								<div className="h-32 flex w-full items-center justify-center">No Metadata</div>
+								<div className="h-32 flex w-full items-center justify-center">
+									{t('components.metadata.metadataEditor.MetadataEditorTable.noMetadata')}
+								</div>
 							</td>
 						</tr>
 					)}

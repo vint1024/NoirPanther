@@ -25,31 +25,31 @@ export default function LocalePreferences() {
 			>
 				<Languages />
 				<AlertTitle>{t(getKey('contribute'))}</AlertTitle>
-				<AlertDescription className="flex flex-row items-start justify-between">
-					{t(getKey('contributeIfAble'))}
+				<AlertDescription className="gap-3 md:flex-row md:items-center md:justify-between flex flex-col">
+					<span>{t(getKey('contributeIfAble'))}</span>
+
+					<div className="gap-x-2 md:self-center flex shrink-0 flex-row self-start">
+						<Button
+							variant="ghost"
+							className="hover:bg-black/15"
+							onClick={() => {
+								dismissAlert('contribute-to-translations')
+								setDidDismiss(true)
+							}}
+						>
+							{t(getKey('noThanks'))}
+						</Button>
+
+						<ButtonOrLink
+							href="https://hosted.weblate.org/engage/stump/"
+							target="_blank"
+							rel="noopener noreferrer"
+							variant="outline"
+						>
+							{t(getKey('contribute'))}
+						</ButtonOrLink>
+					</div>
 				</AlertDescription>
-
-				<div className="md:right-10 gap-x-2 md:absolute ml-4 mt-2 flex flex-row self-center">
-					<Button
-						variant="ghost"
-						className="hover:bg-black/15"
-						onClick={() => {
-							dismissAlert('contribute-to-translations')
-							setDidDismiss(true)
-						}}
-					>
-						{t(getKey('noThanks'))}
-					</Button>
-
-					<ButtonOrLink
-						href="https://hosted.weblate.org/engage/stump/"
-						target="_blank"
-						rel="noopener noreferrer"
-						variant="outline"
-					>
-						{t(getKey('contribute'))}
-					</ButtonOrLink>
-				</div>
 			</Alert>
 
 			<LocaleSelector />

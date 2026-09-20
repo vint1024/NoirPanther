@@ -212,7 +212,7 @@ export default function JobTable() {
 							</Badge>
 						)
 					},
-					header: 'Status',
+					header: t(`${LOCALE_BASE}.columns.status`),
 					id: 'status',
 				}),
 				columnHelper.display({

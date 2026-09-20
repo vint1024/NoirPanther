@@ -21,7 +21,13 @@ export default function ReadMore({ text, muted }: Props) {
 	const [showingAll, { toggle }] = useBoolean(false)
 	const contentId = useId()
 
-	const resolvedText = text ? text : DEBUG_ENV ? DEBUG_FAKE_TEXT : ''
+	// Book descriptions come from file metadata and are often indented HTML (Standard Ebooks
+	// ships `\n\t\t\t<p>…`). Markdown reads an indented line as a CODE BLOCK, so the tags were
+	// printed verbatim instead of being rendered — strip the leading indentation first.
+	const resolvedText = useMemo(() => {
+		const raw = text ? text : DEBUG_ENV ? DEBUG_FAKE_TEXT : ''
+		return raw.replace(/^[ \t]+/gm, '')
+	}, [text])
 	const canReadMore = resolvedText.length > 250
 	const markdownClassName = useMemo(() => cn({ 'opacity-80': muted }), [muted])
 

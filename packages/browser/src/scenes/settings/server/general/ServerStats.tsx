@@ -2,6 +2,7 @@ import { useSuspenseGraphQL } from '@stump/client'
 import { formatBytesSeparate } from '@stump/client'
 import { STAT_COLORS, StatCard, StatCardProps } from '@stump/components'
 import { graphql } from '@stump/graphql'
+import { useLocaleContext } from '@stump/i18n'
 import { Book, HardDrive, Layers, Library } from 'lucide-react'
 
 import { useTheme } from '@/hooks/useTheme'
@@ -16,6 +17,7 @@ const query = graphql(`
 `)
 
 export default function ServerStats() {
+	const { t } = useLocaleContext()
 	const { data } = useSuspenseGraphQL(query, ['serverStats'])
 	const { isDarkVariant } = useTheme()
 
@@ -23,21 +25,21 @@ export default function ServerStats() {
 
 	const stats: StatCardProps[] = [
 		{
-			label: 'Libraries',
+			label: t(getKey('libraries')),
 			value: data.numberOfLibraries,
 			icon: Library,
 			colors: STAT_COLORS.system,
 			countUp: true,
 		},
 		{
-			label: 'Series',
+			label: t(getKey('series')),
 			value: data.numberOfSeries,
 			icon: Layers,
 			colors: STAT_COLORS.series,
 			countUp: true,
 		},
 		{
-			label: 'Books',
+			label: t(getKey('books')),
 			value: data.mediaCount,
 			icon: Book,
 			colors: STAT_COLORS.books,
@@ -46,7 +48,7 @@ export default function ServerStats() {
 		...(diskUsage
 			? [
 					{
-						label: 'Disk usage',
+						label: t(getKey('diskUsage')),
 						value: diskUsage.value,
 						suffix: diskUsage.unit,
 						icon: HardDrive,
@@ -65,3 +67,5 @@ export default function ServerStats() {
 		</div>
 	)
 }
+
+const getKey = (key: string) => `scenes.settings.server.general.ServerStats.${key}`

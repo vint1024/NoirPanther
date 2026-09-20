@@ -2122,7 +2122,8 @@
 					"publicUrl": {
 						"label": "Public URL",
 						"description": "The URL that your server is accessible from outside your network",
-						"updateFailed": "Failed to update the URL"
+						"updateFailed": "Failed to update the URL",
+						"updateSuccess": "Public URL updated"
 					}
 				},
 				"helpfulLinks": {
