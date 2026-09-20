@@ -83,7 +83,8 @@ impl SeriesMutation {
 				);
 			}
 		}
-		if let Err(error) = remove_thumbnails(&[series.id.clone()], &thumbnails_dir).await
+		if let Err(error) =
+			remove_thumbnails(std::slice::from_ref(&series.id), &thumbnails_dir).await
 		{
 			tracing::error!(?error, "Failed to remove thumbnail for deleted series");
 		}
@@ -336,7 +337,7 @@ impl SeriesMutation {
 			.iter()
 			.map(|id| id.to_string())
 			.collect::<Vec<_>>();
-		if source_ids.contains(&target_id.to_string()) {
+		if source_ids.contains(&target_id) {
 			return Err("A series cannot be merged into itself".into());
 		}
 

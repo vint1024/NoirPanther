@@ -305,7 +305,7 @@ pub async fn validate_api_key(
 		},
 	};
 
-	Ok(attach_content_rules(conn, constructed_user).await?)
+	attach_content_rules(conn, constructed_user).await
 }
 
 /// A function to handle bearer token authentication. This function will verify the token and

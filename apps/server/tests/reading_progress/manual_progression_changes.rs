@@ -651,7 +651,7 @@ async fn test_accept_local_progress_splices_history_from_ancestor() {
 		.expect("db error");
 	assert_eq!(remote_sessions.len(), 3); // pre-ancestor, ancestor, and new local progress
 
-	let og_conflicting_ids = vec![conflicting_session_1.id, conflicting_session_2.id];
+	let og_conflicting_ids = [conflicting_session_1.id, conflicting_session_2.id];
 	assert!(remote_sessions
 		.iter()
 		.all(|session| !og_conflicting_ids.contains(&session.id)));

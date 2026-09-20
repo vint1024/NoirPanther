@@ -643,7 +643,7 @@ mod tests {
 		let sender = MockEmailerSender { is_error: true };
 
 		let (records, errors) =
-			send_attachments(&user, &emailer, &vec![book], &recipients, &sender)
+			send_attachments(&user, &emailer, &[book], &recipients, &sender)
 				.await
 				.unwrap();
 
@@ -666,7 +666,7 @@ mod tests {
 		let sender = MockEmailerSender { is_error: false };
 
 		let (records, errors) =
-			send_attachments(&user, &emailer, &vec![book], &recipients, &sender)
+			send_attachments(&user, &emailer, &[book], &recipients, &sender)
 				.await
 				.unwrap();
 

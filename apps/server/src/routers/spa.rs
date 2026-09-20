@@ -37,7 +37,9 @@ const DIST: &str = "/dist";
 /// blob: frames of its own, which is why `frame-src` allows `self` and `blob:` rather than
 /// nothing at all. `unsafe-inline` stays because index.html boots with an inline script and
 /// the styles are injected at runtime — script injection is already prevented in the renderer.
-fn security_headers() -> tower::layer::util::Stack<
+/// The stack of three `SetResponseHeaderLayer`s, spelled out because `ServiceBuilder` types are
+/// built by nesting.
+type SecurityHeaders = tower::layer::util::Stack<
 	SetResponseHeaderLayer<HeaderValue>,
 	tower::layer::util::Stack<
 		SetResponseHeaderLayer<HeaderValue>,
@@ -46,7 +48,9 @@ fn security_headers() -> tower::layer::util::Stack<
 			tower::layer::util::Identity,
 		>,
 	>,
-> {
+>;
+
+fn security_headers() -> SecurityHeaders {
 	// The readers build their content locally — EPUB pages are blob: frames with blob:
 	// stylesheets, PDF rendering runs in a blob: worker — so same-origin blob: and data: are
 	// allowed for every resource type they touch. What stays closed is what an injected

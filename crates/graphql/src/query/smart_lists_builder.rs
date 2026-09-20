@@ -345,7 +345,7 @@ mod tests {
 		.insert(&db)
 		.await;
 
-		let should_exclude_ids = vec![
+		let should_exclude_ids = [
 			stinky_book.id,
 			another_stinky_book.id,
 			okay_name_but_stinky_size.id,

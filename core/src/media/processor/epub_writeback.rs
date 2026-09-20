@@ -236,10 +236,10 @@ fn rewrite_opf(
 					skipping_depth += 1;
 				} else if inside_metadata
 					&& (is_replaced_element(writeback, &local)
-						|| (local == b"meta" && is_replaced_meta(writeback, &tag))
-						|| is_refines_to_dropped(&tag, &dropped_ids))
+						|| (local == b"meta" && is_replaced_meta(writeback, tag))
+						|| is_refines_to_dropped(tag, &dropped_ids))
 				{
-					if let Some(id) = element_id(&tag) {
+					if let Some(id) = element_id(tag) {
 						dropped_ids.insert(id);
 					}
 					skipping_depth = 1;
@@ -257,10 +257,10 @@ fn rewrite_opf(
 				let replaced = inside_metadata
 					&& skipping_depth == 0
 					&& (is_replaced_element(writeback, &local)
-						|| (local == b"meta" && is_replaced_meta(writeback, &tag))
-						|| is_refines_to_dropped(&tag, &dropped_ids));
+						|| (local == b"meta" && is_replaced_meta(writeback, tag))
+						|| is_refines_to_dropped(tag, &dropped_ids));
 				if replaced {
-					if let Some(id) = element_id(&tag) {
+					if let Some(id) = element_id(tag) {
 						dropped_ids.insert(id);
 					}
 				} else if skipping_depth == 0 {

@@ -398,9 +398,9 @@ fn combined_filter(rules: &[Model], levels: &[MatchLevel]) -> Option<Condition> 
 /// Build the media-level filter for a set of rules. Assumes the query joins
 /// `series` (inner) and `series_metadata` (left), as
 /// `media::Entity::find_for_user` does — the media side is matched through
-/// self-contained subqueries. Tags are matched with inheritance (own + series
-/// + library); genre/publisher match the book's own metadata or, when
-/// inherited, its series metadata
+/// self-contained subqueries. Tags are matched with inheritance (the book's own
+/// tags, plus the series' and the library's); genre and publisher match the
+/// book's own metadata or, when inherited, its series metadata
 pub fn media_filter(rules: &[Model]) -> Option<Condition> {
 	combined_filter(
 		rules,

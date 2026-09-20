@@ -483,7 +483,7 @@ mod tests {
 		let cbz_file = fs::File::open(&cbz_path).expect("failed to open CBZ");
 		let cbz_archive =
 			zip::ZipArchive::new(cbz_file).expect("failed to read CBZ archive");
-		assert!(cbz_archive.len() > 0, "should contain at least one entry");
+		assert!(!cbz_archive.is_empty(), "should contain at least one entry");
 	}
 
 	#[test]

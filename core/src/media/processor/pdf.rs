@@ -755,7 +755,7 @@ mod tests {
 
 		let result = processor.generate_stump_hash(path);
 		assert!(result.is_ok());
-		assert!(result.unwrap().len() > 0);
+		assert!(!result.unwrap().is_empty());
 	}
 
 	#[test]
