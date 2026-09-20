@@ -40,6 +40,7 @@ mod m20260816_000000_drop_legacy_epubcfi;
 mod m20260830_015110_oneshots;
 mod m20260911_000000_pg_book_club_role_text;
 mod m20260919_000000_media_metadata_reading_direction;
+mod m20260920_000000_pg_device_key_created_at_tz;
 
 pub struct Migrator;
 
@@ -86,6 +87,7 @@ impl MigratorTrait for Migrator {
 			Box::new(m20260830_015110_oneshots::Migration),
 			Box::new(m20260911_000000_pg_book_club_role_text::Migration),
 			Box::new(m20260919_000000_media_metadata_reading_direction::Migration),
+			Box::new(m20260920_000000_pg_device_key_created_at_tz::Migration),
 		]
 	}
 }
