@@ -94,3 +94,22 @@ editing, search-by-author, offline encryption E2/E3, OPDS, book clubs, themes.
 **Audit method:** for each ⏳ item, confirm the key symbol/file exists in current
 tree AND is wired/rendered (not just present-but-orphaned, like B10). After the
 v0.1.5 merge the failure mode is "took theirs" → our addition reverted.
+
+## Upstream merge — Stump v0.1.9 (2026-09-20)
+
+- **A30/A32/A33 handed over to upstream.** Stump 0.1.8 fixed the four holes this fork reported,
+  with 12 integration tests; their versions are what we now ship (they also let `MANAGE_USERS`
+  holders administer other users and protect the server owner). Our A31 (content rules hide
+  BOOKS) is fork-only and stays, guarded by `visibility_filters_are_applied`.
+- **A20 handed over too**: upstream's `cache_friendly_url` replaced our `?v=` thumbnail URLs.
+- **New in the fork:** `StumpConfig::load` strips settings a build no longer knows (0.1.9 dropped
+  `profile`, and the strict loader refused to start on every existing `Stump.toml`). Extend
+  `REMOVED_SETTINGS` whenever upstream removes a field.
+- **Web fixes after the merge:** localization re-applied to the rewritten server stats / jobs table
+  / metadata table; the translations alert no longer positions its buttons over the text; book
+  descriptions are de-indented before Markdown (indented HTML was rendered as a code block).
+- **Where fork code moved (core reorg #1424):** metadata → `core/src/metadata/media.rs`, EPUB
+  collections and writeback → `core/src/media/processor/`, cover placeholder → `core/src/image/`,
+  writeback job → `core/src/metadata/provider/`, job registration → `core/src/job/dispatch.rs`.
+- **Test DB:** fork tables (content rules, library paths, series merges) are created in
+  `crates/tests/src/db.rs`, without which upstream's new user tests fail with "no such table".
