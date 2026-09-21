@@ -200,6 +200,20 @@ _Clubs_
 | 18  | Send, edit, delete, react             | All four land; the composer keeps the draft if sending fails           |
 | 19  | Open a thread from a message          | Root message on top, replies below, same rules as above                |
 
+_Screens that are easy to forget_ (every one of these was missed on the 2026-09-21 pass and then
+found to have changed — they are reached through a menu or a rarely-used path, so a "click around
+the app" sweep never lands on them)
+
+| #   | What                                             | Looking for                                                                 |
+| --- | ------------------------------------------------ | --------------------------------------------------------------------------- |
+| 20  | Club with no current book → "Add a book", search | Cover and title on ONE row with spacing, not stacked                        |
+| 21  | Series → edit → "Merge series", type a name      | Candidates are a bordered card of padded rows, each with its own background |
+| 22  | Book → edit metadata, scroll to the tag fields   | Every field has its "+" button; genre chips carry a ✕                       |
+| 23  | Browse → Files, two levels down                  | Breadcrumb reads "Root › Folder"; rows keep their padding                   |
+| 24  | Book → "..." menu                                | Every entry translated; "Go to series" lands on the series                  |
+| 25  | Browse → OPDS catalogs (with none added)         | The add form and the empty state, both translated                           |
+| 26  | Reader → contents/bookmarks sheet                | Rows are full height, the bin button is reachable                           |
+
 _Platform specifics_
 
 | #   | What                                       | Looking for                                                                               |
