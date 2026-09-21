@@ -107,6 +107,25 @@ sitting on top of buttons.
 
 ## 3. Mobile app (iOS / iPadOS / Android / Mac)
 
+**Before you touch any device, three checks that cost a minute and save an evening:**
+
+1. **Android: is the installed app a debug build?** A release APK carries its own JS bundle and
+   never talks to Metro, so nothing you edit shows up and you end up testing last month's code.
+   ```bash
+   adb shell dumpsys package in.kuvshinov.noirpanther | grep -E "flags=|versionName"
+   ```
+   `flags=0x0` with no `DEBUGGABLE` means release. Install a debug build instead:
+   `cd android && JAVA_HOME=$JDK17 ./gradlew --no-daemon :app:assembleDebug` then
+   `adb install -r app/build/outputs/apk/debug/app-debug.apk`.
+2. **Mac: bring the window to the front first** (`osascript -e 'tell application id "in.kuvshinov.noirpanther" to activate'`).
+   An inactive Catalyst window draws no toolbar items and takes no synthesised clicks — both look
+   exactly like a broken build.
+3. **Native header items and tab bars do not survive Fast Refresh.** Judge them only after a clean
+   app restart.
+
+Also: do not run the Android emulator while an Xcode build is going. The emulator loses its CPU
+thread and dies ("hanging thread QEMU2 CPU0"), or wedges with an ANR.
+
 **Devices and how to drive them** (UDIDs and the rest: memory `environment-and-test-creds`):
 
 | Device                  | UDID                                   | When                           |
