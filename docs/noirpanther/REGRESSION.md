@@ -30,7 +30,7 @@ TEST_DATABASE_URL=postgresql://stump:stump-local@localhost:15432/stump \
 #     "select datname from pg_database where datname like 'stump_test_%'"
 
 # app: pure logic (page order, description parsing, server timestamps)
-cd ../../../noirpanther && yarn test                      # 52 tests
+cd ../../../noirpanther && yarn test                      # 68 tests
 
 # web: 293 tests
 yarn workspace @stump/browser test
