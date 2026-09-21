@@ -185,34 +185,40 @@ _Readers_
 
 _Offline (E3)_
 
-| #   | What                                             | Looking for                                                                                         |
-| --- | ------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
-| 13  | Download an EPUB and a CBZ, then airplane mode   | Both open; the comic pages come from the archive on the device                                      |
-| 14  | Read offline, then go back online                | Progress syncs, **no** false conflict prompt                                                        |
-| 15  | Downloads screen                                 | Sizes add up; deleting frees the file                                                               |
-| 16  | An account with OFFLINE_READ but no DownloadFile | Can still take a book offline. Make that account on the LOCAL stand — never test against production |
+| #   | What                                             | Looking for                                                                                                                                                                                                                    |
+| --- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 13  | Download an EPUB and a CBZ, then airplane mode   | Both open; the comic pages come from the archive on the device                                                                                                                                                                 |
+| 14  | Read offline, then go back online                | Progress syncs, **no** false conflict prompt                                                                                                                                                                                   |
+| 15  | Downloads screen                                 | Sizes add up; deleting frees the file                                                                                                                                                                                          |
+| 16  | An account with OFFLINE_READ but no DownloadFile | Can still take a book offline. Make that account on the LOCAL stand — never test against production                                                                                                                            |
+| 17  | Two accounts, one device                         | Download under `cat`, log out, log in as `test`: Downloads is EMPTY and `noirpanther://reader/<that book id>` does NOT open it. Back as `cat`: everything is there, at the same page. A download is private to whoever made it |
+| 18  | Stop the server, cold-start the app              | The owner still sees and reads their downloads (the cached user keeps them). Log OUT and they are hidden — that is the rule, not a bug                                                                                         |
 
 _Clubs_
 
 | #   | What                                  | Looking for                                                            |
 | --- | ------------------------------------- | ---------------------------------------------------------------------- |
-| 17  | Open a discussion, scroll back a page | No message appears twice (this regressed once — `flattenMessagePages`) |
-| 18  | Send, edit, delete, react             | All four land; the composer keeps the draft if sending fails           |
-| 19  | Open a thread from a message          | Root message on top, replies below, same rules as above                |
+| 19  | Open a discussion, scroll back a page | No message appears twice (this regressed once — `flattenMessagePages`) |
+| 20  | Send, edit, delete, react             | All four land; the composer keeps the draft if sending fails           |
+| 21  | Open a thread from a message          | Root message on top, replies below, same rules as above                |
 
 _Screens that are easy to forget_ (every one of these was missed on the 2026-09-21 pass and then
 found to have changed — they are reached through a menu or a rarely-used path, so a "click around
 the app" sweep never lands on them)
 
-| #   | What                                             | Looking for                                                                 |
-| --- | ------------------------------------------------ | --------------------------------------------------------------------------- |
-| 20  | Club with no current book → "Add a book", search | Cover and title on ONE row with spacing, not stacked                        |
-| 21  | Series → edit → "Merge series", type a name      | Candidates are a bordered card of padded rows, each with its own background |
-| 22  | Book → edit metadata, scroll to the tag fields   | Every field has its "+" button; genre chips carry a ✕                       |
-| 23  | Browse → Files, two levels down                  | Breadcrumb reads "Root › Folder"; rows keep their padding                   |
-| 24  | Book → "..." menu                                | Every entry translated; "Go to series" lands on the series                  |
-| 25  | Browse → OPDS catalogs (with none added)         | The add form and the empty state, both translated                           |
-| 26  | Reader → contents/bookmarks sheet                | Rows are full height, the bin button is reachable                           |
+| #   | What                                              | Looking for                                                                                                                                                                                                 |
+| --- | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 22  | Club with no current book → "Add a book", search  | Cover and title on ONE row with spacing, not stacked                                                                                                                                                        |
+| 23  | Series → edit → "Merge series", type a name       | Candidates are a bordered card of padded rows, each with its own background                                                                                                                                 |
+| 24  | Book → edit metadata, scroll to the tag fields    | Every field has its "+" button; genre chips carry a ✕                                                                                                                                                       |
+| 25  | Browse → Files, two levels down                   | Breadcrumb reads "Root › Folder"; rows keep their padding                                                                                                                                                   |
+| 26  | Book → "..." menu                                 | Every entry translated; "Go to series" lands on the series                                                                                                                                                  |
+| 27  | Browse → OPDS catalogs (with none added)          | The add form and the empty state, both translated                                                                                                                                                           |
+| 28  | Reader → contents/bookmarks sheet                 | Rows are full height, the bin button is reachable                                                                                                                                                           |
+| 29  | Settings → server row → pencil → Save             | Saves and returns. On Android this killed the process outright until 2026-09-21 (a store write during the pop) — check logcat has no `addViewAt`. Do it twice: with a changed name and with nothing changed |
+| 30  | Settings → the same form → switch Login ↔ API key | The session re-authenticates (that is what `authKey` is for) and the catalog still loads; switching back restores the login form                                                                            |
+| 31  | Search for a title as it is SHOWN on screen       | e.g. `sunday` finds "Sunday pages 1906", whose file is named "Little Nemo…". Search reads the metadata title, not just the file name                                                                        |
+| 32  | Settings → Data usage                             | Totals count only the signed-in person's downloads, and "clear" frees their files                                                                                                                           |
 
 _Platform specifics_
 
