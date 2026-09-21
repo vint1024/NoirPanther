@@ -30,16 +30,16 @@ TEST_DATABASE_URL=postgresql://stump:stump-local@localhost:15432/stump \
 #     "select datname from pg_database where datname like 'stump_test_%'"
 
 # app: pure logic (page order, description parsing, server timestamps)
-cd ../../../noirpanther && yarn test
+cd ../../../noirpanther && yarn test                      # 52 tests
 
-# web: 289 tests
+# web: 293 tests
 yarn workspace @stump/browser test
 cd packages/browser && npx tsc -b tsconfig.json
 npx eslint packages/browser/src packages/components/src --quiet
 
 # the client's GraphQL documents against the server schema, and against a running server
 cd ../../../noirpanther
-node scripts/compat/check-schema.cjs                       # 63 documents, 7 fork-only
+node scripts/compat/check-schema.cjs                       # 62 documents, 7 fork-only
 node scripts/compat/live.cjs http://localhost:10912 cat cattest12345    # 64/64
 ```
 
@@ -58,11 +58,11 @@ python3 .build-logs/chunk_cycles.py apps/web/dist/assets    # expect "cycles 0"
 
 Three fork features have no automated test and will not get one cheaply. Each is a few minutes:
 
-| Feature                              | How to check it                                                                                                                                                                                                                                                                                                                                  |
-| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **A14** memory bounding              | Watch `docker stats` during a scan that is happening anyway (a release rescan, or a big library on the local stand). RSS should plateau in the hundreds of MB rather than climb until the container is killed; compare with the previous release's figure in `.build-logs/STATUS.md`. Do not start a production rescan just to measure this.     |
-| **A21** a library root that vanished | On `:10912`, rename one of a library's folders on disk, run a scan, and look at the library's books: they must be marked missing, not deleted, and not silently kept as present. Rename the folder back, scan again: they come back. The old scan harness in `core/integration-tests` predates the sea-orm rewrite, which is why this is manual. |
-| **A20** versioned thumbnail URLs     | Open a book page in the browser, note the cover URL carries `?last_modified=…`, regenerate the series thumbnail, reload: the value must change and the new cover must show without a hard refresh.                                                                                                                                               |
+| Feature                              | How to check it                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **A14** memory bounding              | Watch `docker stats` during a scan that is happening anyway (a release rescan, or a big library on the local stand). RSS should plateau in the hundreds of MB rather than climb until the container is killed; compare with the previous release's figure in `.build-logs/STATUS.md`. Do not start a production rescan just to measure this.                                                                                                                                                                           |
+| **A21** a library root that vanished | On `:10912`, rename one of a library's folders on disk, run a scan, and look at the library's books: they must be marked missing, not deleted, and not silently kept as present. Rename the folder back, scan again: they come back. 🔴 The renamed folder also leaves a phantom series behind (the scanner sees a new folder as a new series) — delete it afterwards, or the stand keeps duplicate books. The old scan harness in `core/integration-tests` predates the sea-orm rewrite, which is why this is manual. |
+| **A20** versioned thumbnail URLs     | Open a book page in the browser, note the cover URL carries `?last_modified=…`, regenerate the series thumbnail, reload: the value must change and the new cover must show without a hard refresh.                                                                                                                                                                                                                                                                                                                     |
 
 Everything else the fork adds has a test; the map of which test guards which feature is in
 `FORK_BACKLOG.md`.
@@ -232,12 +232,16 @@ _Platform specifics_
 | 25  | Deep link `noirpanther://reader/<id>` cold | Opens the book, not a blank page                                                          |
 | 26  | Stump compatibility toggle on              | Clubs tab gone, merge section gone, catalog still works                                   |
 
-**Known open items to look at while passing** (decide, then fix — do not fix blind):
+**Known open items** — none. All three that stood here were closed on 2026-09-21 and are kept
+below so nobody re-opens them from memory:
 
-- Two club chat screens share ~70 % of their code; a fix can land in one and miss the other.
-- `books.tsx` and `downloads.tsx` force a large header title (including on Mac, where Browse turns
-  it off), the series list sets none. Compare rows 2 and 22 and pick one behaviour.
-- Android with the reading timer on: the footer layout has never been looked at.
+- The two club chat screens shared ~70 % of their code. The composer is now one component
+  (`components/bookclubs/ChatComposer`) and the page flattening is shared, which is what the
+  duplicate-message bug actually rode on; the screens are down from 438/357 to 310/264 lines.
+- The large header title of the list screens is now one definition (`lib/nav/screenOptions`,
+  `listScreenOptions`), so books / series / downloads cannot drift apart again.
+- Android with the reading timer on: looked at, and the footer is right — chapter left,
+  Readium's own counter in the middle, timer on the right, one line, nothing overlapping.
 
 ## 4. Servers after deploying
 
