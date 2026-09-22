@@ -17,8 +17,8 @@ use sea_orm::{ConnectionTrait, Database, DbBackend, DbConn, DbErr, Schema};
 /// ```
 ///
 /// It matters because production runs PostgreSQL and the suite otherwise only ever exercises
-/// SQLite — the very fixes that exist *because* Postgres behaves differently (A17/A18/A19 in
-/// FORK_BACKLOG) were tested by hand and by nothing else.
+/// SQLite — the very fixes that exist *because* Postgres behaves differently were tested by
+/// hand and by nothing else.
 pub const TEST_DATABASE_URL: &str = "TEST_DATABASE_URL";
 
 /// How long a leftover test database may live before another run reclaims it. Databases are

@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 """Authorization regression check for a NoirPanther server (run it against a TEST server).
 
-    python3 scripts/noirpanther/authz_check.py http://localhost:10912 \\
-        --owner cat:cattest12345 --user dog:dogtest12345 [--outsider panther_m0:memberpass123]
+    python3 scripts/noirpanther/authz_check.py <server-url> \\
+        --owner <name>:<password> --user <name>:<password> [--outsider <name>:<password>]
+
+`--owner` is a server owner, `--user` a plain account the checks may reshape, and the optional
+`--outsider` somebody who belongs to no book club. Use throwaway accounts on a test server:
+the run rewrites the regular user's permissions, age restriction and content rules.
 
 Covers the holes closed in 0.1.7-r4 (all of them upstream Stump behaviour, or upstream-merge
 fallout): self-service privilege escalation through updateViewer / updateUser, per-user

@@ -749,7 +749,7 @@ async fn update_user(
 	} else {
 		// NoirPanther: upstream silently ignores privileged fields a caller may not set.
 		// Keep a signal in the log — this is exactly the shape of a privilege-escalation
-		// attempt (see FORK_BACKLOG A30, fixed upstream in 0.1.8+).
+		// attempt (fixed upstream in 0.1.8+).
 		let requested =
 			PermissionSet::new(input.permissions.clone()).resolve_into_string();
 		let current =
