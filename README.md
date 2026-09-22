@@ -47,7 +47,7 @@ Registry — no login required:
 | --------------------------------------- | --------------------------------------------------------------- |
 | `ghcr.io/vint1024/noirpanther:latest`   | the newest release                                              |
 | `ghcr.io/vint1024/noirpanther:0.1.9`    | the newest fork revision built on Stump 0.1.9                   |
-| `ghcr.io/vint1024/noirpanther:0.1.9-r3` | exactly this release (pinned — updates only when you change it) |
+| `ghcr.io/vint1024/noirpanther:0.1.9-r4` | exactly this release (pinned — updates only when you change it) |
 
 ### With the built-in SQLite database
 
@@ -187,8 +187,8 @@ for the details:
 
 ## Versioning and updates
 
-Releases are numbered **`<Stump version>-r<N>`**: `0.1.9-r3` is built from Stump `0.1.9`, and `r3`
-is the third fork revision on top of it. So the first half tells you which Stump you are getting.
+Releases are numbered **`<Stump version>-r<N>`**: `0.1.9-r4` is built from Stump `0.1.9`, and `r4`
+is the fourth fork revision on top of it. So the first half tells you which Stump you are getting.
 
 The server checks this repository's releases and tells the owner in **Settings → Server → General**
 when a newer one exists.
