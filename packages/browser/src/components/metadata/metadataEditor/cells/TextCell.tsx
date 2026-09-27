@@ -20,8 +20,8 @@ export default function TextCell<Field extends string>({
 	isLong,
 	isMonoText,
 }: Props<Field>) {
-	const { t } = useLocaleContext()
 	const form = useFormContext()
+	const { t } = useLocaleContext()
 
 	const { isEditing, isFieldLocked } = useMetadataEditorContext()
 
@@ -41,12 +41,12 @@ export default function TextCell<Field extends string>({
 					{...form.register(binding)}
 				/>
 
-				<ToolTip content={t('components.metadata.metadataEditor.cells.TextCell.resetField')}>
+				<ToolTip content={t('metadataEditor.actions.resetField')}>
 					<Button
 						variant="destructive"
 						size="icon"
 						className="h-4 w-4 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
-						aria-label={t('components.metadata.metadataEditor.cells.TextCell.resetField')}
+						aria-label={t('metadataEditor.actions.resetField')}
 						// @ts-expect-error: Null is fine to reset it here. form.resetField didn't quite work as expected
 						onClick={() => form.setValue(binding, null)}
 					>

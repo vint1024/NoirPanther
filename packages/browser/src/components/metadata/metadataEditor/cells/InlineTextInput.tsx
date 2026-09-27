@@ -2,8 +2,6 @@ import { Button, cn, Input, TextArea, ToolTip } from '@stump/components'
 import { useLocaleContext } from '@stump/i18n'
 import { Minus } from 'lucide-react'
 
-const RESET_KEY = 'components.metadata.metadataEditor.cells.NumberCell.resetField'
-
 type Props = {
 	value: string | null | undefined
 	onChange: (value: string | null) => void
@@ -37,12 +35,12 @@ export default function InlineTextInput({
 				{...(isLong ? {} : { size })}
 			/>
 
-			<ToolTip content={t(RESET_KEY)}>
+			<ToolTip content={t('metadataEditor.actions.resetField')}>
 				<Button
 					variant="destructive"
 					size="icon"
 					className="h-4 w-4 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
-					aria-label={t(RESET_KEY)}
+					aria-label={t('metadataEditor.actions.resetField')}
 					onClick={() => onChange(null)}
 				>
 					<Minus className="h-3 w-3" />

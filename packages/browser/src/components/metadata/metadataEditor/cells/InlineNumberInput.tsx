@@ -4,8 +4,6 @@ import { Minus } from 'lucide-react'
 
 import type { NumberValidation } from '../../fieldDefs'
 
-const RESET_KEY = 'components.metadata.metadataEditor.cells.NumberCell.resetField'
-
 type Props = {
 	value: number | null | undefined
 	onChange: (value: number | null) => void
@@ -39,12 +37,12 @@ export default function InlineNumberInput({
 				}}
 			/>
 
-			<ToolTip content={t(RESET_KEY)}>
+			<ToolTip content={t('metadataEditor.actions.resetField')}>
 				<Button
 					variant="destructive"
 					size="icon"
 					className="h-4 w-4 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
-					aria-label={t(RESET_KEY)}
+					aria-label={t('metadataEditor.actions.resetField')}
 					onClick={() => onChange(null)}
 				>
 					<Minus className="h-3 w-3" />

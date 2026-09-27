@@ -1016,6 +1016,10 @@
 		},
 		"addFields": {
 			"description": "Каждое значение — на отдельной строке"
+		},
+		"actions": {
+			"removeItem": "Удалить элемент",
+			"resetField": "Сбросить поле"
 		}
 	},
 	"metadataMatching": {
