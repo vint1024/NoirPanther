@@ -43,11 +43,11 @@ handful of features on top. Everything Stump does, it does.
 Multi-arch images (`linux/amd64`, `linux/arm64`) are published to the GitHub Container
 Registry — no login required:
 
-| Tag                                     | What you get                                                    |
-| --------------------------------------- | --------------------------------------------------------------- |
-| `ghcr.io/vint1024/noirpanther:latest`   | the newest release                                              |
-| `ghcr.io/vint1024/noirpanther:0.1.9`    | the newest fork revision built on Stump 0.1.9                   |
-| `ghcr.io/vint1024/noirpanther:0.1.9-r4` | exactly this release (pinned — updates only when you change it) |
+| Tag                                      | What you get                                                    |
+| ---------------------------------------- | --------------------------------------------------------------- |
+| `ghcr.io/vint1024/noirpanther:latest`    | the newest release                                              |
+| `ghcr.io/vint1024/noirpanther:0.1.10`    | the newest fork revision built on Stump 0.1.10                  |
+| `ghcr.io/vint1024/noirpanther:0.1.10-r1` | exactly this release (pinned — updates only when you change it) |
 
 ### With the built-in SQLite database
 
@@ -163,7 +163,8 @@ docker compose pull && docker compose up -d
 - **Metadata written back into EPUB files** (opt-in), with an editor in the web app
 - **Better metadata out of files** — clean titles from multi-title EPUBs, real series from EPUB 3
   collections, comic languages, and manga that opens right-to-left by itself
-- **Book clubs** — enabled and built to work with large clubs
+- **Book clubs** — enabled and built to work with large clubs; people join by accepting an
+  invitation, never by being added
 - **PostgreSQL-ready** — the upstream queries that only worked on SQLite are fixed, and there is a
   script to move an existing SQLite database over
 - **Sign-in throttling that cannot be weaponised** — a run of wrong passwords blocks that address
@@ -187,8 +188,8 @@ for the details:
 
 ## Versioning and updates
 
-Releases are numbered **`<Stump version>-r<N>`**: `0.1.9-r4` is built from Stump `0.1.9`, and `r4`
-is the fourth fork revision on top of it. So the first half tells you which Stump you are getting.
+Releases are numbered **`<Stump version>-r<N>`**: `0.1.10-r1` is built from Stump `0.1.10`, and
+`r1` is the first fork revision on top of it. So the first half tells you which Stump you are getting.
 
 The server checks this repository's releases and tells the owner in **Settings → Server → General**
 when a newer one exists.

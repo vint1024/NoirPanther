@@ -114,7 +114,17 @@ impl Entity {
 			Some(
 				book_club::Column::Id.in_subquery(
 					Self::subquery_for_user(user)
-						.and_where(book_club_member::Column::Role.gte::<i32>(role as i32))
+						// NoirPanther: roles are stored by name ('ADMIN'), so upstream's
+						// `role >= 2` compared text with a number — PostgreSQL refused it
+						// ("operator does not exist: text >= integer") and SQLite, where any
+						// text sorts above any number, let every member through as an admin.
+						// Match the roles that rank at least `role` instead.
+						.and_where(
+							book_club_member::Column::Role.is_in(
+								<BookClubMemberRole as sea_orm::Iterable>::iter()
+									.filter(|r| *r >= role),
+							),
+						)
 						.to_owned(),
 				),
 			)
@@ -241,7 +251,8 @@ mod tests {
 		let select =
 			Entity::find_for_member_enforce_role(&user, BookClubMemberRole::Moderator);
 		let stmt_str = select_no_cols_to_string(select);
-		assert_eq!(stmt_str, r#"SELECT  FROM "book_clubs" WHERE "book_clubs"."id" IN (SELECT "book_club_id" FROM "book_club_members" WHERE "book_club_members"."user_id" = '42' AND "book_club_members"."role" >= 1)"#.to_string());
+		// NoirPanther: the roles at or above Moderator, by name (see find_for_member_enforce_role)
+		assert_eq!(stmt_str, r#"SELECT  FROM "book_clubs" WHERE "book_clubs"."id" IN (SELECT "book_club_id" FROM "book_club_members" WHERE "book_club_members"."user_id" = '42' AND "book_club_members"."role" IN ('MODERATOR', 'ADMIN', 'CREATOR'))"#.to_string());
 	}
 
 	#[test]

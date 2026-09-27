@@ -101,6 +101,11 @@ impl BookClub {
 	}
 
 	async fn invitations(&self, ctx: &Context<'_>) -> Result<Vec<BookClubInvitation>> {
+		// NoirPanther: who has been invited is for the club's admins and the server owner;
+		// anyone else gets an empty list, not an error, so no client breaks on the field.
+		if !can_see_invitations(ctx, &self.model.id).await? {
+			return Ok(vec![]);
+		}
 		let conn = ctx.data::<CoreContext>()?.conn.as_ref();
 		let book_club_invitations =
 			book_club_invitation::Entity::find_for_book_club_id(&self.model.id.clone())
@@ -252,4 +257,18 @@ impl BookClub {
 
 		Ok(count)
 	}
+}
+
+/// NoirPanther: may the caller see a club's open invitations? The server owner, or a member whose
+/// role is admin or creator — the same people who may send them.
+async fn can_see_invitations(ctx: &Context<'_>, club_id: &str) -> Result<bool> {
+	let AuthContext { user, .. } = ctx.data::<AuthContext>()?;
+	if user.is_server_owner {
+		return Ok(true);
+	}
+	let conn = ctx.data::<CoreContext>()?.conn.as_ref();
+	let membership = book_club_member::Entity::find_by_club_for_user(user, club_id)
+		.one(conn)
+		.await?;
+	Ok(membership.is_some_and(|m| m.role >= BookClubMemberRole::Admin))
 }

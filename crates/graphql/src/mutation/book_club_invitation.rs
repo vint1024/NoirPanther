@@ -3,7 +3,7 @@ use models::{
 	entity::{book_club_invitation, book_club_member, user::AuthUser},
 	shared::book_club::BookClubMemberRole,
 };
-use sea_orm::{prelude::*, Set};
+use sea_orm::{prelude::*, PaginatorTrait, Set};
 
 use crate::{
 	data::{AuthContext, CoreContext},
@@ -30,6 +30,7 @@ impl BookClubInvitationMutation {
 		let conn = ctx.data::<CoreContext>()?.conn.as_ref();
 
 		validate_book_club_invitation_input(user, &id, &input, conn).await?;
+		refuse_repeat_invitation(&id, &input.user_id, conn).await?;
 
 		let created_invitation = create_invitation_active_model(&id, &input)
 			.insert(conn)
@@ -77,6 +78,33 @@ async fn validate_book_club_invitation_input(
 		return Err("Cannot create an invitation for yourself".into());
 	}
 
+	Ok(())
+}
+
+/// NoirPanther: one open invitation per person, and none for someone already in the club.
+/// Upstream stores every call, so the invitee saw the same club twice (and accepting both made
+/// two memberships). Kept apart from `validate_book_club_invitation_input`, whose upstream unit
+/// tests run on a mock database with a fixed set of answers.
+async fn refuse_repeat_invitation(
+	club_id: &ID,
+	user_id: &str,
+	conn: &DatabaseConnection,
+) -> Result<()> {
+	let invited = book_club_invitation::Entity::find_for_book_club_id(club_id.as_ref())
+		.filter(book_club_invitation::Column::UserId.eq(user_id))
+		.count(conn)
+		.await?;
+	if invited > 0 {
+		return Err("This person already has an invitation to the club".into());
+	}
+	let in_club = book_club_member::Entity::find()
+		.filter(book_club_member::Column::BookClubId.eq(club_id.as_str()))
+		.filter(book_club_member::Column::UserId.eq(user_id))
+		.count(conn)
+		.await?;
+	if in_club > 0 {
+		return Err("This person is already in the club".into());
+	}
 	Ok(())
 }
 

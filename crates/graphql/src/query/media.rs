@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use async_graphql::{Context, Object, Result, ID};
 use models::{
@@ -483,14 +483,19 @@ impl MediaQuery {
 		};
 
 		let user_id = user.id.clone();
-		let limit = offset_info.limit();
-		let offset = offset_info.offset();
+		let limit = offset_info.limit() as usize;
+		let offset = offset_info.offset() as usize;
 
 		#[derive(Debug, FromQueryResult)]
 		struct OnDeckMediaId {
 			id: String,
 		}
 
+		// NoirPanther: the whole on-deck list first (one book per series, so it stays small), then
+		// only what this user may see, and only then the page — upstream paged in SQL, dropped
+		// hidden books afterwards (short pages) and counted with a second SQL body that had
+		// drifted from this one (no "series being read" exclusion, no access filter), so
+		// `totalItems` promised books the list never showed.
 		let on_deck_media_ids = OnDeckMediaId::find_by_statement(db_statement(
 			conn,
 			r#"
@@ -587,21 +592,39 @@ impl MediaQuery {
 				ORDER BY
 					-- Most recently read series first
 					series_last_read_date DESC
-				LIMIT $2
-				OFFSET $3
 				"#,
-			[user_id.clone().into(), limit.into(), offset.into()],
+			[user_id.into()],
 		))
 		.all(conn)
 		.await?;
 
-		let media_ids: Vec<String> =
+		let all_ids: Vec<String> =
 			on_deck_media_ids.into_iter().map(|row| row.id).collect();
+		let visible: HashSet<String> = if all_ids.is_empty() {
+			HashSet::new()
+		} else {
+			media::Entity::find_for_user(user)
+				.select_only()
+				.column(media::Column::Id)
+				.filter(media::Column::Id.is_in(all_ids.clone()))
+				.into_tuple::<String>()
+				.all(conn)
+				.await?
+				.into_iter()
+				.collect()
+		};
+		let visible_ids: Vec<String> = all_ids
+			.into_iter()
+			.filter(|id| visible.contains(id))
+			.collect();
+		let total_count = visible_ids.len() as u64;
+		let media_ids: Vec<String> =
+			visible_ids.into_iter().skip(offset).take(limit).collect();
 
 		if media_ids.is_empty() {
 			return Ok(PaginatedResponse {
 				nodes: vec![],
-				page_info: OffsetPaginationInfo::new(offset_info, 0).into(),
+				page_info: OffsetPaginationInfo::new(offset_info, total_count).into(),
 			});
 		}
 
@@ -623,90 +646,6 @@ impl MediaQuery {
 			.filter_map(|id| media_map.remove(&id))
 			.map(Media::from)
 			.collect();
-
-		let total_count = conn
-			.query_one(db_statement(
-				conn,
-				r#"
-					-- Count total number of on deck items (for pagination)
-					WITH
-					-- Find all series where the user has read at least one book
-					user_read_series AS (
-						SELECT DISTINCT m.series_id
-						FROM media m
-						JOIN reading_sessions rs ON rs.media_id = m.id
-						WHERE rs.user_id = $1
-						AND rs.status = 'FINISHED'
-						AND m.series_id IS NOT NULL
-					),
-
-					-- Find all media IDs that user has read or is currently reading
-					user_read_or_reading_media AS (
-						-- Media that user has finished
-						SELECT DISTINCT media_id
-						FROM reading_sessions
-						WHERE user_id = $1
-						AND status = 'FINISHED'
-
-						UNION
-
-						-- Media that user is currently reading
-						SELECT DISTINCT rs.media_id
-						FROM reading_sessions rs
-						WHERE rs.user_id = $1
-						AND rs.status = 'READING'
-						AND NOT EXISTS (
-							SELECT 1
-							FROM reading_sessions rs2
-							WHERE rs2.user_id = rs.user_id
-							AND rs2.media_id = rs.media_id
-							AND (
-								rs2.updated_at > rs.updated_at
-								OR (
-									rs2.updated_at = rs.updated_at
-									AND rs2.created_at > rs.created_at
-								)
-								OR (
-									rs2.updated_at = rs.updated_at
-									AND rs2.created_at = rs.created_at
-									AND rs2.id > rs.id
-								)
-							)
-						)
-					),
-
-					-- Find the first unread book for each series
-					next_in_series AS (
-						SELECT
-							m.id,
-							ROW_NUMBER() OVER(
-								PARTITION BY m.series_id
-								ORDER BY m.name
-							) as book_rank
-						FROM
-							media m
-						WHERE
-							m.series_id IN (SELECT series_id FROM user_read_series)
-							-- Exclude media that user has read or is currently reading
-							AND m.id NOT IN (SELECT media_id FROM user_read_or_reading_media)
-							-- Ensure the media is not deleted
-							AND m.deleted_at IS NULL
-					)
-
-					-- Count only the first book for each series
-					SELECT
-						COUNT(*) as count
-					FROM
-						next_in_series
-					WHERE
-						book_rank = 1
-					"#,
-				[user_id.into()],
-			))
-			.await?
-			.ok_or_else(|| async_graphql::Error::new("Failed to get count"))?
-			.try_get::<i64>("", "count")?
-			.try_into()?;
 
 		Ok(PaginatedResponse {
 			nodes: ordered_results,

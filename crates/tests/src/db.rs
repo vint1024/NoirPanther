@@ -1,11 +1,12 @@
 use migrations::{Migrator, MigratorTrait};
 use models::entity::{
 	age_restriction, api_key, book_club, book_club_book, book_club_discussion,
-	book_club_member, content_access_rule, device_public_key, kobo_sync_session, library,
-	library_config, library_exclusion, library_path, media, media_analysis,
-	media_metadata, media_tag, reading_device, reading_session, refresh_token, series,
-	series_merge, series_metadata, server_config, session, tag, user,
-	user_login_activity, user_preferences,
+	book_club_invitation, book_club_member, content_access_rule, device_public_key,
+	kobo_sync_session, library, library_config, library_exclusion, library_path, media,
+	media_analysis, media_metadata, media_tag, reading_device, reading_session,
+	refresh_token, series, series_merge, series_metadata, server_config, session,
+	smart_list, smart_list_access_rule, smart_list_view, tag, user, user_login_activity,
+	user_preferences,
 };
 use sea_orm::{ConnectionTrait, Database, DbBackend, DbConn, DbErr, Schema};
 
@@ -176,6 +177,12 @@ pub async fn create_database_tables(db: &DbConn) -> Result<(), DbErr> {
 		schema.create_table_from_entity(book_club_member::Entity),
 		schema.create_table_from_entity(book_club_book::Entity),
 		schema.create_table_from_entity(book_club_discussion::Entity),
+		// invitations: people join a club by accepting one (fork: consent, no duplicates)
+		schema.create_table_from_entity(book_club_invitation::Entity),
+		// smart lists: the fork fixed `meta` on PostgreSQL and tests it here as well
+		schema.create_table_from_entity(smart_list::Entity),
+		schema.create_table_from_entity(smart_list_access_rule::Entity),
+		schema.create_table_from_entity(smart_list_view::Entity),
 		// offline reading (E3) wraps a book to a device's registered public key
 		schema.create_table_from_entity(device_public_key::Entity),
 	];

@@ -11,7 +11,10 @@ use models::{
 	entity::{media, series, smart_list, smart_list_view},
 	shared::image::ImageRef,
 };
-use sea_orm::{QuerySelect, TransactionTrait};
+use sea_orm::{
+	ColumnTrait, EntityTrait, JoinType, QueryFilter, QuerySelect, QueryTrait,
+	RelationTrait, TransactionTrait,
+};
 use std::collections::HashSet;
 
 #[derive(Debug, SimpleObject)]
@@ -151,10 +154,20 @@ impl SmartList {
 		let books_query =
 			build_books_query(user, smart_list.joiner, &deserialized_filters, None);
 
-		let ids: Vec<(String, Option<String>)> = books_query
+		// NoirPanther: a reading-status filter joins the sessions and groups the books query by
+		// book, and PostgreSQL then refuses `series.library_id` in its select list ("must appear
+		// in the GROUP BY clause"), which broke every list's meta in one request. Take the
+		// matching book ids from it and look up their series and libraries in a plain query.
+		let book_ids = books_query
+			.select_only()
+			.column(media::Column::Id)
+			.into_query();
+		let ids: Vec<(Option<String>, Option<String>)> = media::Entity::find()
 			.select_only()
 			.column(media::Column::SeriesId)
 			.column(series::Column::LibraryId)
+			.join(JoinType::LeftJoin, media::Relation::Series.def())
+			.filter(media::Column::Id.in_subquery(book_ids))
 			.into_tuple()
 			.all(&txn)
 			.await?;
@@ -164,7 +177,9 @@ impl SmartList {
 		let mut matched_libraries: HashSet<String> = HashSet::new();
 
 		for (series_id, library_id) in ids {
-			matched_series.insert(series_id);
+			if let Some(series_id) = series_id {
+				matched_series.insert(series_id);
+			}
 			if let Some(library_id) = library_id {
 				matched_libraries.insert(library_id);
 			}

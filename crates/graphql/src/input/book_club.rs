@@ -172,6 +172,9 @@ impl CreateBookClubMemberInput {
 			hide_progress: Set(false),
 			user_id: Set(self.user_id),
 			role: Set(self.role),
+			// NoirPanther: the column is NOT NULL and upstream never set it, so every direct
+			// add failed ("null value in column joined_at") — the invitation path sets it.
+			joined_at: Set(chrono::Utc::now().into()),
 			..Default::default()
 		}
 	}

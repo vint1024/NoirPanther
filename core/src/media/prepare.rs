@@ -102,7 +102,7 @@ pub async fn prepare_draft(
 		id: Set(id),
 		name: Set(file_stem),
 		size: Set(size),
-		extension: Set(extension),
+		extension: Set(stored_extension(&extension)),
 		pages: Set(pages),
 		hash: Set(processed.hash),
 		koreader_hash: Set(processed.koreader_hash),
@@ -129,4 +129,23 @@ pub async fn prepare_draft(
 		metadata: resolved_metadata,
 		tags: resolved_tags,
 	})
+}
+
+/// NoirPanther: the extension as stored — lowercase. The code compares it verbatim (`== "epub"`
+/// in the media, series and library mutations; the app's offline pager wants `cbz`/`zip`), so
+/// `Book.EPUB` misbehaved. Rows stored before are folded by migration m20260927.
+fn stored_extension(extension: &str) -> String {
+	extension.to_lowercase()
+}
+
+#[cfg(test)]
+mod noirpanther_tests {
+	use super::stored_extension;
+
+	#[test]
+	fn an_uppercase_extension_is_stored_lowercase() {
+		assert_eq!(stored_extension("PDF"), "pdf");
+		assert_eq!(stored_extension("Epub"), "epub");
+		assert_eq!(stored_extension("cbz"), "cbz");
+	}
 }

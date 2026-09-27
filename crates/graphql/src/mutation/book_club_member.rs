@@ -1,5 +1,8 @@
 use async_graphql::{Context, Object, Result, ID};
-use models::{entity::book_club_member, shared::book_club::BookClubMemberRole};
+use models::{
+	entity::{book_club_member, user::AuthUser},
+	shared::book_club::BookClubMemberRole,
+};
 use sea_orm::prelude::*;
 
 use crate::{
@@ -24,6 +27,8 @@ impl BookClubMemberMutation {
 		book_club_id: ID,
 		input: CreateBookClubMemberInput,
 	) -> Result<BookClubMember> {
+		let AuthContext { user, .. } = ctx.data::<AuthContext>()?;
+		refuse_adding_someone_else(user, &input)?;
 		let conn = ctx.data::<CoreContext>()?.conn.as_ref();
 		let created_member = input
 			.into_active_model(book_club_id.as_ref())
@@ -78,4 +83,22 @@ impl BookClubMemberMutation {
 
 		Ok(BookClubMember::from(member))
 	}
+}
+
+/// NoirPanther: nobody is put in a book club without saying yes. Upstream lets a club admin add
+/// anyone outright (it only never worked: `joined_at` was left empty); here people join by
+/// accepting an invitation (`createBookClubInvitation` → `respondToBookClubInvitation`), which
+/// they can decline. Pinned by `tests/fork/book_clubs.rs` so an upstream change can't quietly
+/// bring direct adds back.
+fn refuse_adding_someone_else(
+	user: &AuthUser,
+	input: &CreateBookClubMemberInput,
+) -> Result<()> {
+	if input.user_id != user.id {
+		return Err(
+			"People join a book club by accepting an invitation: invite them instead"
+				.into(),
+		);
+	}
+	Ok(())
 }
