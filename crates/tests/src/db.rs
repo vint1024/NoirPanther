@@ -13,7 +13,7 @@ use sea_orm::{ConnectionTrait, Database, DbBackend, DbConn, DbErr, Schema};
 /// Point this at a PostgreSQL server to run the suite against it instead of in-memory SQLite:
 ///
 /// ```sh
-/// TEST_DATABASE_URL=postgresql://stump:stump-local@localhost:15432/stump \
+/// TEST_DATABASE_URL=postgresql://<user>:<password>@localhost:15432/stump \
 ///   cargo test --workspace -- --test-threads=1
 /// ```
 ///
